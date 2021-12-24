@@ -10,7 +10,6 @@ import java.util.concurrent.CompletableFuture;
 
 @Dao
 public interface UserCredentialsDao {
-    String TABLENAME_USER_CREDENTIALS = "user_credentials";
     @Insert
     @StatementAttributes(consistencyLevel = "LOCAL_QUORUM")
     CompletableFuture<Void> insert(UserCredentials userCredentials);

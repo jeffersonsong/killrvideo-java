@@ -18,7 +18,7 @@ import com.datastax.oss.driver.api.mapper.annotations.PartitionKey;
  * @author DataStax Developer Advocates team.
  */
 @Entity
-@CqlName(UserCredentialsDao.TABLENAME_USER_CREDENTIALS)
+@CqlName("user_credentials")
 public class UserCredentials implements Serializable {
 
     /** Serial. */

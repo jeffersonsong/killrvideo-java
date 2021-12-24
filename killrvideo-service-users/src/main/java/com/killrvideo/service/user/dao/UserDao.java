@@ -10,8 +10,6 @@ import java.util.concurrent.CompletableFuture;
 
 @Dao
 public interface UserDao {
-    String TABLENAME_USERS = "users";
-
     @Insert
     @StatementAttributes(consistencyLevel = "LOCAL_QUORUM")
     CompletableFuture<Void> insert(User user);

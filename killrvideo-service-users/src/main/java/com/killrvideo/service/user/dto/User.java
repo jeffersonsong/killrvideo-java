@@ -19,7 +19,7 @@ import com.datastax.oss.driver.api.mapper.annotations.PartitionKey;
  * @author DataStax Developer Advocates team.
  */
 @Entity
-@CqlName(UserDao.TABLENAME_USERS)
+@CqlName("users")
 public class User {
     @PartitionKey
     private UUID userid;
