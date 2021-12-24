@@ -43,7 +43,7 @@
 	<properties>
 		
 		<!-- DataStax Java-Driver -->
-		<dse.version>1.8.2</dse.version>
+		<dse.version>1.9.0</dse.version>
 		
 		<!-- Spring -->
 		<spring.version>5.3.14</spring.version>
