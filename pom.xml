@@ -44,6 +44,7 @@
 		
 		<!-- DataStax Java-Driver -->
 		<dse.version>1.9.0</dse.version>
+		<datastax-driver.version>4.4.0</datastax-driver.version>
 		
 		<!-- Spring -->
 		<spring.version>5.3.14</spring.version>
@@ -110,7 +111,7 @@
 			<dependency>
 				<groupId>com.datastax.oss</groupId>
 				<artifactId>java-driver-core</artifactId>
-				<version>4.4.0</version>
+				<version>${datastax-driver.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>com.datastax.dse</groupId>
