@@ -5,22 +5,21 @@ import java.util.UUID;
 
 import javax.validation.constraints.NotNull;
 
+import com.datastax.driver.mapping.annotations.Column;
+import com.killrvideo.service.user.dao.UserDao;
 import org.hibernate.validator.constraints.Length;
 
-import com.datastax.driver.mapping.annotations.Column;
-import com.datastax.driver.mapping.annotations.PartitionKey;
-import com.datastax.driver.mapping.annotations.Table;
-import com.killrvideo.model.CommonConstants;
-import com.killrvideo.service.user.dao.UserDseDao;
+import com.datastax.oss.driver.api.mapper.annotations.CqlName;
+import com.datastax.oss.driver.api.mapper.annotations.Entity;
+import com.datastax.oss.driver.api.mapper.annotations.PartitionKey;
 
 /**
  * Pojo representing DTO for table 'users'.
  *
  * @author DataStax Developer Advocates team.
  */
-@Table(keyspace = 
-            CommonConstants.KILLRVIDEO_KEYSPACE,
-       name = UserDseDao.TABLENAME_USERS)
+@Entity
+@CqlName(UserDao.TABLENAME_USERS)
 public class User {
 
     /** Column names in the DB. */
@@ -159,6 +158,4 @@ public class User {
     public void setCreatedAt(Date createdAt) {
         this.createdAt = createdAt;
     }
-    
-    
 }

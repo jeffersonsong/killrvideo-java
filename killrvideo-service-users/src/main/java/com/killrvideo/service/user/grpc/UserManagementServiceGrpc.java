@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
+import com.killrvideo.service.user.dao.UserRepository;
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,7 +23,6 @@ import org.springframework.stereotype.Service;
 
 import com.google.protobuf.Timestamp;
 import com.killrvideo.messaging.dao.MessagingDao;
-import com.killrvideo.service.user.dao.UserDseDao;
 import com.killrvideo.service.user.dto.User;
 import com.killrvideo.service.user.dto.UserCredentials;
 import com.killrvideo.utils.HashUtils;
@@ -56,7 +56,7 @@ public class UserManagementServiceGrpc extends UserManagementServiceImplBase {
     private String serviceKey;
     
     @Autowired
-    private UserDseDao userDseDao;
+    private UserRepository userRepository;
     
     @Autowired
     private MessagingDao messagingDao;
@@ -78,7 +78,7 @@ public class UserManagementServiceGrpc extends UserManagementServiceImplBase {
         final String hashedPassword = HashUtils.hashPassword(grpcReq.getPassword().trim());
         
          // Invoke DAO Async
-        userDseDao.createUserAsync(user, hashedPassword).whenComplete((result, error) -> {
+        userRepository.createUserAsync(user, hashedPassword).whenComplete((result, error) -> {
             if (error != null ) {
                 traceError("createUser", starts, error);
                 grpcResObserver.onError(Status.INVALID_ARGUMENT.augmentDescription(error.getMessage())
@@ -113,7 +113,7 @@ public class UserManagementServiceGrpc extends UserManagementServiceImplBase {
         String email = grpcReq.getEmail();
         
         // Invoke Async
-        CompletableFuture<UserCredentials> futureCredential = userDseDao.getUserCredentialAsync(email);
+        CompletableFuture<UserCredentials> futureCredential = userRepository.getUserCredentialAsync(email);
         
         // Map back as GRPC (if correct invalid credential otherwize)
         futureCredential.whenComplete((credential, error) -> {
@@ -163,7 +163,7 @@ public class UserManagementServiceGrpc extends UserManagementServiceImplBase {
                     .toArray(size -> new UUID[size]));
             
             // Execute Async
-            CompletableFuture<List<User>> userListFuture = userDseDao.getUserProfilesAsync(listOfUserId);
+            CompletableFuture<List<User>> userListFuture = userRepository.getUserProfilesAsync(listOfUserId);
             
             // Mapping back to GRPC objects
             userListFuture.whenComplete((users, error) -> {
