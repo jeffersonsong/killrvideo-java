@@ -46,7 +46,6 @@ import com.evanlennick.retry4j.config.RetryConfig;
 import com.evanlennick.retry4j.config.RetryConfigBuilder;
 import com.killrvideo.discovery.ServiceDiscoveryDao;
 import com.killrvideo.dse.graph.KillrVideoTraversalSource;
-import com.killrvideo.dse.utils.BlobToStringCodec;
 import com.killrvideo.model.CommonConstants;
 
 import io.netty.handler.ssl.SslContext;
@@ -132,7 +131,7 @@ public class DseConfiguration {
          clusterConfig.withoutJMXReporting();
          clusterConfig.withoutMetrics();
          clusterConfig.getConfiguration().getSocketOptions().setReadTimeoutMillis(1000);
-         clusterConfig.getConfiguration().getCodecRegistry().register(new BlobToStringCodec());
+         //clusterConfig.getConfiguration().getCodecRegistry().register(new BlobToStringCodec());
          
          final AtomicInteger atomicCount = new AtomicInteger(1);
          Callable<DseSession> connectionToDse = () -> {
