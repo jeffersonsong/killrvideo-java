@@ -59,7 +59,6 @@
 		<protobuf.version>3.5.1-1</protobuf.version>
 		<protobuf.java.version>3.5.1</protobuf.java.version>
 		<protoc-gen-grpc.version>1.10.0</protoc-gen-grpc.version>
-		<spring-boot-grpc.version>2.1.5</spring-boot-grpc.version>
 		
 		<!-- kafka -->
 		<kafka-connect.version>2.1.0</kafka-connect.version>
