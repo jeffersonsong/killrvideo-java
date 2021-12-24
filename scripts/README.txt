@@ -16,3 +16,6 @@ Modify run-docker-backend-external.sh
 export KILLRVIDEO_BACKEND='172.17.0.1'
 
 https://stackoverflow.com/questions/31324981/how-to-access-host-port-from-docker-container/43541732#43541732
+
+KILLRVIDEO_HOST_IP=172.17.0.1
+KILLRVIDEO_DOCKER_IP=172.17.0.1
