@@ -1,5 +1,6 @@
 package com.killrvideo.service.user.grpc;
 
+import java.time.Instant;
 import java.util.Date;
 import java.util.UUID;
 
@@ -24,7 +25,7 @@ public class UserManagementServiceGrpcMapper {
     public static User mapUserRequest2User(CreateUserRequest grpcReq) {
         User user = new User();
         user.setEmail(grpcReq.getEmail());
-        user.setCreatedAt(new Date());
+        user.setCreatedDate(Instant.now());
         user.setFirstname(grpcReq.getFirstName());
         user.setLastname(grpcReq.getLastName());
         user.setUserid(UUID.fromString(grpcReq.getUserId().getValue()));

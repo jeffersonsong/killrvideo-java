@@ -1,11 +1,11 @@
 package com.killrvideo.service.user.dto;
 
+import java.time.Instant;
 import java.util.Date;
 import java.util.UUID;
 
 import javax.validation.constraints.NotNull;
 
-import com.datastax.driver.mapping.annotations.Column;
 import com.killrvideo.service.user.dao.UserDao;
 import org.hibernate.validator.constraints.Length;
 
@@ -21,32 +21,20 @@ import com.datastax.oss.driver.api.mapper.annotations.PartitionKey;
 @Entity
 @CqlName(UserDao.TABLENAME_USERS)
 public class User {
-
-    /** Column names in the DB. */
-    public static final String COLUMN_USERID    = "userid";
-    public static final String COLUMN_FIRSTNAME = "firstname";
-    public static final String COLUMN_LASTNAME  = "lastname";
-    public static final String COLUMN_EMAIL     = "email";
-    public static final String COLUMN_CREATE    = "created_date";
-
     @PartitionKey
     private UUID userid;
 
     @Length(min = 1, message = "firstName must not be empty")
-    @Column
     private String firstname;
 
     @Length(min = 1, message = "lastname must not be empty")
-    @Column
     private String lastname;
 
     @Length(min = 1, message = "email must not be empty")
-    @Column
     private String email;
 
     @NotNull
-    @Column(name = COLUMN_CREATE)
-    private Date createdAt;
+    private Instant createdDate;
 
     /**
      * Default constructor (reflection)
@@ -56,12 +44,12 @@ public class User {
     /**
      * Constructor with all parameters.
      */
-    public User(UUID userid, String firstname, String lastname, String email, Date createdAt) {
+    public User(UUID userid, String firstname, String lastname, String email, Instant createdDate) {
         this.userid = userid;
         this.firstname = firstname;
         this.lastname = lastname;
         this.email = email;
-        this.createdAt = createdAt;
+        this.createdDate = createdDate;
     }
 
     /**
@@ -146,16 +134,16 @@ public class User {
      * @return
      *       current value of 'createdAt'
      */
-    public Date getCreatedAt() {
-        return createdAt;
+    public Instant getCreatedDate() {
+        return createdDate;
     }
 
     /**
      * Setter for attribute 'createdAt'.
-     * @param createdAt
+     * @param createdDate
      * 		new value for 'createdAt '
      */
-    public void setCreatedAt(Date createdAt) {
-        this.createdAt = createdAt;
+    public void setCreatedDate(Instant createdDate) {
+        this.createdDate = createdDate;
     }
 }

@@ -1,6 +1,7 @@
 package com.killrvideo.service.user.dao;
 
 import com.datastax.oss.driver.api.core.CqlSession;
+import com.killrvideo.model.CommonConstants;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 

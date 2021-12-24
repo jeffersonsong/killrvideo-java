@@ -5,7 +5,6 @@ import java.util.UUID;
 
 import javax.validation.constraints.NotNull;
 
-import com.datastax.driver.mapping.annotations.Column;
 import com.datastax.oss.driver.api.mapper.annotations.CqlName;
 import com.killrvideo.service.user.dao.UserCredentialsDao;
 import org.hibernate.validator.constraints.Length;
@@ -24,21 +23,14 @@ public class UserCredentials implements Serializable {
 
     /** Serial. */
     private static final long serialVersionUID = 2013590265131367178L;
-    
-    /** Column names in the DB. */
-    public static final String COLUMN_USERID    = "userid";
-    public static final String COLUMN_PASSWORD  = "password";
-    public static final String COLUMN_EMAIL     = "email";
 
     @PartitionKey
     private String email;
 
     @Length(min = 1, message = "password must not be empty")
-    @Column(name = COLUMN_PASSWORD)
     private String password;
 
     @NotNull
-    @Column
     private UUID userid;
 
     /**
