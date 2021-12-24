@@ -136,9 +136,9 @@ public class SuggestedVideosDseDao extends DseDaoSupport implements KillrVideoTr
         // Build statement
         KillrVideoTraversal graphTraversal = traversalSource.users(userid.toString()).recommendByUserRating(5, 4, 1000, 5);
         GraphStatement graphStatement = DseGraph.statementFromTraversal(graphTraversal);
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Recommend TRAVERSAL is {} ",  DseUtils.displayGraphTranserval(graphTraversal));
-        }
+        //if (LOGGER.isDebugEnabled()) {
+            //LOGGER.debug("Recommend TRAVERSAL is {} ",  DseUtils.displayGraphTranserval(graphTraversal));
+        //}
         
         // Execute Sync
         CompletableFuture<GraphResultSet> futureRs = 
