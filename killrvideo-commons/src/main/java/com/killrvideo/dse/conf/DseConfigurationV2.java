@@ -1,12 +1,11 @@
 package com.killrvideo.dse.conf;
 
 import com.datastax.driver.core.policies.AddressTranslator;
+import com.datastax.dse.driver.api.core.graph.DseGraph;
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.CqlSessionBuilder;
-import com.evanlennick.retry4j.CallExecutor;
-import com.evanlennick.retry4j.config.RetryConfig;
-import com.evanlennick.retry4j.config.RetryConfigBuilder;
 import com.killrvideo.discovery.ServiceDiscoveryDao;
+import com.killrvideo.dse.graph.KillrVideoTraversalSource;
 import com.killrvideo.model.CommonConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,7 +17,6 @@ import org.springframework.context.annotation.Configuration;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
-import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -221,5 +219,16 @@ public class DseConfigurationV2 {
         } else {
             LOGGER.info(" + Connection is not authenticated (no username/password)");
         }
+    }
+
+    /**
+     * Graph Traversal for suggested videos.
+     *
+     * @return
+     *      traversal
+     */
+    @Bean
+    public KillrVideoTraversalSource initializeGraphTraversalSource() {
+        return DseGraph.g.getGraph().traversal(KillrVideoTraversalSource.class);
     }
 }
