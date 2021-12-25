@@ -43,7 +43,7 @@
 	<properties>
 		
 		<!-- DataStax Java-Driver -->
-		<datastax-driver.version>4.4.0</datastax-driver.version>
+		<datastax-driver.version>4.5.0</datastax-driver.version>
 		<cassandra-native-protocol.version>1.4.9</cassandra-native-protocol.version>
 		
 		<!-- Spring -->
@@ -128,6 +128,13 @@
 				<artifactId>native-protocol</artifactId>
 				<version>${cassandra-native-protocol.version}</version>
 			</dependency>
+			<!--
+			<dependency>
+				<groupId>org.apache.tinkerpop</groupId>
+				<artifactId>gremlin-core</artifactId>
+				<version>3.4.10</version>
+			</dependency>
+			-->
 
 	 		<!-- Bean Validation -->
 	        <dependency>
