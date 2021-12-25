@@ -53,9 +53,11 @@ public class PageableQueryUtils {
         ResultListPage<T> result = new ResultListPage<>();
         List<T> commentList = StreamSupport.stream(rs.currentPage().spliterator(), false)
                 .map(mapper).collect(Collectors.toList());
-        String nextPage = Bytes.toHexString(rs.getExecutionInfo().getPagingState());
         result.setresults(commentList);
-        result.setPagingState(Optional.ofNullable(nextPage));
+        if (rs.hasMorePages()) {
+            String nextPage = Bytes.toHexString(rs.getExecutionInfo().getPagingState());
+            result.setPagingState(Optional.ofNullable(nextPage));
+        }
         return result;
     }
 }
