@@ -44,6 +44,7 @@
 		
 		<!-- DataStax Java-Driver -->
 		<datastax-driver.version>4.9.0</datastax-driver.version>
+		<gremlin.version>3.4.10</gremlin.version>
 
 		<!-- Spring -->
 		<spring.version>5.3.14</spring.version>
@@ -97,7 +98,6 @@
 		<maven-surefire-plugin.version>2.22.0</maven-surefire-plugin.version>
 		<maven-os-plugin.version>1.5.0.Final</maven-os-plugin.version>
 		<protobuf-maven-plugin.version>0.5.0</protobuf-maven-plugin.version>
-
 	</properties>
 
 	<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
@@ -122,13 +122,11 @@
 				<artifactId>java-driver-mapper-processor</artifactId>
 				<version>${datastax-driver.version}</version>
 			</dependency>
-			<!--
 			<dependency>
 				<groupId>org.apache.tinkerpop</groupId>
 				<artifactId>gremlin-core</artifactId>
-				<version>3.4.10</version>
+				<version>${gremlin.version}</version>
 			</dependency>
-			-->
 
 	 		<!-- Bean Validation -->
 	        <dependency>

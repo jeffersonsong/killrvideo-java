@@ -46,8 +46,8 @@
 			<artifactId>java-driver-mapper-processor</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>com.datastax.oss</groupId>
-			<artifactId>native-protocol</artifactId>
+			<groupId>org.apache.tinkerpop</groupId>
+			<artifactId>gremlin-core</artifactId>
 		</dependency>
 
 		<!--  Service Discovery -->
@@ -138,12 +138,6 @@
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-		<!--
-		<dependency>
-			<groupId>org.apache.tinkerpop</groupId>
-			<artifactId>gremlin-core</artifactId>
-		</dependency>
-		-->
 	</dependencies>
 
 	<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
