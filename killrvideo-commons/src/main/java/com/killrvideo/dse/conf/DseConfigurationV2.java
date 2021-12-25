@@ -1,6 +1,5 @@
 package com.killrvideo.dse.conf;
 
-import com.datastax.driver.core.policies.AddressTranslator;
 import com.datastax.dse.driver.api.core.graph.DseGraph;
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.CqlSessionBuilder;

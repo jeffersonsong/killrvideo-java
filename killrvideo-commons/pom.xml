@@ -38,19 +38,6 @@
 			<artifactId>java-driver-core</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>com.datastax.dse</groupId>
-			<artifactId>dse-java-driver-mapping</artifactId>
-		</dependency>
-		<!--
-		<dependency>
-			<groupId>com.datastax.dse</groupId>
-			<artifactId>dse-java-driver-extras</artifactId>
-		</dependency>		-->
-		<dependency>
-			<groupId>com.datastax.dse</groupId>
-			<artifactId>dse-java-driver-graph</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>com.datastax.oss</groupId>
 			<artifactId>java-driver-mapper-runtime</artifactId>
 		</dependency>

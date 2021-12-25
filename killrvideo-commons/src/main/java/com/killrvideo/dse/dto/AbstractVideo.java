@@ -2,8 +2,6 @@ package com.killrvideo.dse.dto;
 
 import org.hibernate.validator.constraints.Length;
 
-import com.datastax.driver.mapping.annotations.Column;
-
 /**
  * Bean representing shared attributes in videos.
  *
@@ -19,11 +17,9 @@ public abstract class AbstractVideo extends AbstractEntity {
     public static final String COLUMN_TAGS    = "tags";
     public static final String COLUMN_PREVIEW = "preview_image_location";
     
-    @Column
     @Length(min = 1, message = "The video name must not be empty")
     protected String name;
 
-    @Column(name = COLUMN_PREVIEW)
     protected String previewImageLocation;
 
     /**

@@ -43,7 +43,6 @@
 	<properties>
 		
 		<!-- DataStax Java-Driver -->
-		<dse.version>1.9.0</dse.version>
 		<datastax-driver.version>4.4.0</datastax-driver.version>
 		<cassandra-native-protocol.version>1.4.9</cassandra-native-protocol.version>
 		
@@ -113,23 +112,6 @@
 				<groupId>com.datastax.oss</groupId>
 				<artifactId>java-driver-core</artifactId>
 				<version>${datastax-driver.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>com.datastax.dse</groupId>
-				<artifactId>dse-java-driver-mapping</artifactId>
-				<version>${dse.version}</version>
-			</dependency>
-			<!--
-			<dependency>
-				<groupId>com.datastax.dse</groupId>
-				<artifactId>dse-java-driver-extras</artifactId>
-				<version>${dse.version}</version>
-			</dependency>
-			-->
-			<dependency>
-				<groupId>com.datastax.dse</groupId>
-				<artifactId>dse-java-driver-graph</artifactId>
-				<version>${dse.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>com.datastax.oss</groupId>
