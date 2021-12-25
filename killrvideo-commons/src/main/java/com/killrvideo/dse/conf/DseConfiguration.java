@@ -21,9 +21,9 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Configuration
-public class DseConfigurationV2 {
+public class DseConfiguration {
     /** Internal logger. */
-    private static final Logger LOGGER = LoggerFactory.getLogger(DseConfigurationV2.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DseConfiguration.class);
     @Value("${killrvideo.discovery.service.cassandra: cassandra}")
     private String cassandraServiceName;
 
