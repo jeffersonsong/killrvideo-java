@@ -28,10 +28,11 @@ public class RatingRepository {
     /** Precompile statements to speed up queries. */
     private PreparedStatement updateRating;
 
-    public RatingRepository(CqlSession session, VideoRatingDao videoRatingDao, VideoRatingByUserDao videoRatingByUserDao) {
+    public RatingRepository(CqlSession session) {
         this.session = session;
-        this.videoRatingDao = videoRatingDao;
-        this.videoRatingByUserDao = videoRatingByUserDao;
+        VideoRatingMapper mapper = VideoRatingMapper.build(session).build();
+        this.videoRatingDao = mapper.getVideoRatingDao();
+        this.videoRatingByUserDao = mapper.getVideoRatingByUserDao();
         SimpleStatement updateStatement = QueryBuilder.update("video_ratings")
                 .increment(VideoRating.COLUMN_RATING_COUNTER)
                 .increment(VideoRating.COLUMN_RATING_TOTAL, QueryBuilder.bindMarker())
