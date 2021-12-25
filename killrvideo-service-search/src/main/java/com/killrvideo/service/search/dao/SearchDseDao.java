@@ -10,6 +10,7 @@ import java.util.regex.Pattern;
 
 import javax.annotation.PostConstruct;
 
+import com.killrvideo.model.CommonConstants;
 import com.killrvideo.service.search.dto.Video;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -87,8 +88,8 @@ public class SearchDseDao extends DseDaoSupport {
     	mapperVideo = mappingManager.mapper(Video.class);
     	
     	// Using Mapper and annotated bean to get constants value
-        String keyspaceVideo   = mapperVideo.getTableMetadata().getKeyspace().getName();
-        String tableNameVideo  = mapperVideo.getTableMetadata().getName();
+        String keyspaceVideo   = CommonConstants.KILLRVIDEO_KEYSPACE;
+        String tableNameVideo  = Video.TABLENAME_VIDEOS;
         
         // Statement for tags
     	findSuggestedTags = dseSession.prepare(QueryBuilder
