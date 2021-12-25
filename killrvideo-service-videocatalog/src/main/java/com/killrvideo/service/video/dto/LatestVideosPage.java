@@ -9,9 +9,8 @@ import java.util.List;
  * @author DataStax Developer Advocates team.
  */
 public class LatestVideosPage {
-    
     /** List of Previews. */
-    private List< LatestVideo > listOfPreview = new ArrayList<>();
+    private List<LatestVideo> listOfPreview = new ArrayList<>();
     
     /** Flag if paging state. */
     private String cassandraPagingState = "";
@@ -89,5 +88,4 @@ public class LatestVideosPage {
     public void setNextPageState(String nextPageState) {
         this.nextPageState = nextPageState;
     }
-
 }

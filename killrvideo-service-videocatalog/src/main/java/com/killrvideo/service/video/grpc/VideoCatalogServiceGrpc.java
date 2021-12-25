@@ -13,12 +13,13 @@ import static java.util.stream.Collectors.toList;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
+import com.killrvideo.service.video.dto.Video;
+import com.killrvideo.service.video.repository.VideoCatalogRepository;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -29,9 +30,7 @@ import org.springframework.stereotype.Service;
 
 import com.google.protobuf.Timestamp;
 import com.killrvideo.dse.dto.CustomPagingState;
-import com.killrvideo.dse.dto.Video;
 import com.killrvideo.messaging.dao.MessagingDao;
-import com.killrvideo.service.video.dao.VideoCatalogDseDao;
 import com.killrvideo.service.video.dto.LatestVideosPage;
 import com.killrvideo.utils.GrpcMappingUtils;
 
@@ -73,7 +72,7 @@ public class VideoCatalogServiceGrpc extends VideoCatalogServiceImplBase {
     private MessagingDao messagingDao;
     
     @Autowired
-    private VideoCatalogDseDao videoCatalogDao;
+    private VideoCatalogRepository videoCatalogDao;
 
     /** {@inheritDoc} */
     @Override
@@ -161,10 +160,9 @@ public class VideoCatalogServiceGrpc extends VideoCatalogServiceImplBase {
         CustomPagingState pageState = 
                 CustomPagingState.parse(Optional.ofNullable(grpcReq.getPagingState()))
                                  .orElse(videoCatalogDao.buildFirstCustomPagingState());
-        final Optional<Date> startDate = Optional.ofNullable(grpcReq.getStartingAddedDate())
+        final Optional<Instant> startDate = Optional.ofNullable(grpcReq.getStartingAddedDate())
                 .filter(x -> StringUtils.isNotBlank(x.toString()))
-                .map(x -> Instant.ofEpochSecond(x.getSeconds(), x.getNanos()))
-                .map(Date::from);
+                .map(x -> Instant.ofEpochSecond(x.getSeconds(), x.getNanos()));
         final Optional<UUID> startVideoId = Optional.ofNullable(grpcReq.getStartingVideoId())
                 .filter(x -> StringUtils.isNotBlank(x.toString()))
                 .map(x -> x.getValue())
@@ -283,10 +281,9 @@ public class VideoCatalogServiceGrpc extends VideoCatalogServiceImplBase {
                 .map(Uuid::getValue)
                 .filter(StringUtils::isNotBlank)
                 .map(UUID::fromString);
-        final Optional<Date> startingAddedDate = Optional
+        final Optional<Instant> startingAddedDate = Optional
                 .ofNullable(grpcReq.getStartingAddedDate())
-                .map(ts -> Instant.ofEpochSecond(ts.getSeconds(), ts.getNanos()))
-                .map(Date::from);
+                .map(ts -> Instant.ofEpochSecond(ts.getSeconds(), ts.getNanos()));
         final Optional<String> pagingState = 
                 Optional.ofNullable(grpcReq.getPagingState()).filter(StringUtils::isNotBlank);
         final Optional<Integer> pagingSize =
@@ -322,7 +319,7 @@ public class VideoCatalogServiceGrpc extends VideoCatalogServiceImplBase {
      *
      * @param method
      *      current operation
-     * @param start
+     * @param starts
      *      timestamp for starting
      */
     private void traceSuccess(String method, Instant starts) {
@@ -336,7 +333,7 @@ public class VideoCatalogServiceGrpc extends VideoCatalogServiceImplBase {
      *
      * @param method
      *      current operation
-     * @param start
+     * @param starts
      *      timestamp for starting
      */
     private void traceError(String method, Instant starts, Throwable t) {

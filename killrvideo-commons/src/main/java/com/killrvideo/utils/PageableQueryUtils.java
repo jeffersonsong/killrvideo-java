@@ -30,6 +30,21 @@ public class PageableQueryUtils {
     public static BoundStatement buildStatement(
             PreparedStatement preparedStatement,
             Function<PreparedStatement, BoundStatementBuilder> function,
+            Optional<Integer> pageSize,
+            Optional<String> pageState,
+            ConsistencyLevel consistencyLevel) {
+        BoundStatementBuilder statementBuilder = function.apply(preparedStatement);
+        if (pageState.isPresent() && isNotBlank(pageState.get())) {
+            statementBuilder.setPagingState(Bytes.fromHexString(pageState.get()));
+        }
+        pageSize.ifPresent(statementBuilder::setPageSize);
+        statementBuilder.setConsistencyLevel(consistencyLevel);
+        return statementBuilder.build();
+    }
+
+    public static BoundStatement buildStatement(
+            PreparedStatement preparedStatement,
+            Function<PreparedStatement, BoundStatementBuilder> function,
             int pageSize,
             Optional<String> pageState,
             ConsistencyLevel consistencyLevel) {

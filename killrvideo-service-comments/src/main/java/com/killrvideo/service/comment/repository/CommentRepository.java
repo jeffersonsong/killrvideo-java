@@ -27,11 +27,11 @@ public class CommentRepository {
     private static final String QUERY_COMMENTS_BY_USER =
             "SELECT userid, commentid, videoid, comment, toTimestamp(commentid) as comment_timestamp " +
                     "FROM killrvideo.comments_by_user " +
-                    "WHERE userid = ?";
+                    "WHERE userid = :userid";
     public static final String QUERY_COMMENTS_BY_VIDEO =
             "SELECT videoid, commentid, userid, comment, toTimestamp(commentid) as comment_timestamp " +
                     "FROM killrvideo.comments_by_video " +
-                    "WHERE videoid = ?";
+                    "WHERE videoid = :videoid";
     private final CqlSession session;
     private final CommentByUserDao commentByUserDao;
     private final CommentByVideoDao commentByVideoDao;

@@ -1,21 +1,19 @@
 package com.killrvideo.service.video.dto;
 
-import java.util.Date;
+import java.time.Instant;
 import java.util.UUID;
 
-import com.datastax.driver.mapping.annotations.Column;
-import com.datastax.driver.mapping.annotations.PartitionKey;
-import com.datastax.driver.mapping.annotations.Table;
-import com.killrvideo.model.CommonConstants;
-import com.killrvideo.service.video.dao.VideoCatalogDseDao;
+import com.datastax.oss.driver.api.mapper.annotations.CqlName;
+import com.datastax.oss.driver.api.mapper.annotations.Entity;
+import com.datastax.oss.driver.api.mapper.annotations.PartitionKey;
 
 /**
  * Pojo representing DTO for table 'latest_videos'
  *
  * @author DataStax Developer Advocates team.
  */
-@Table(keyspace = CommonConstants.KILLRVIDEO_KEYSPACE, 
-    name = VideoCatalogDseDao.TABLENAME_LATEST_VIDEOS)
+@Entity
+@CqlName("latest_videos")
 public class LatestVideo extends VideoPreview {
 
     /** Serial. */
@@ -28,7 +26,6 @@ public class LatestVideo extends VideoPreview {
     @PartitionKey
     private String yyyymmdd;
 
-    @Column
     private UUID userid;
 
     /**
@@ -39,7 +36,7 @@ public class LatestVideo extends VideoPreview {
     /**
      * Constructor with all parameters.
      */
-    public LatestVideo(String yyyymmdd, UUID userid, UUID videoid, String name, String previewImageLocation, Date addedDate) {
+    public LatestVideo(String yyyymmdd, UUID userid, UUID videoid, String name, String previewImageLocation, Instant addedDate) {
         super(name, previewImageLocation, addedDate, videoid);
         this.yyyymmdd = yyyymmdd;
         this.userid = userid;
@@ -82,6 +79,4 @@ public class LatestVideo extends VideoPreview {
     public void setUserid(UUID userid) {
         this.userid = userid;
     }
-    
-    
 }
