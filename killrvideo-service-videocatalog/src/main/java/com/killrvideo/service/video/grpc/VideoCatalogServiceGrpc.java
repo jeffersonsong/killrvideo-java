@@ -18,7 +18,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
-import com.killrvideo.service.video.dto.Video;
+import com.killrvideo.dse.dto.Video;
 import com.killrvideo.service.video.repository.VideoCatalogRepository;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;

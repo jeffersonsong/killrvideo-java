@@ -1,7 +1,7 @@
 package com.killrvideo.service.sugestedvideo.dao;
 
 import com.datastax.oss.driver.api.mapper.annotations.*;
-import com.killrvideo.service.sugestedvideo.dto.Video;
+import com.killrvideo.dse.dto.Video;
 
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;

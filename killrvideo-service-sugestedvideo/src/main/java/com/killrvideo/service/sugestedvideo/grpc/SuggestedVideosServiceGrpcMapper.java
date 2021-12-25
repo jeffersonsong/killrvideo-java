@@ -8,7 +8,7 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 import java.util.HashSet;
 import java.util.UUID;
 
-import com.killrvideo.service.sugestedvideo.dto.Video;
+import com.killrvideo.dse.dto.Video;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;

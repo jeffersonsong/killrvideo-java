@@ -9,7 +9,7 @@ import java.util.Optional;
 import java.util.TreeSet;
 import java.util.concurrent.CompletableFuture;
 
-import com.killrvideo.service.search.dto.Video;
+import com.killrvideo.dse.dto.Video;
 import com.killrvideo.service.search.repository.SearchRepository;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;

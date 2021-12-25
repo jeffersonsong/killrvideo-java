@@ -10,7 +10,7 @@ import com.killrvideo.service.video.dao.*;
 import com.killrvideo.service.video.dto.LatestVideo;
 import com.killrvideo.service.video.dto.LatestVideosPage;
 import com.killrvideo.service.video.dto.UserVideo;
-import com.killrvideo.service.video.dto.Video;
+import com.killrvideo.dse.dto.Video;
 import com.killrvideo.utils.MappedAsyncPagingIterableUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -33,7 +33,7 @@ import java.util.stream.StreamSupport;
 import static com.killrvideo.dse.dto.AbstractVideo.COLUMN_NAME;
 import static com.killrvideo.dse.dto.AbstractVideo.COLUMN_PREVIEW;
 import static com.killrvideo.service.video.dto.LatestVideo.COLUMN_YYYYMMDD;
-import static com.killrvideo.service.video.dto.Video.*;
+import static com.killrvideo.dse.dto.Video.*;
 import static com.killrvideo.utils.PageableQueryUtils.buildStatement;
 import static com.killrvideo.utils.PageableQueryUtils.queryAsyncWithPagination;
 

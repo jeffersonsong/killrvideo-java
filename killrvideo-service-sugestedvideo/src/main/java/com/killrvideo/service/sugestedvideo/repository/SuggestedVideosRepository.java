@@ -17,7 +17,7 @@ import com.killrvideo.dse.graph.KillrVideoTraversalSource;
 import com.killrvideo.dse.graph.__;
 import com.killrvideo.service.sugestedvideo.dao.VideoDao;
 import com.killrvideo.service.sugestedvideo.dao.VideoMapper;
-import com.killrvideo.service.sugestedvideo.dto.Video;
+import com.killrvideo.dse.dto.Video;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,8 +34,8 @@ import java.util.stream.StreamSupport;
 
 import static com.killrvideo.dse.graph.KillrVideoTraversalConstants.VERTEX_USER;
 import static com.killrvideo.dse.graph.KillrVideoTraversalConstants.VERTEX_VIDEO;
-import static com.killrvideo.service.sugestedvideo.dto.AbstractVideo.COLUMN_NAME;
-import static com.killrvideo.service.sugestedvideo.dto.Video.*;
+import static com.killrvideo.dse.dto.AbstractVideo.COLUMN_NAME;
+import static com.killrvideo.dse.dto.Video.*;
 
 @Repository
 public class SuggestedVideosRepository {

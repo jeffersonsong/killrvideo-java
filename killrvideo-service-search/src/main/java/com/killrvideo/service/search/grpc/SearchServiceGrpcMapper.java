@@ -1,6 +1,6 @@
 package com.killrvideo.service.search.grpc;
 
-import com.killrvideo.service.search.dto.Video;
+import com.killrvideo.dse.dto.Video;
 import com.killrvideo.utils.GrpcMappingUtils;
 
 import killrvideo.search.SearchServiceOuterClass.SearchResultsVideoPreview;

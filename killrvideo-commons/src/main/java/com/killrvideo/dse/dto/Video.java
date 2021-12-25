@@ -1,4 +1,4 @@
-package com.killrvideo.service.sugestedvideo.dto;
+package com.killrvideo.dse.dto;
 
 import com.datastax.oss.driver.api.mapper.annotations.CqlName;
 import com.datastax.oss.driver.api.mapper.annotations.Entity;
@@ -23,7 +23,7 @@ public class Video extends AbstractVideo {
 
     /** Serial. */
     private static final long serialVersionUID = 7035802926837646137L;
-    
+
     /** Column names in the DB. */
     public static final String COLUMN_USERID       = "userid";
     public static final String COLUMN_VIDEOID      = "videoid";
@@ -31,7 +31,7 @@ public class Video extends AbstractVideo {
     public static final String COLUMN_LOCATION     = "location";
     public static final String COLUMN_LOCATIONTYPE = "location_type";
     public static final String COLUMN_ADDED_DATE   = "added_date";
-    
+
     @PartitionKey
     private UUID videoid;
 
@@ -217,6 +217,4 @@ public class Video extends AbstractVideo {
     public void setAddedDate(Instant addedDate) {
         this.addedDate = addedDate;
     }
-    
-    
 }

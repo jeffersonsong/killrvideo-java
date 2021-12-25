@@ -5,7 +5,7 @@ import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.cql.*;
 import com.datastax.oss.protocol.internal.util.Bytes;
 import com.killrvideo.dse.dto.ResultListPage;
-import com.killrvideo.service.search.dto.Video;
+import com.killrvideo.dse.dto.Video;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,8 +19,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static com.killrvideo.service.search.dto.AbstractVideo.COLUMN_NAME;
-import static com.killrvideo.service.search.dto.Video.*;
+import static com.killrvideo.dse.dto.AbstractVideo.COLUMN_NAME;
+import static com.killrvideo.dse.dto.Video.*;
 
 @Repository
 public class SearchRepository {
