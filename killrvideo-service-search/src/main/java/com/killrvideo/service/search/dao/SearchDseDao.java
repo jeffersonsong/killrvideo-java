@@ -10,6 +10,7 @@ import java.util.regex.Pattern;
 
 import javax.annotation.PostConstruct;
 
+import com.killrvideo.service.search.dto.Video;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,7 +29,6 @@ import com.datastax.driver.mapping.Mapper;
 import com.google.common.reflect.TypeToken;
 import com.killrvideo.dse.dao.DseDaoSupport;
 import com.killrvideo.dse.dto.ResultListPage;
-import com.killrvideo.dse.dto.Video;
 import com.killrvideo.utils.FutureUtils;
 
 /**
@@ -43,7 +43,7 @@ public class SearchDseDao extends DseDaoSupport {
     private static Logger LOGGER = LoggerFactory.getLogger(SearchDseDao.class);
    
     /** Mapper to ease queries. */
-    protected Mapper < Video >  mapperVideo;
+    protected Mapper <Video>  mapperVideo;
 
     /** Precompile statements to speed up queries. */
     private PreparedStatement findSuggestedTags;
