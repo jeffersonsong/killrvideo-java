@@ -66,6 +66,7 @@
 						</goals>
 						<configuration>
 							<sources>
+								<source>target/generated-sources/annotations</source>
 								<source>target/generated-sources/protobuf/java</source>
 								<source>target/generated-sources/protobuf/grpc-java</source>
 							</sources>

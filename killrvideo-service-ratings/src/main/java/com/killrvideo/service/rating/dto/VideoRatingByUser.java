@@ -3,22 +3,18 @@ package com.killrvideo.service.rating.dto;
 import java.io.Serializable;
 import java.util.UUID;
 
-import com.datastax.driver.mapping.annotations.ClusteringColumn;
-import com.datastax.driver.mapping.annotations.Column;
-import com.datastax.driver.mapping.annotations.PartitionKey;
-import com.datastax.driver.mapping.annotations.Table;
-import com.killrvideo.model.CommonConstants;
-import com.killrvideo.service.rating.dao.RatingDseDao;
+import com.datastax.oss.driver.api.mapper.annotations.ClusteringColumn;
+import com.datastax.oss.driver.api.mapper.annotations.CqlName;
+import com.datastax.oss.driver.api.mapper.annotations.Entity;
+import com.datastax.oss.driver.api.mapper.annotations.PartitionKey;
 
 /**
  * Pojo representing DTO for table 'video_ratings_by_user'.
  *
  * @author DataStax Developer Advocates team.
  */
-@Table(name=
-        RatingDseDao.TABLENAME_VIDEOS_RATINGS_BYUSER,
-       keyspace=
-         CommonConstants.KILLRVIDEO_KEYSPACE)
+@Entity
+@CqlName("video_ratings_by_user")
 public class VideoRatingByUser implements Serializable {
 
     /** Serial. */
@@ -30,7 +26,6 @@ public class VideoRatingByUser implements Serializable {
     @ClusteringColumn
     private UUID userid;
 
-    @Column
     private int rating;
 
     /**

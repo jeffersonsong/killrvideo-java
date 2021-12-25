@@ -10,6 +10,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.UUID;
 
+import com.killrvideo.service.rating.dao.RatingRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +18,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.killrvideo.messaging.dao.MessagingDao;
-import com.killrvideo.service.rating.dao.RatingDseDao;
 import com.killrvideo.utils.GrpcMappingUtils;
 
 import io.grpc.Status;
@@ -53,7 +53,7 @@ public class RatingsServiceGrpc extends RatingsServiceImplBase {
     private String topicvideoRated;
     
     @Autowired
-    private RatingDseDao dseRatingDao;
+    private RatingRepository ratingRepository;
     
     /** {@inheritDoc} */
     @Override
@@ -71,7 +71,7 @@ public class RatingsServiceGrpc extends RatingsServiceImplBase {
         Integer rate = grpcReq.getRating();
         
         // Invoking Dao (Async), publish event if successful
-        dseRatingDao.rateVideo(videoid, userid, rate).whenComplete((result, error) -> {
+        ratingRepository.rateVideo(videoid, userid, rate).whenComplete((result, error) -> {
             if (error == null) {
                 traceSuccess("rateVideo", starts);
                 messagingDao.sendEvent(topicvideoRated, 
@@ -103,7 +103,7 @@ public class RatingsServiceGrpc extends RatingsServiceImplBase {
         UUID videoid = UUID.fromString(grpcReq.getVideoId().getValue());
         
         // Invoking Dao (Async) and map result back to GRPC (maptoRatingResponse)
-        dseRatingDao.findRating(videoid).whenComplete((videoRating, error) -> {
+        ratingRepository.findRating(videoid).whenComplete((videoRating, error) -> {
             if (error == null) {
                 traceSuccess("getRating", starts);
                 if (videoRating.isPresent()) {
@@ -138,7 +138,7 @@ public class RatingsServiceGrpc extends RatingsServiceImplBase {
         UUID userid  = UUID.fromString(grpcReq.getUserId().getValue());
         
         // Invoking Dao (Async) and map result back to GRPC (maptoRatingResponse)
-        dseRatingDao.findUserRating(videoid,userid).whenComplete((videoRating, error) -> {
+        ratingRepository.findUserRating(videoid,userid).whenComplete((videoRating, error) -> {
             if (error == null) {
                 traceSuccess("getUserRating" , starts);
                 if (videoRating.isPresent()) {
@@ -163,7 +163,7 @@ public class RatingsServiceGrpc extends RatingsServiceImplBase {
      *
      * @param method
      *      current operation
-     * @param start
+     * @param starts
      *      timestamp for starting
      */
     private void traceSuccess(String method, Instant starts) {
@@ -177,7 +177,7 @@ public class RatingsServiceGrpc extends RatingsServiceImplBase {
      *
      * @param method
      *      current operation
-     * @param start
+     * @param starts
      *      timestamp for starting
      */
     private void traceError(String method, Instant starts, Throwable t) {
