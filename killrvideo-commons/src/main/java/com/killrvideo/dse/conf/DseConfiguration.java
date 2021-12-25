@@ -3,6 +3,9 @@ package com.killrvideo.dse.conf;
 import com.datastax.dse.driver.api.core.graph.DseGraph;
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.CqlSessionBuilder;
+import com.evanlennick.retry4j.CallExecutor;
+import com.evanlennick.retry4j.config.RetryConfig;
+import com.evanlennick.retry4j.config.RetryConfigBuilder;
 import com.killrvideo.discovery.ServiceDiscoveryDao;
 import com.killrvideo.dse.graph.KillrVideoTraversalSource;
 import com.killrvideo.model.CommonConstants;
@@ -16,6 +19,7 @@ import org.springframework.context.annotation.Configuration;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
+import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -86,7 +90,6 @@ public class DseConfiguration {
             return clusterConfig.withKeyspace(CommonConstants.KILLRVIDEO_KEYSPACE).build();
         };
 
-        /*
         if (!maxNumberOfTriesFromEnvVar.isEmpty()) {
             maxNumberOfTries = maxNumberOfTriesFromEnvVar.get();
         }
@@ -117,9 +120,6 @@ public class DseConfiguration {
                     long timeElapsed = System.currentTimeMillis() - top;
                     LOGGER.info("[OK] Connection established to Cassandra Cluster in {} millis.", timeElapsed);})
                 .execute(connectionToCassandra).getResult();
-         */
-
-        return connectionToCassandra.call();
     }
 
     /**
