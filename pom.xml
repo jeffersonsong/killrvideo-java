@@ -43,7 +43,7 @@
 	<properties>
 		
 		<!-- DataStax Java-Driver -->
-		<datastax-driver.version>4.7.0</datastax-driver.version>
+		<datastax-driver.version>4.8.0</datastax-driver.version>
 
 		<!-- Spring -->
 		<spring.version>5.3.14</spring.version>
