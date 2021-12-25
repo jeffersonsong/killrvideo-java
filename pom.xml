@@ -122,7 +122,6 @@
 				<artifactId>java-driver-mapper-processor</artifactId>
 				<version>${datastax-driver.version}</version>
 			</dependency>
-			-->
 			<!--
 			<dependency>
 				<groupId>org.apache.tinkerpop</groupId>
