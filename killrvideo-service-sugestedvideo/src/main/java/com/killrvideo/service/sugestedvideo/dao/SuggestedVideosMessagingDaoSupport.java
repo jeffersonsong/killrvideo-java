@@ -5,6 +5,7 @@ import static com.killrvideo.service.sugestedvideo.grpc.SuggestedVideosServiceGr
 import java.util.Date;
 import java.util.UUID;
 
+import com.killrvideo.service.sugestedvideo.repository.SuggestedVideosRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +27,7 @@ public abstract class SuggestedVideosMessagingDaoSupport {
     private static Logger LOGGER = LoggerFactory.getLogger(SuggestedVideosMessagingDaoSupport.class);
     
     @Autowired
-    protected SuggestedVideosDseDao sugestedVideoDseDao;
+    protected SuggestedVideosRepository suggestedVideosRepository;
     
     /**
      * Message is consumed from specialized class but treatment is the same, updating graph.
@@ -41,7 +42,7 @@ public abstract class SuggestedVideosMessagingDaoSupport {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("[NewUserEvent] Processing rating with user {} and video {}", userId, videoId);
         }
-        sugestedVideoDseDao.updateGraphNewUserRating(videoId, userId, rating);
+        suggestedVideosRepository.updateGraphNewUserRating(videoId, userId, rating);
     }
     
     /**
@@ -57,7 +58,7 @@ public abstract class SuggestedVideosMessagingDaoSupport {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("[NewUserEvent] Processing for user {} ", userId);
         }
-        sugestedVideoDseDao.updateGraphNewUser(userId, email, userCreation);
+        suggestedVideosRepository.updateGraphNewUser(userId, email, userCreation);
     }
     
     /**
@@ -67,7 +68,7 @@ public abstract class SuggestedVideosMessagingDaoSupport {
      *      a video has been created
      */
     protected void onYoutubeVideoAddingMessage(YouTubeVideoAdded videoAdded) {
-       sugestedVideoDseDao.updateGraphNewVideo(mapVideoAddedtoVideoDTO(videoAdded));
+       suggestedVideosRepository.updateGraphNewVideo(mapVideoAddedtoVideoDTO(videoAdded));
     }
     
 

@@ -11,6 +11,8 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
+import com.killrvideo.service.sugestedvideo.dto.Video;
+import com.killrvideo.service.sugestedvideo.repository.SuggestedVideosRepository;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,8 +21,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.killrvideo.dse.dto.ResultListPage;
-import com.killrvideo.dse.dto.Video;
-import com.killrvideo.service.sugestedvideo.dao.SuggestedVideosDseDao;
 
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
@@ -46,7 +46,7 @@ public class SuggestedVideosServiceGrpc extends SuggestedVideoServiceImplBase {
     private String serviceKey;
     
     @Autowired
-    private SuggestedVideosDseDao suggestedVideosDseDao;
+    private SuggestedVideosRepository suggestedVideosDseDao;
     
     /** {@inheritDoc} */
     @Override
@@ -64,7 +64,7 @@ public class SuggestedVideosServiceGrpc extends SuggestedVideoServiceImplBase {
         Optional<String> videoPagingState = Optional.ofNullable(grpcReq.getPagingState()).filter(StringUtils::isNotBlank);
         
         // Invoke DAO Async
-        CompletableFuture<ResultListPage<Video>> futureDao = 
+        CompletableFuture<ResultListPage<Video>> futureDao =
                 suggestedVideosDseDao.getRelatedVideos(videoId, videoPageSize, videoPagingState);
         
         // Map Result back to GRPC
@@ -130,7 +130,7 @@ public class SuggestedVideosServiceGrpc extends SuggestedVideoServiceImplBase {
      *
      * @param method
      *      current operation
-     * @param start
+     * @param starts
      *      timestamp for starting
      */
     private void traceSuccess(String method, Instant starts) {
@@ -144,7 +144,7 @@ public class SuggestedVideosServiceGrpc extends SuggestedVideoServiceImplBase {
      *
      * @param method
      *      current operation
-     * @param start
+     * @param starts
      *      timestamp for starting
      */
     private void traceError(String method, Instant starts, Throwable t) {

@@ -1,18 +1,12 @@
 package com.killrvideo.dse.dto;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import java.util.stream.StreamSupport;
 
-import com.datastax.driver.core.PagingState;
-import com.datastax.driver.core.ResultSet;
-import com.datastax.driver.mapping.Mapper;
-import com.datastax.driver.mapping.Result;
 import com.datastax.oss.driver.api.core.cql.AsyncResultSet;
 import com.datastax.oss.driver.api.core.cql.Row;
 import com.datastax.oss.protocol.internal.util.Bytes;
@@ -34,35 +28,6 @@ public class ResultListPage < ENTITY > {
 	 * Default Constructor.
 	 */
 	public ResultListPage() {}
-	
-	/**
-     * Constructor from a RESULT.
-     * 
-     * @param rs
-     *      result set
-     */
-    public ResultListPage(Result<ENTITY> rs) {
-        if (null != rs) {
-            Iterator<ENTITY> iterResults = rs.iterator();
-            // rs.getAvailableWithoutFetching() all to parse only current page without fecthing all
-            IntStream.range(0, rs.getAvailableWithoutFetching())
-                     .forEach(item -> listOfResults.add(iterResults.next()));
-            nextPage = Optional.ofNullable(rs.getExecutionInfo().getPagingState())
-                               .map(PagingState::toString);
-        }
-    }
-    
-	/**
-	 * Constructor with mapper.
-	 *
-	 * @param rs
-	 * 		result set
-	 * @param mapper
-	 * 		mapper
-	 */
-	public ResultListPage(ResultSet rs, Mapper<ENTITY> mapper) {
-		this(mapper.map(rs));
-	}
 
 	public ResultListPage(AsyncResultSet rs, Function<Row, ENTITY> mapper) {
 		if (rs != null) {

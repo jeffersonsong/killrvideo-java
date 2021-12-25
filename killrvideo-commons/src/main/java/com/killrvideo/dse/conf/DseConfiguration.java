@@ -171,52 +171,6 @@ public class DseConfiguration {
                  .execute(connectionToDse).getResult();
     }
 
-    @Bean
-    public CqlSession initializeCassandra() throws Exception {
-        long top = System.currentTimeMillis();
-        LOGGER.info("Initializing connection to Cassandra...");
-
-        final AtomicInteger atomicCount = new AtomicInteger(1);
-        Callable<CqlSession> connectionToCassandra = () -> {
-            return CqlSession.builder().withKeyspace(CommonConstants.KILLRVIDEO_KEYSPACE).build();
-        };
-
-        /*
-        if (!maxNumberOfTriesFromEnvVar.isEmpty()) {
-            maxNumberOfTries = maxNumberOfTriesFromEnvVar.get();
-        }
-
-        if (!delayBetweenTriesFromEnvVar.isEmpty()) {
-            delayBetweenTries = delayBetweenTriesFromEnvVar.get();
-        }
-
-        // Connecting to DSE with a retry mechanism :
-        // In docker deployments we may have to wait until all components are up and running.
-        RetryConfig config = new RetryConfigBuilder()
-                .retryOnAnyException()
-                .withMaxNumberOfTries(maxNumberOfTries)
-                .withDelayBetweenTries(delayBetweenTries, ChronoUnit.SECONDS)
-                .withFixedBackoff()
-                .build();
-
-        return new CallExecutor<CqlSession>(config)
-                .afterFailedTry(s -> {
-                    LOGGER.info("Attempt #{}/{} failed.. trying in {} seconds, waiting for Cassandra to start...", atomicCount.getAndIncrement(),
-                            maxNumberOfTries,  delayBetweenTries); })
-                .onFailure(s -> {
-                    LOGGER.error("Cannot connection to Cassandra after {} attempts, exiting", maxNumberOfTries);
-                    System.err.println("Can not connect to Cassandra after " + maxNumberOfTries + " attempts, exiting");
-                    System.exit(500);
-                })
-                .onSuccess(s -> {
-                    long timeElapsed = System.currentTimeMillis() - top;
-                    LOGGER.info("[OK] Connection established to Cassandra Cluster in {} millis.", timeElapsed);})
-                .execute(connectionToCassandra).getResult();
-        */
-
-        return connectionToCassandra.call();
-    }
-    
     /**
      * Use to create mapper and perform ORM on top of Cassandra tables.
      * 

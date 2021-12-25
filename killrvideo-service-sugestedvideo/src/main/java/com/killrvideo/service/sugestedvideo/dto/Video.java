@@ -1,31 +1,28 @@
-package com.killrvideo.dse.dto;
+package com.killrvideo.service.sugestedvideo.dto;
 
+import com.datastax.oss.driver.api.mapper.annotations.CqlName;
+import com.datastax.oss.driver.api.mapper.annotations.Entity;
+import com.datastax.oss.driver.api.mapper.annotations.PartitionKey;
+import com.killrvideo.dse.utils.EmptyCollectionIfNull;
+import org.hibernate.validator.constraints.Length;
+
+import javax.validation.constraints.NotNull;
+import java.time.Instant;
 import java.util.Date;
 import java.util.Set;
 import java.util.UUID;
-
-import javax.validation.constraints.NotNull;
-
-import org.hibernate.validator.constraints.Length;
-
-import com.datastax.driver.mapping.annotations.Column;
-import com.datastax.driver.mapping.annotations.PartitionKey;
-import com.datastax.driver.mapping.annotations.Table;
-import com.killrvideo.dse.utils.EmptyCollectionIfNull;
-import com.killrvideo.model.CommonConstants;
 
 /**
  * Pojo representing DTO for table 'videos'.
  *
  * @author DataStax Developer Advocates team.
  */
-@Table(keyspace = CommonConstants.KILLRVIDEO_KEYSPACE, name = Video.TABLENAME_VIDEOS)
+@Entity
+@CqlName("videos")
 public class Video extends AbstractVideo {
 
     /** Serial. */
     private static final long serialVersionUID = 7035802926837646137L;
-    
-    public static final String TABLENAME_VIDEOS = "videos";
     
     /** Column names in the DB. */
     public static final String COLUMN_USERID       = "userid";
@@ -39,27 +36,21 @@ public class Video extends AbstractVideo {
     private UUID videoid;
 
     @NotNull
-    @Column
     private UUID userid;
 
     @Length(min = 1, message = "description must not be empty")
-    @Column
     private String description;
 
     @Length(min = 1, message = "location must not be empty")
-    @Column
     private String location;
 
-    @Column(name = COLUMN_LOCATIONTYPE)
     private int locationType;
 
-    @Column
     @EmptyCollectionIfNull
     private Set<String> tags;
 
     @NotNull
-    @Column(name = COLUMN_ADDED_DATE)
-    private Date addedDate;
+    private Instant addedDate;
 
     /**
      * Default Constructor allowing reflection.
@@ -76,14 +67,14 @@ public class Video extends AbstractVideo {
     /**
      * Constructor wihout location nor preview.
      */
-    public Video(UUID videoid, UUID userid, String name, String description, int locationType, Set<String> tags, Date addedDate) {
+    public Video(UUID videoid, UUID userid, String name, String description, int locationType, Set<String> tags, Instant addedDate) {
         this(videoid, userid, name, description, null, locationType, null, tags, addedDate);
     }
 
     /**
      * All attributes constructor.
      */
-    public Video(UUID videoid, UUID userid, String name, String description, String location, int locationType, String previewImageLocation, Set<String> tags, Date addedDate) {
+    public Video(UUID videoid, UUID userid, String name, String description, String location, int locationType, String previewImageLocation, Set<String> tags, Instant addedDate) {
         super(name, previewImageLocation);
         this.videoid = videoid;
         this.userid = userid;
@@ -214,7 +205,7 @@ public class Video extends AbstractVideo {
      * @return
      *       current value of 'addedDate'
      */
-    public Date getAddedDate() {
+    public Instant getAddedDate() {
         return addedDate;
     }
 
@@ -223,7 +214,7 @@ public class Video extends AbstractVideo {
      * @param addedDate
      * 		new value for 'addedDate '
      */
-    public void setAddedDate(Date addedDate) {
+    public void setAddedDate(Instant addedDate) {
         this.addedDate = addedDate;
     }
     

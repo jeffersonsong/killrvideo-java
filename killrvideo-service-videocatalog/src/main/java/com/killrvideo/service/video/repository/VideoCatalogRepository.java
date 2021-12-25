@@ -32,8 +32,8 @@ import java.util.stream.StreamSupport;
 
 import static com.killrvideo.dse.dto.AbstractVideo.COLUMN_NAME;
 import static com.killrvideo.dse.dto.AbstractVideo.COLUMN_PREVIEW;
-import static com.killrvideo.dse.dto.Video.*;
 import static com.killrvideo.service.video.dto.LatestVideo.COLUMN_YYYYMMDD;
+import static com.killrvideo.service.video.dto.Video.*;
 import static com.killrvideo.utils.PageableQueryUtils.buildStatement;
 import static com.killrvideo.utils.PageableQueryUtils.queryAsyncWithPagination;
 
