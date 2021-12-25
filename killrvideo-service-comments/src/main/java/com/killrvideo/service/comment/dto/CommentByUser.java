@@ -2,20 +2,17 @@ package com.killrvideo.service.comment.dto;
 
 import java.util.UUID;
 
-import com.datastax.driver.mapping.annotations.PartitionKey;
-import com.datastax.driver.mapping.annotations.Table;
-import com.killrvideo.model.CommonConstants;
-import com.killrvideo.service.comment.dao.CommentDseDao;
+import com.datastax.oss.driver.api.mapper.annotations.CqlName;
+import com.datastax.oss.driver.api.mapper.annotations.Entity;
+import com.datastax.oss.driver.api.mapper.annotations.PartitionKey;
 
 /**
  * Specialization for USER.
  *
  * @author DataStax Developer Advocates team.
  */
-@Table(name=
-           CommentDseDao.TABLENAME_COMMENTS_BY_USER,
-       keyspace=
-           CommonConstants.KILLRVIDEO_KEYSPACE)
+@Entity
+@CqlName("comments_by_user")
 public class CommentByUser extends Comment {
     
     /** Serial. */
@@ -49,4 +46,12 @@ public class CommentByUser extends Comment {
         return userid;
     }
 
+    public Comment toComment() {
+        Comment comment = new Comment();
+        comment.setCommentid(this.commentid);
+        comment.setUserid(this.userid);
+        comment.setVideoid(this.videoid);
+        comment.setComment(this.comment);
+        return comment;
+    }
 }

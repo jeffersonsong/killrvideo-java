@@ -1,15 +1,15 @@
 package com.killrvideo.service.comment.dto;
 
+import java.time.Instant;
 import java.util.Date;
 import java.util.UUID;
 
 import javax.validation.constraints.NotNull;
 
+import com.datastax.oss.driver.api.mapper.annotations.ClusteringColumn;
+import com.datastax.oss.driver.api.mapper.annotations.Computed;
 import org.hibernate.validator.constraints.Length;
 
-import com.datastax.driver.mapping.annotations.ClusteringColumn;
-import com.datastax.driver.mapping.annotations.Column;
-import com.datastax.driver.mapping.annotations.Computed;
 import com.killrvideo.dse.dto.AbstractEntity;
 
 /**
@@ -28,11 +28,10 @@ public class Comment extends AbstractEntity {
     public static final String COLUMN_COMMENTID = "commentid";
     public static final String COLUMN_COMMENT   = "comment";
 
-    @Column @NotNull
+     @NotNull
     protected UUID userid;
     
     @NotNull
-    @Column
     protected UUID videoid;
 
     @NotNull
@@ -40,12 +39,11 @@ public class Comment extends AbstractEntity {
     protected UUID commentid;
 
     @Length(min = 1, message = "The comment must not be empty")
-    @Column
     protected String comment;
 
     @NotNull
     @Computed("toTimestamp(commentid)")
-    private Date dateOfComment;
+    private Instant dateOfComment;
     
     /**
      * Default constructor.
@@ -122,7 +120,7 @@ public class Comment extends AbstractEntity {
      * @return
      *       current value of 'dateOfComment'
      */
-    public Date getDateOfComment() {
+    public Instant getDateOfComment() {
         return dateOfComment;
     }
 
@@ -131,7 +129,7 @@ public class Comment extends AbstractEntity {
      * @param dateOfComment
      * 		new value for 'dateOfComment '
      */
-    public void setDateOfComment(Date dateOfComment) {
+    public void setDateOfComment(Instant dateOfComment) {
         this.dateOfComment = dateOfComment;
     }
     

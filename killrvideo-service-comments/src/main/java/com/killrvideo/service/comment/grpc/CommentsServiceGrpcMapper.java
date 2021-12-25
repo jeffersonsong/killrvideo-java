@@ -4,9 +4,7 @@ import static com.killrvideo.service.comment.grpc.CommentsServiceGrpcValidator.i
 import static com.killrvideo.service.comment.grpc.CommentsServiceGrpcValidator.notEmpty;
 import static com.killrvideo.service.comment.grpc.CommentsServiceGrpcValidator.positive;
 import static com.killrvideo.service.comment.grpc.CommentsServiceGrpcValidator.validate;
-import static com.killrvideo.utils.GrpcMappingUtils.dateToTimestamp;
-import static com.killrvideo.utils.GrpcMappingUtils.uuidToTimeUuid;
-import static com.killrvideo.utils.GrpcMappingUtils.uuidToUuid;
+import static com.killrvideo.utils.GrpcMappingUtils.*;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import java.util.Optional;
@@ -137,7 +135,7 @@ public class CommentsServiceGrpcMapper {
                   .setComment(c.getComment())
                   .setUserId(uuidToUuid(c.getUserid()))
                   .setCommentId(uuidToTimeUuid(c.getCommentid()))
-                  .setCommentTimestamp(dateToTimestamp(c.getDateOfComment()))
+                  .setCommentTimestamp(instantToTimeStamp(c.getDateOfComment()))
                   .build());
         }
         dseRes.getPagingState().ifPresent(builder::setPagingState);
@@ -153,7 +151,7 @@ public class CommentsServiceGrpcMapper {
                    .setComment(c.getComment())
                    .setCommentId(uuidToTimeUuid(c.getCommentid()))
                    .setVideoId(uuidToUuid(c.getVideoid()))
-                   .setCommentTimestamp(dateToTimestamp(c.getDateOfComment()))
+                   .setCommentTimestamp(instantToTimeStamp(c.getDateOfComment()))
                    .build());
         }
         dseRes.getPagingState().ifPresent(builder::setPagingState);

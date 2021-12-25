@@ -1,5 +1,6 @@
 package com.killrvideo.service.user.dao;
 
+import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.MappedAsyncPagingIterable;
 import com.killrvideo.service.user.dto.User;
 import com.killrvideo.service.user.dto.UserCredentials;
@@ -15,9 +16,10 @@ public class UserRepository {
     private UserDao userDao;
     private UserCredentialsDao userCredentialsDao;
 
-    public UserRepository(UserDao userDao, UserCredentialsDao userCredentialsDao) {
-        this.userDao = userDao;
-        this.userCredentialsDao = userCredentialsDao;
+    public UserRepository(CqlSession session) {
+        UserMapper mapper = UserMapper.builder(session).build();
+        this.userDao = mapper.getUserDao();
+        this.userCredentialsDao = mapper.getUserCredentialsDao();
     }
 
     public CompletableFuture<Void> createUserAsync(User user, String hashedPassword) {

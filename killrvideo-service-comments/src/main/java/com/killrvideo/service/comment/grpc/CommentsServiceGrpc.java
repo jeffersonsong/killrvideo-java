@@ -13,6 +13,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.concurrent.CompletableFuture;
 
+import com.killrvideo.service.comment.dao.CommentRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,7 +51,7 @@ public class CommentsServiceGrpc extends CommentsServiceImplBase {
     
     /** Communications and queries to DSE (Comment). */
     @Autowired
-    private CommentDseDao dseCommentDao;
+    private CommentRepository dseCommentDao;
     
     @Autowired
     private MessagingDao messagingDao;
@@ -167,7 +168,7 @@ public class CommentsServiceGrpc extends CommentsServiceImplBase {
      *
      * @param method
      *      current operation
-     * @param start
+     * @param starts
      *      timestamp for starting
      */
     private void traceSuccess(String method, Instant starts) {
@@ -181,7 +182,7 @@ public class CommentsServiceGrpc extends CommentsServiceImplBase {
      *
      * @param method
      *      current operation
-     * @param start
+     * @param starts
      *      timestamp for starting
      */
     private void traceError(String method, Instant starts, Throwable t) {

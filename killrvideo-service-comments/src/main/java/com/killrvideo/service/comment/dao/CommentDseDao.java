@@ -53,7 +53,6 @@ import com.killrvideo.utils.FutureUtils;
  * 
  * @author DataStax Developer Advocates team.
  */
-@Repository
 public class CommentDseDao extends DseDaoSupport {
 
     /** Logger for that class. */
@@ -340,7 +339,7 @@ public class CommentDseDao extends DseDaoSupport {
                      c.setUserid(row.getUUID(COLUMN_USERID));
                      c.setCommentid(row.getUUID(COLUMN_COMMENTID));
                      c.setVideoid(row.getUUID(COLUMN_VIDEOID));
-                     c.setDateOfComment(row.getTimestamp("comment_timestamp"));
+                     c.setDateOfComment(row.getTimestamp("comment_timestamp").toInstant());
                      result.getResults().add(c);
                  });
         result.setPagingState(
