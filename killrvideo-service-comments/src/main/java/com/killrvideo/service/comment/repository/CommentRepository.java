@@ -1,9 +1,12 @@
-package com.killrvideo.service.comment.dao;
+package com.killrvideo.service.comment.repository;
 
 import com.datastax.oss.driver.api.core.ConsistencyLevel;
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.cql.*;
 import com.killrvideo.dse.dto.ResultListPage;
+import com.killrvideo.service.comment.dao.CommentByUserDao;
+import com.killrvideo.service.comment.dao.CommentByVideoDao;
+import com.killrvideo.service.comment.dao.CommentMapper;
 import com.killrvideo.service.comment.dto.*;
 import org.springframework.stereotype.Repository;
 

@@ -13,7 +13,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.concurrent.CompletableFuture;
 
-import com.killrvideo.service.comment.dao.CommentRepository;
+import com.killrvideo.service.comment.repository.CommentRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

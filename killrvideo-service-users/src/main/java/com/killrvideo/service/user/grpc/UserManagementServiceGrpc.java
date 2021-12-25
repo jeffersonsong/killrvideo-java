@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
-import com.killrvideo.service.user.dao.UserRepository;
+import com.killrvideo.service.user.repository.UserRepository;
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

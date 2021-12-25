@@ -1,7 +1,10 @@
-package com.killrvideo.service.user.dao;
+package com.killrvideo.service.user.repository;
 
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.MappedAsyncPagingIterable;
+import com.killrvideo.service.user.dao.UserCredentialsDao;
+import com.killrvideo.service.user.dao.UserDao;
+import com.killrvideo.service.user.dao.UserMapper;
 import com.killrvideo.service.user.dto.User;
 import com.killrvideo.service.user.dto.UserCredentials;
 import com.killrvideo.utils.MappedAsyncPagingIterableUtils;

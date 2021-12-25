@@ -11,7 +11,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
-import com.killrvideo.service.statistic.dao.StatisticsRepository;
+import com.killrvideo.service.statistic.repository.StatisticsRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

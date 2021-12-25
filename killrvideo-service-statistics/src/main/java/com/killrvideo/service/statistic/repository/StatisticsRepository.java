@@ -1,4 +1,4 @@
-package com.killrvideo.service.statistic.dao;
+package com.killrvideo.service.statistic.repository;
 
 import com.datastax.oss.driver.api.core.ConsistencyLevel;
 import com.datastax.oss.driver.api.core.CqlSession;
@@ -7,6 +7,8 @@ import com.datastax.oss.driver.api.core.cql.BoundStatement;
 import com.datastax.oss.driver.api.core.cql.PreparedStatement;
 import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 import com.datastax.oss.driver.api.querybuilder.QueryBuilder;
+import com.killrvideo.service.statistic.dao.VideoPlaybackStatsDao;
+import com.killrvideo.service.statistic.dao.VideoPlaybackStatsMapper;
 import com.killrvideo.service.statistic.dto.VideoPlaybackStats;
 import com.killrvideo.utils.MappedAsyncPagingIterableUtils;
 import org.springframework.stereotype.Repository;
@@ -29,9 +31,10 @@ public class StatisticsRepository {
 
     private PreparedStatement incrRecordPlayBacks;
 
-    public StatisticsRepository(CqlSession session, VideoPlaybackStatsDao videoPlaybackStatsDao) {
+    public StatisticsRepository(CqlSession session) {
         this.session = session;
-        this.videoPlaybackStatsDao = videoPlaybackStatsDao;
+        VideoPlaybackStatsMapper mapper = VideoPlaybackStatsMapper.build(session).build();
+        this.videoPlaybackStatsDao = mapper.getVideoPlaybackStatsDao();
         SimpleStatement queryIncPlayBack = QueryBuilder.update("video_playback_stats")
                 .increment(VideoPlaybackStats.COLUMN_VIEWS)
                 .whereColumn(VideoPlaybackStats.COLUMN_VIDEOID).isEqualTo(QueryBuilder.bindMarker())

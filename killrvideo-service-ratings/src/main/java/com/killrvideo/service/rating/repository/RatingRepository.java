@@ -1,4 +1,4 @@
-package com.killrvideo.service.rating.dao;
+package com.killrvideo.service.rating.repository;
 
 import com.datastax.oss.driver.api.core.ConsistencyLevel;
 import com.datastax.oss.driver.api.core.CqlSession;
@@ -7,6 +7,9 @@ import com.datastax.oss.driver.api.core.cql.BoundStatement;
 import com.datastax.oss.driver.api.core.cql.PreparedStatement;
 import com.datastax.oss.driver.api.core.cql.SimpleStatement;
 import com.datastax.oss.driver.api.querybuilder.QueryBuilder;
+import com.killrvideo.service.rating.dao.VideoRatingByUserDao;
+import com.killrvideo.service.rating.dao.VideoRatingDao;
+import com.killrvideo.service.rating.dao.VideoRatingMapper;
 import com.killrvideo.service.rating.dto.VideoRating;
 import com.killrvideo.service.rating.dto.VideoRatingByUser;
 import org.slf4j.Logger;
