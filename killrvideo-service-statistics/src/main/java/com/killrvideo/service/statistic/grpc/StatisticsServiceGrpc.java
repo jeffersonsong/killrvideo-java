@@ -11,13 +11,13 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
+import com.killrvideo.service.statistic.dao.StatisticsRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import com.killrvideo.service.statistic.dao.StatisticsDseDao;
 import com.killrvideo.service.statistic.dto.VideoPlaybackStats;
 
 import io.grpc.Status;
@@ -47,7 +47,7 @@ public class StatisticsServiceGrpc extends StatisticsServiceImplBase {
     private String serviceKey;
     
     @Autowired
-    private StatisticsDseDao statisticsDseDao;
+    private StatisticsRepository statisticsRepository;
     
     /** {@inheritDoc} */
     @Override
@@ -63,7 +63,7 @@ public class StatisticsServiceGrpc extends StatisticsServiceImplBase {
         final UUID videoId = UUID.fromString(grpcReq.getVideoId().getValue());
         
         // Invoke DAO Async
-        CompletableFuture<Void> futureDao = statisticsDseDao.recordPlaybackStartedAsync(videoId);
+        CompletableFuture<Void> futureDao = statisticsRepository.recordPlaybackStartedAsync(videoId);
         
         // Map Result back to GRPC
         futureDao.whenComplete((result, error) -> {
@@ -96,7 +96,7 @@ public class StatisticsServiceGrpc extends StatisticsServiceImplBase {
         
         // Invoke DAO Async
         CompletableFuture<List<VideoPlaybackStats>> futureDao = 
-                statisticsDseDao.getNumberOfPlaysAsync(listOfVideoId);
+                statisticsRepository.getNumberOfPlaysAsync(listOfVideoId);
         
         // Map Result back to GRPC
         futureDao.whenComplete((videoList, error) -> {

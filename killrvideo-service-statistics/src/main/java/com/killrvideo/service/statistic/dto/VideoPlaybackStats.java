@@ -3,21 +3,17 @@ package com.killrvideo.service.statistic.dto;
 import java.io.Serializable;
 import java.util.UUID;
 
-import com.datastax.driver.mapping.annotations.Column;
-import com.datastax.driver.mapping.annotations.PartitionKey;
-import com.datastax.driver.mapping.annotations.Table;
-import com.killrvideo.model.CommonConstants;
-import com.killrvideo.service.statistic.dao.StatisticsDseDao;
+import com.datastax.oss.driver.api.mapper.annotations.CqlName;
+import com.datastax.oss.driver.api.mapper.annotations.Entity;
+import com.datastax.oss.driver.api.mapper.annotations.PartitionKey;
 
 /**
  * Pojo representing DTO for table 'video_playback_stats'.
  *
  * @author DataStax Developer Advocates team.
  */
-@Table(keyspace = 
-        CommonConstants.KILLRVIDEO_KEYSPACE, 
-       name = 
-        StatisticsDseDao.TABLENAME_PLAYBACK_STATS)
+@Entity
+@CqlName("video_playback_stats")
 public class VideoPlaybackStats implements Serializable {
 
     /** Serial. */
@@ -35,7 +31,6 @@ public class VideoPlaybackStats implements Serializable {
      * is no "@Counter" annotation that I know of.  No worries though, just use the incr() function
      * while using the QueryBuilder.  Something similar to with(QueryBuilder.incr("views")).
      */
-    @Column
     private Long views;
 
     /**
@@ -75,6 +70,4 @@ public class VideoPlaybackStats implements Serializable {
     public void setViews(Long views) {
         this.views = views;
     }
-    
-    
 }
