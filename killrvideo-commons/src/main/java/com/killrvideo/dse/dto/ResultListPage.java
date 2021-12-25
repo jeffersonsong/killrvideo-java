@@ -4,12 +4,18 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.StreamSupport;
 
 import com.datastax.driver.core.PagingState;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.mapping.Mapper;
 import com.datastax.driver.mapping.Result;
+import com.datastax.oss.driver.api.core.cql.AsyncResultSet;
+import com.datastax.oss.driver.api.core.cql.Row;
+import com.datastax.oss.protocol.internal.util.Bytes;
 
 /**
  * Ease usage of the paginState.
@@ -34,8 +40,6 @@ public class ResultListPage < ENTITY > {
      * 
      * @param rs
      *      result set
-     * @param mapper
-     *      mapper
      */
     public ResultListPage(Result<ENTITY> rs) {
         if (null != rs) {
@@ -58,6 +62,19 @@ public class ResultListPage < ENTITY > {
 	 */
 	public ResultListPage(ResultSet rs, Mapper<ENTITY> mapper) {
 		this(mapper.map(rs));
+	}
+
+	public ResultListPage(AsyncResultSet rs, Function<Row, ENTITY> mapper) {
+		if (rs != null) {
+			List<ENTITY> list = StreamSupport.stream(rs.currentPage().spliterator(), false)
+					.map(mapper).collect(Collectors.toList());
+			listOfResults.addAll(list);
+			if (rs.hasMorePages() && rs.getExecutionInfo().getPagingState() != null) {
+				nextPage = Optional.ofNullable(
+						Bytes.toHexString(rs.getExecutionInfo().getPagingState())
+				);
+			}
+		}
 	}
 	
 	/** {@inheritDoc} */

@@ -10,6 +10,7 @@ import java.util.TreeSet;
 import java.util.concurrent.CompletableFuture;
 
 import com.killrvideo.service.search.dto.Video;
+import com.killrvideo.service.search.repository.SearchRepository;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,7 +19,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.killrvideo.dse.dto.ResultListPage;
-import com.killrvideo.service.search.dao.SearchDseDao;
 
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
@@ -43,7 +43,7 @@ public class SearchServiceGrpc extends SearchServiceImplBase {
     private String serviceKey;
    
     @Autowired
-    private SearchDseDao dseSearchDao;
+    private SearchRepository dseSearchDao;
     
     /** {@inheritDoc} */
     @Override
@@ -126,7 +126,7 @@ public class SearchServiceGrpc extends SearchServiceImplBase {
      *
      * @param method
      *      current operation
-     * @param start
+     * @param starts
      *      timestamp for starting
      */
     private void traceSuccess(String method, Instant starts) {
@@ -140,7 +140,7 @@ public class SearchServiceGrpc extends SearchServiceImplBase {
      *
      * @param method
      *      current operation
-     * @param start
+     * @param starts
      *      timestamp for starting
      */
     private void traceError(String method, Instant starts, Throwable t) {
