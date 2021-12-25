@@ -82,8 +82,8 @@ public class DseConfiguration {
         LOGGER.info("Initializing connection to Cassandra...");
 
         CqlSessionBuilder clusterConfig = CqlSession.builder();
-        //populateContactPoints(clusterConfig);
-        //opulateAuthentication(clusterConfig);
+        // populateContactPoints(clusterConfig);
+        populateAuthentication(clusterConfig);
 
         final AtomicInteger atomicCount = new AtomicInteger(1);
         Callable<CqlSession> connectionToCassandra = () -> {
