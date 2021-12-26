@@ -61,7 +61,7 @@
 		<protoc-gen-grpc.version>1.10.0</protoc-gen-grpc.version>
 		
 		<!-- kafka -->
-		<kafka-connect.version>2.1.0</kafka-connect.version>
+		<kafka-connect.version>3.0.0</kafka-connect.version>
 
 		<!-- Test -->
 		<cassandra-unit.version>4.3.1.0</cassandra-unit.version>
