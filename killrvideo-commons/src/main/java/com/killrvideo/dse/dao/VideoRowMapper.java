@@ -4,11 +4,7 @@ import com.datastax.oss.driver.api.core.cql.Row;
 import com.killrvideo.dse.dto.Video;
 import org.springframework.stereotype.Component;
 
-import static com.killrvideo.dse.dto.AbstractVideo.COLUMN_NAME;
-import static com.killrvideo.dse.dto.AbstractVideo.COLUMN_PREVIEW;
-import static com.killrvideo.dse.dto.AbstractVideo.COLUMN_TAGS;
 import static com.killrvideo.dse.dto.Video.*;
-import static com.killrvideo.dse.dto.Video.COLUMN_ADDED_DATE;
 
 @Component
 public class VideoRowMapper {

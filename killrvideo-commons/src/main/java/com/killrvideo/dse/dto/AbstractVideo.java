@@ -1,5 +1,9 @@
 package com.killrvideo.dse.dto;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.validator.constraints.Length;
 
 /**
@@ -7,9 +11,8 @@ import org.hibernate.validator.constraints.Length;
  *
  * @author DataStax Developer Advocates team
  */
+@Getter @Setter @NoArgsConstructor @AllArgsConstructor
 public abstract class AbstractVideo extends AbstractEntity {
-
-    /** Serial. */
     private static final long serialVersionUID = -4366554197274003003L;
     
     /** Column names. */
@@ -21,60 +24,4 @@ public abstract class AbstractVideo extends AbstractEntity {
     protected String name;
 
     protected String previewImageLocation;
-
-    /**
-     * Allow default initializations.
-     */
-    protected AbstractVideo() {}
-
-    /**
-     * Constructor used by sub entities.
-     * 
-     * @param name
-     *            video name
-     * @param preview
-     *            video preview location
-     */
-    protected AbstractVideo(String name, String preview) {
-        this.name = name;
-        this.previewImageLocation = preview;
-    }
-    
-    /**
-     * Getter for attribute 'name'.
-     *
-     * @return current value of 'name'
-     */
-    public String getName() {
-        return name;
-    }
-
-    /**
-     * Setter for attribute 'name'.
-     * 
-     * @param name
-     *            new value for 'name '
-     */
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    /**
-     * Getter for attribute 'previewImageLocation'.
-     *
-     * @return current value of 'previewImageLocation'
-     */
-    public String getPreviewImageLocation() {
-        return previewImageLocation;
-    }
-
-    /**
-     * Setter for attribute 'previewImageLocation'.
-     * 
-     * @param previewImageLocation
-     *            new value for 'previewImageLocation '
-     */
-    public void setPreviewImageLocation(String previewImageLocation) {
-        this.previewImageLocation = previewImageLocation;
-    }
 }

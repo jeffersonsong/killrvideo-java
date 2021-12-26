@@ -152,7 +152,6 @@ public class UserManagementServiceGrpc extends UserManagementServiceImplBase {
             grpcResObserver.onNext(builder.build());
             grpcResObserver.onCompleted();
             LOGGER.debug("No user id provided");
-            return;
         } else {
             
             // Mapping GRPC => Domain (Dao)
@@ -160,7 +159,7 @@ public class UserManagementServiceGrpc extends UserManagementServiceImplBase {
                     .getUserIdsList()
                     .stream()
                     .map(uuid -> UUID.fromString(uuid.getValue()))
-                    .toArray(size -> new UUID[size]));
+                    .toArray(UUID[]::new));
             
             // Execute Async
             CompletableFuture<List<User>> userListFuture = userRepository.getUserProfilesAsync(listOfUserId);

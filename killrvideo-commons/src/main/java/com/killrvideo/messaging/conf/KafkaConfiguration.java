@@ -72,7 +72,7 @@ public class KafkaConfiguration {
         props.put(KEY_SERIALIZER_CLASS_CONFIG,   StringSerializer.class.getName());
         props.put(VALUE_SERIALIZER_CLASS_CONFIG, ByteArraySerializer.class.getName());
         props.put(ACKS_CONFIG,                   producerAck);
-        return new KafkaProducer<String, byte[]>(props);
+        return new KafkaProducer<>(props);
     }
 
     @Bean("kafka.consumer.videoRating")
@@ -82,7 +82,7 @@ public class KafkaConfiguration {
         props.put(GROUP_ID_CONFIG,                 consumerGroup);
         props.put(KEY_DESERIALIZER_CLASS_CONFIG,   StringDeserializer.class.getName());
         props.put(VALUE_DESERIALIZER_CLASS_CONFIG, ByteArrayDeserializer.class.getName());
-        return new KafkaConsumer<String,byte[]>(props);
+        return new KafkaConsumer<>(props);
     }
     
     @Bean("kafka.consumer.userCreating")
@@ -92,7 +92,7 @@ public class KafkaConfiguration {
         props.put(GROUP_ID_CONFIG,                 consumerGroup);
         props.put(KEY_DESERIALIZER_CLASS_CONFIG,   StringDeserializer.class.getName());
         props.put(VALUE_DESERIALIZER_CLASS_CONFIG, ByteArrayDeserializer.class.getName());
-        return new KafkaConsumer<String,byte[]>(props);
+        return new KafkaConsumer<>(props);
     }
     
     @Bean("kafka.consumer.videoCreating")
@@ -102,7 +102,7 @@ public class KafkaConfiguration {
         props.put(GROUP_ID_CONFIG,                 consumerGroup);
         props.put(KEY_DESERIALIZER_CLASS_CONFIG,   StringDeserializer.class.getName());
         props.put(VALUE_DESERIALIZER_CLASS_CONFIG, ByteArrayDeserializer.class.getName());
-        return new KafkaConsumer<String,byte[]>(props);
+        return new KafkaConsumer<>(props);
     }
     
     @Bean("kafka.consumer.error")
@@ -112,7 +112,7 @@ public class KafkaConfiguration {
         props.put(GROUP_ID_CONFIG,                 consumerGroup);
         props.put(KEY_DESERIALIZER_CLASS_CONFIG,   StringDeserializer.class.getName());
         props.put(VALUE_DESERIALIZER_CLASS_CONFIG, ByteArrayDeserializer.class.getName());
-        return new KafkaConsumer<String,byte[]>(props);
+        return new KafkaConsumer<>(props);
     }
     
 }

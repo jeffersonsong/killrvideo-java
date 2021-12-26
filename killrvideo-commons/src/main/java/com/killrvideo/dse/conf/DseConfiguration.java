@@ -16,9 +16,18 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManagerFactory;
+import java.io.BufferedInputStream;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
+import java.security.KeyStore;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
 import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 import java.util.concurrent.Callable;
@@ -27,7 +36,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Configuration
 public class DseConfiguration {
 
-	/** Internal logger. */
+    /**
+     * Internal logger.
+     */
     private static final Logger LOGGER = LoggerFactory.getLogger(DseConfiguration.class);
 
     @Value("${killrvideo.discovery.service.cassandra: cassandra}")
@@ -43,34 +54,34 @@ public class DseConfiguration {
     public String graphRecommendationName;
 
     @Value("#{environment.KILLRVIDEO_DSE_USERNAME}")
-    public Optional < String > dseUsername;
+    public Optional<String> dseUsername;
 
     @Value("#{environment.KILLRVIDEO_DSE_PASSWORD}")
-    public Optional < String > dsePassword;
+    public Optional<String> dsePassword;
 
     @Value("${killrvideo.cassandra.maxNumberOfTries: 50}")
     private Integer maxNumberOfTries;
 
     @Value("#{environment.KILLRVIDEO_MAX_NUMBER_RETRY}")
-    private Optional < Integer > maxNumberOfTriesFromEnvVar;
+    private Optional<Integer> maxNumberOfTriesFromEnvVar;
 
     @Value("${killrvideo.cassandra.delayBetweenTries: 3}")
     private Integer delayBetweenTries;
 
     @Value("#{environment.KILLRVIDEO_DELAY_BETWEEN_RETRY}")
-    private Optional < Integer > delayBetweenTriesFromEnvVar;
+    private Optional<Integer> delayBetweenTriesFromEnvVar;
 
     @Value("${killrvideo.ssl.CACertFileLocation: cassandra.cert}")
     private String sslCACertFileLocation;
 
     @Value("#{environment.KILLRVIDEO_SSL_CERTIFICATE}")
-    public Optional < String > sslCACertFileLocationEnvVar;
+    public Optional<String> sslCACertFileLocationEnvVar;
 
     @Value("${killrvideo.ssl.enable: false}")
     public boolean dseEnableSSL = false;
 
     @Value("#{environment.KILLRVIDEO_ENABLE_SSL}")
-    public Optional < Boolean > dseEnableSSLEnvVar;
+    public Optional<Boolean> dseEnableSSLEnvVar;
 
     @Value("${killrvideo.etcd.enabled : true}")
     private boolean etcdLookup = false;
@@ -84,15 +95,16 @@ public class DseConfiguration {
         LOGGER.info("Initializing connection to Cassandra...");
 
         CqlSessionBuilder clusterConfig = CqlSession.builder();
-        // populateContactPoints(clusterConfig);
+        populateContactPoints(clusterConfig);
         populateAuthentication(clusterConfig);
+        populateSSL(clusterConfig);
 
         final AtomicInteger atomicCount = new AtomicInteger(1);
         Callable<CqlSession> connectionToCassandra = () -> {
             return clusterConfig.withKeyspace(CommonConstants.KILLRVIDEO_KEYSPACE).build();
         };
 
-        if (!maxNumberOfTriesFromEnvVar.isEmpty()) {
+        if (maxNumberOfTriesFromEnvVar.isPresent()) {
             maxNumberOfTries = maxNumberOfTriesFromEnvVar.get();
         }
 
@@ -112,7 +124,8 @@ public class DseConfiguration {
         return new CallExecutor<CqlSession>(config)
                 .afterFailedTry(s -> {
                     LOGGER.info("Attempt #{}/{} failed.. trying in {} seconds, waiting for Cassandra to start...", atomicCount.getAndIncrement(),
-                            maxNumberOfTries,  delayBetweenTries); })
+                            maxNumberOfTries, delayBetweenTries);
+                })
                 .onFailure(s -> {
                     LOGGER.error("Cannot connection to Cassandra after {} attempts, exiting", maxNumberOfTries);
                     System.err.println("Can not connect to Cassandra after " + maxNumberOfTries + " attempts, exiting");
@@ -120,15 +133,15 @@ public class DseConfiguration {
                 })
                 .onSuccess(s -> {
                     long timeElapsed = System.currentTimeMillis() - top;
-                    LOGGER.info("[OK] Connection established to Cassandra Cluster in {} millis.", timeElapsed);})
+                    LOGGER.info("[OK] Connection established to Cassandra Cluster in {} millis.", timeElapsed);
+                })
                 .execute(connectionToCassandra).getResult();
     }
 
     /**
      * Graph Traversal for suggested videos.
      *
-     * @return
-     *      traversal
+     * @return traversal
      */
     @Bean
     public KillrVideoTraversalSource initializeGraphTraversalSource() {
@@ -139,60 +152,51 @@ public class DseConfiguration {
      * Retrieve cluster nodes adresses (eg:node1:9042) from ETCD and initialize the `contact points`,
      * endpoints of Cassandra cluster nodes.
      *
-     * @note
-     * [Initializing Contact Points with Java Driver]
-     *
+     * @param clusterConfig current configuration
+     * @note [Initializing Contact Points with Java Driver]
+     * <p>
      * (1) The default port is 9042. If you keep using the default port you
      * do not need to use or `withPort()` or `addContactPointsWithPorts()`, only `addContactPoint()`.
-     *
+     * <p>
      * (2) Best practice is to use the SAME PORT for each node and to  setup the port through `withPort()`.
-     *
+     * <p>
      * (3) Never, ever use `addContactPointsWithPorts` in clusters : it will ony set port FOR THE FIRST NODE.
      * DON'T USE, EVEN IF ALL NODE USE SAME PORT. It purpose is only for tests and standalone servers.
-     *
+     * <p>
      * (4) What if I have a cluster and nodes do not use the same port (eg: node1:9043, node2:9044, node3:9045) ?
      * You need to use {@link AddressTranslator} as defined below and reference with `withAddressTranslator(translator);`
      *
      * <code>
      * public class MyClusterAddressTranslator implements AddressTranslator {
-     *  @Override
-     *  public void init(Cluster cluster) {}
-     *  @Override
-     *  public void close() {}
-     *
-     *  @Override
-     *  public InetSocketAddress translate(InetSocketAddress incoming) {
-     *     // Given the configuration
-     *     Map<String, Integer> clusterNodes = new HashMap<String, Integer>() { {
-     *       put("node1", 9043);put("node2", 9044);put("node3", 9045);
-     *      }};
-     *      String targetHostName = incoming.getHostName();
-     *      if (clusterNodes.containsKey(targetHostName)) {
-     *          return new InetSocketAddress(targetHostName, clusterNodes.get(targetHostName));
-     *      }
-     *      throw new IllegalArgumentException("Cannot translate URL " + incoming + " hostName not found");
-     *   }
+     * @Override public void init(Cluster cluster) {}
+     * @Override public void close() {}
+     * @Override public InetSocketAddress translate(InetSocketAddress incoming) {
+     * // Given the configuration
+     * Map<String, Integer> clusterNodes = new HashMap<String, Integer>() { {
+     * put("node1", 9043);put("node2", 9044);put("node3", 9045);
+     * }};
+     * String targetHostName = incoming.getHostName();
+     * if (clusterNodes.containsKey(targetHostName)) {
+     * return new InetSocketAddress(targetHostName, clusterNodes.get(targetHostName));
+     * }
+     * throw new IllegalArgumentException("Cannot translate URL " + incoming + " hostName not found");
+     * }
      * }
      * </code>
-     *
-     * @param builder
-     *      current configuration
      */
-    private void populateContactPoints(CqlSessionBuilder builder)  {
+    private void populateContactPoints(CqlSessionBuilder clusterConfig) {
         discoveryDao.lookup(cassandraServiceName).stream()
                 .map(this::asSocketInetAdress)
-                .filter(node -> node.isPresent())
-                .map(node -> node.get())
-                .forEach(builder::addContactPoint);
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .forEach(clusterConfig::addContactPoint);
     }
 
     /**
      * Convert information in ETCD as real adress {@link InetSocketAddress} if possible.
      *
-     * @param contactPoint
-     *      network node adress information like hostname:port
-     * @return
-     *      java formatted inet adress
+     * @param contactPoint network node adress information like hostname:port
+     * @return java formatted inet adress
      */
     private Optional<InetSocketAddress> asSocketInetAdress(String contactPoint) {
         Optional<InetSocketAddress> target = Optional.empty();
@@ -221,15 +225,71 @@ public class DseConfiguration {
      * who might need (like us for example) to connect KillrVideo up to an external
      * cluster that requires authentication.
      */
-    private void populateAuthentication(CqlSessionBuilder builder) {
+    private void populateAuthentication(CqlSessionBuilder clusterConfig) {
         if (dseUsername.isPresent() && dsePassword.isPresent()
                 && dseUsername.get().length() > 0) {
-            builder.withAuthCredentials(dseUsername.get(), dsePassword.get());
+            clusterConfig.withAuthCredentials(dseUsername.get(), dsePassword.get());
             String obfuscatedPassword = new String(new char[dsePassword.get().length()]).replace("\0", "*");
             LOGGER.info(" + Using supplied DSE username: '{}' and password: '{}' from environment variables",
                     dseUsername.get(), obfuscatedPassword);
         } else {
             LOGGER.info(" + Connection is not authenticated (no username/password)");
+        }
+    }
+
+    /**
+     * If SSL is enabled use the supplied CA cert file to create
+     * an SSL context and use to configure our cluster.
+     *
+     * @param clusterConfig current configuration
+     */
+    private void populateSSL(CqlSessionBuilder clusterConfig) {
+
+        // Reading Environment Variables to eventually override default config
+        if (!dseEnableSSLEnvVar.isEmpty()) {
+            dseEnableSSL = dseEnableSSLEnvVar.get();
+            if (!sslCACertFileLocationEnvVar.isEmpty()) {
+                sslCACertFileLocation = sslCACertFileLocationEnvVar.get();
+            }
+        }
+
+        if (dseEnableSSL) {
+            LOGGER.info(" + SSL is enabled, using supplied SSL certificate: '{}'", sslCACertFileLocation);
+            try {
+                // X509 Certificate
+                FileInputStream fis = new FileInputStream(sslCACertFileLocation);
+                X509Certificate caCert = (X509Certificate) CertificateFactory.getInstance("X.509")
+                        .generateCertificate(new BufferedInputStream(fis));
+
+                // KeyStore
+                KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
+                ks.load(null, null);
+                ks.setCertificateEntry(Integer.toString(1), caCert);
+
+                // TrustStore
+                TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+                tmf.init(ks);
+                SSLContext sslContext = SSLContext.getInstance("TLS");
+                sslContext.init(null, tmf.getTrustManagers(), null);
+                clusterConfig.withSslContext(sslContext);
+
+            } catch (FileNotFoundException fne) {
+                String errMsg = "SSL cert file not found. You must provide a valid certification file when using SSL encryption option.";
+                LOGGER.error(errMsg, fne);
+                throw new IllegalArgumentException(errMsg, fne);
+
+            } catch (CertificateException ce) {
+                String errCert = "Your CA certificate looks invalid. You must provide a valid certification file when using SSL encryption option.";
+                LOGGER.error(errCert, ce);
+
+                throw new IllegalArgumentException(errCert, ce);
+            } catch (Exception e) {
+                String errSsl = "Exception in SSL configuration: ";
+                LOGGER.error(errSsl, e);
+                throw new IllegalArgumentException(errSsl, e);
+            }
+        } else {
+            LOGGER.info(" + SSL encryption is not enabled)");
         }
     }
 }

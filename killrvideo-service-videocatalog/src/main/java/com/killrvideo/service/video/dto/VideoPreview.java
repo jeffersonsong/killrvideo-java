@@ -12,8 +12,6 @@ import com.killrvideo.dse.dto.AbstractVideo;
  * @author DataStax Developer Advocates team.
  */
 public class VideoPreview extends AbstractVideo {
-
-    /** Serial. */
     private static final long serialVersionUID = 1319627901957309436L;
     
     /** Column names in the DB. */

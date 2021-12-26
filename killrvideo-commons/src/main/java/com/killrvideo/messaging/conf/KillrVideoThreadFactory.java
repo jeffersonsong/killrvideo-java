@@ -37,9 +37,6 @@ public class KillrVideoThreadFactory implements ThreadFactory {
     /**
      * Overriding error handling providing logging.
      */
-    private Thread.UncaughtExceptionHandler uncaughtExceptionHandler = (t, e) -> {
-        LOGGER.error("Uncaught asynchronous exception : " + e.getMessage(), e);
-    };
-
-
+    private Thread.UncaughtExceptionHandler uncaughtExceptionHandler = (t, e) ->
+            LOGGER.error("Uncaught asynchronous exception : " + e.getMessage(), e);
 }

@@ -5,19 +5,17 @@ import com.datastax.dse.driver.api.core.graph.FluentGraphStatement;
 import com.datastax.dse.driver.api.core.graph.GraphNode;
 import com.datastax.oss.driver.api.core.ConsistencyLevel;
 import com.datastax.oss.driver.api.core.CqlSession;
-import com.datastax.oss.driver.api.core.cql.BoundStatement;
-import com.datastax.oss.driver.api.core.cql.BoundStatementBuilder;
-import com.datastax.oss.driver.api.core.cql.PreparedStatement;
-import com.datastax.oss.protocol.internal.util.Bytes;
 import com.google.common.collect.Sets;
 import com.killrvideo.dse.dao.VideoRowMapper;
 import com.killrvideo.dse.dto.ResultListPage;
+import com.killrvideo.dse.dto.Video;
 import com.killrvideo.dse.graph.KillrVideoTraversal;
 import com.killrvideo.dse.graph.KillrVideoTraversalSource;
 import com.killrvideo.dse.graph.__;
+import com.killrvideo.dse.utils.PageableQuery;
 import com.killrvideo.service.sugestedvideo.dao.VideoDao;
 import com.killrvideo.service.sugestedvideo.dao.VideoMapper;
-import com.killrvideo.dse.dto.Video;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,20 +33,25 @@ import java.util.stream.StreamSupport;
 import static com.killrvideo.dse.graph.KillrVideoTraversalConstants.VERTEX_USER;
 import static com.killrvideo.dse.graph.KillrVideoTraversalConstants.VERTEX_VIDEO;
 
+/**
+ * Implementations of operation for Videos.
+ *
+ * @author DataStax Developer Advocates team.
+ */
 @Repository
 public class SuggestedVideosRepository {
-    /**
-     * Logger for DAO.
-     */
     private static final Logger LOGGER = LoggerFactory.getLogger(SuggestedVideosRepository.class);
+    private static final String QUERY_RELATED_VIDEOS =
+            "SELECT * " +
+            "FROM killrvideo.videos " +
+            "WHERE solr_query = ?";
     private CqlSession session;
-    private VideoRowMapper videoRowMapper;
     private VideoDao videoDao;
 
     /**
      * Precompile statements to speed up queries.
      */
-    private PreparedStatement findRelatedVideos;
+    private PageableQuery<Video> findRelatedVideos;
 
     @Autowired
     private KillrVideoTraversalSource traversalSource;
@@ -58,8 +61,8 @@ public class SuggestedVideosRepository {
      * paging to ensure we pull back all available results in the application.
      * https://docs.datastax.com/en/dse/6.0/cql/cql/cql_using/search_index/cursorsDeepPaging.html#cursorsDeepPaging__using-paging-with-cql-solr-queries-solrquery-Rim2GsbY
      */
-    private String pagingDriverStart = "{\"q\":\"";
-    private String pagingDriverEnd = "\", \"paging\":\"driver\"}";
+    private static final String PAGING_DRIVER_START = "{\"q\":\"";
+    private static final String PAGING_DRIVER_END = "\", \"paging\":\"driver\"}";
 
     /**
      * Create a set of sentence conjunctions and other "undesirable"
@@ -72,13 +75,13 @@ public class SuggestedVideosRepository {
 
     public SuggestedVideosRepository(CqlSession session, VideoRowMapper videoRowMapper) {
         this.session = session;
-        this.videoRowMapper = videoRowMapper;
         VideoMapper mapper = VideoMapper.build(session).build();
         this.videoDao = mapper.getVideoDao();
-        this.findRelatedVideos = session.prepare(
-                "SELECT * " +
-                        "FROM killrvideo.videos " +
-                        "WHERE solr_query = ?"
+        this.findRelatedVideos = new PageableQuery<>(
+                QUERY_RELATED_VIDEOS,
+                session,
+                ConsistencyLevel.LOCAL_ONE,
+                videoRowMapper::map
         );
     }
 
@@ -87,9 +90,16 @@ public class SuggestedVideosRepository {
      **/
     public CompletableFuture<ResultListPage<Video>> getRelatedVideos(UUID videoId, int fetchSize, Optional<String> pagingState) {
         return findVideoById(videoId).thenCompose(video -> {
-            BoundStatement stmt = createStatementToSearchVideos(video, fetchSize, pagingState);
-            return session.executeAsync(stmt).toCompletableFuture();
-        }).thenApply(rs -> new ResultListPage<>(rs, videoRowMapper::map));
+            if (video == null) {
+                throw new IllegalArgumentException(String.format("Video {} not found", videoId));
+            }
+            String query = buildSolrQueryToSearchVideos(video);
+            return findRelatedVideos.queryNext(
+                    Optional.of(fetchSize),
+                    pagingState,
+                    query
+            );
+        });
     }
 
     private CompletableFuture<Video> findVideoById(UUID videoId) {
@@ -107,7 +117,7 @@ public class SuggestedVideosRepository {
      * We can then use the end result termSet to query across the name, tags, and
      * description columns to find similar videos.
      */
-    private BoundStatement createStatementToSearchVideos(Video video, int fetchSize, Optional<String> pagingState) {
+    private String buildSolrQueryToSearchVideos(Video video) {
         final String space = " ";
         final String eachWordRegEx = "[^\\w]";
         final String eachWordPattern = Pattern.compile(eachWordRegEx).pattern();
@@ -123,19 +133,13 @@ public class SuggestedVideosRepository {
         LOGGER.debug("delimitedTermList is : " + delimitedTermList);
 
         final StringBuilder solrQuery = new StringBuilder();
-        solrQuery.append(pagingDriverStart);
+        solrQuery.append(PAGING_DRIVER_START);
         solrQuery.append("name:(").append(delimitedTermList).append(")^2").append(space);
         solrQuery.append("tags:(").append(delimitedTermList).append(")^4").append(space);
         solrQuery.append("description:").append(delimitedTermList);
-        solrQuery.append(pagingDriverEnd);
+        solrQuery.append(PAGING_DRIVER_END);
 
-        BoundStatementBuilder builder = findRelatedVideos.boundStatementBuilder(solrQuery.toString());
-        pagingState.ifPresent(x -> builder.setPagingState(Bytes.fromHexString(x)));
-        builder.setPageSize(fetchSize);
-        builder.setConsistencyLevel(ConsistencyLevel.LOCAL_ONE);
-
-        BoundStatement statement = builder.build();
-        return statement;
+        return solrQuery.toString();
     }
 
     /**
@@ -148,7 +152,8 @@ public class SuggestedVideosRepository {
         // Parameters validation
         Assert.notNull(userid, "videoid is required to update statistics");
         // Build statement
-        KillrVideoTraversal graphTraversal = traversalSource.users(userid.toString()).recommendByUserRating(5, 4, 1000, 5);
+        KillrVideoTraversal<Vertex, Map<String, Object>> graphTraversal = traversalSource.users(userid.toString())
+                .recommendByUserRating(5, 4, 1000, 5);
         FluentGraphStatement graphStatement = FluentGraphStatement.newInstance(graphTraversal);
         //if (LOGGER.isDebugEnabled()) {
         //LOGGER.debug("Recommend TRAVERSAL is {} ",  DseUtils.displayGraphTranserval(graphTraversal));
@@ -249,9 +254,7 @@ public class SuggestedVideosRepository {
                         // Add Uploaded Edge
                         .add(__.uploaded(video.getUserid()));
         // Add Tags Nodes and edges
-        Sets.newHashSet(video.getTags()).forEach(tag -> {
-            traversal.add(__.taggedWith(tag, new Date()));
-        });
+        Sets.newHashSet(video.getTags()).forEach(tag -> traversal.add(__.taggedWith(tag, new Date())));
         /*
          * Now that our video is successfully applied lets
          * insert that video into our graph for the recommendation engine
@@ -280,7 +283,7 @@ public class SuggestedVideosRepository {
      * @param userCreation
      */
     public void updateGraphNewUser(UUID userId, String email, Date userCreation) {
-        final KillrVideoTraversal traversal = traversalSource.user(userId, email, userCreation);
+        final KillrVideoTraversal<Vertex, Vertex> traversal = traversalSource.user(userId, email, userCreation);
         FluentGraphStatement gStatement = FluentGraphStatement.newInstance(traversal);
         //LOGGER.info("Executed transversal for 'updateGraphNewUser' : {}", DseUtils.displayGraphTranserval(traversal));
         session.executeAsync(gStatement).whenComplete((graphResultSet, ex) -> {

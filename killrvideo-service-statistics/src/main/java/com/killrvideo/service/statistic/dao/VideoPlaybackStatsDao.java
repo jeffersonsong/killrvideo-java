@@ -13,4 +13,8 @@ public interface VideoPlaybackStatsDao {
     @Select(customWhereClause = "videoid in :listOfVideoIds")
     @StatementAttributes(consistencyLevel = "LOCAL_ONE")
     CompletableFuture<MappedAsyncPagingIterable<VideoPlaybackStats>> getNumberOfPlays(@CqlName("listOfVideoIds") List<UUID> listOfVideoIds);
+
+    @Increment(entityClass = VideoPlaybackStats.class)
+    @StatementAttributes(consistencyLevel = "LOCAL_QUORUM")
+    CompletableFuture<Void> increment(UUID videoid, long views);
 }

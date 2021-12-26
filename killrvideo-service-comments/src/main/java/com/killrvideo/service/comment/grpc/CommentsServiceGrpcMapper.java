@@ -46,8 +46,6 @@ public class CommentsServiceGrpcMapper {
      *      current GRPC Request
      * @param streamObserver
      *      response async
-     * @return
-     *      true if the query is valid
      */
     public static void validateGrpcRequestCommentOnVideo(Logger logger, CommentOnVideoRequest request, StreamObserver<?> streamObserver) {
         StringBuilder errorMessage = initErrorString(request);
@@ -66,8 +64,6 @@ public class CommentsServiceGrpcMapper {
      *      current GRPC Request
      * @param streamObserver
      *      response async
-     * @return
-     *      true if the query is valid
      */
     public static void validateGrpcRequestGetVideoComment(Logger logger, GetVideoCommentsRequest request, StreamObserver<?> streamObserver) {
         final StringBuilder errorMessage = initErrorString(request);
@@ -93,8 +89,6 @@ public class CommentsServiceGrpcMapper {
      *      current GRPC Request
      * @param streamObserver
      *      response async
-     * @return
-     *      true if the query is valid
      */
     public static void validateGrpcRequest_GetUserComments(Logger logger, GetUserCommentsRequest request, StreamObserver<?> streamObserver) {
         final StringBuilder errorMessage = initErrorString(request);
@@ -131,33 +125,41 @@ public class CommentsServiceGrpcMapper {
         final GetVideoCommentsResponse.Builder builder = GetVideoCommentsResponse.newBuilder();
         for (Comment c : dseRes.getResults()) {
            builder.setVideoId(uuidToUuid(c.getVideoid()));
-           builder.addComments(CommentsServiceOuterClass.VideoComment.newBuilder()
-                  .setComment(c.getComment())
-                  .setUserId(uuidToUuid(c.getUserid()))
-                  .setCommentId(uuidToTimeUuid(c.getCommentid()))
-                  .setCommentTimestamp(instantToTimeStamp(c.getDateOfComment()))
-                  .build());
+           builder.addComments(newVideoCommentProto(c));
         }
         dseRes.getPagingState().ifPresent(builder::setPagingState);
         return builder.build();
     }
-    
+
+    private static CommentsServiceOuterClass.VideoComment newVideoCommentProto(Comment c) {
+        return CommentsServiceOuterClass.VideoComment.newBuilder()
+                .setComment(c.getComment())
+                .setUserId(uuidToUuid(c.getUserid()))
+                .setCommentId(uuidToTimeUuid(c.getCommentid()))
+                .setCommentTimestamp(instantToTimeStamp(c.getDateOfComment()))
+                .build();
+    }
+
     // Map from CommentDseDao response bean to expected GRPC object.
     public static GetUserCommentsResponse mapFromDseUserCommentToGrpcResponse(ResultListPage<Comment> dseRes) {
         final GetUserCommentsResponse.Builder builder = GetUserCommentsResponse.newBuilder();
         for (Comment c : dseRes.getResults()) {
            builder.setUserId(uuidToUuid(c.getUserid()));
-           builder.addComments(CommentsServiceOuterClass.UserComment.newBuilder()
-                   .setComment(c.getComment())
-                   .setCommentId(uuidToTimeUuid(c.getCommentid()))
-                   .setVideoId(uuidToUuid(c.getVideoid()))
-                   .setCommentTimestamp(instantToTimeStamp(c.getDateOfComment()))
-                   .build());
+           builder.addComments(newUserCommentProto(c));
         }
         dseRes.getPagingState().ifPresent(builder::setPagingState);
         return builder.build();
     }
-    
+
+    private static CommentsServiceOuterClass.UserComment newUserCommentProto(Comment c) {
+        return CommentsServiceOuterClass.UserComment.newBuilder()
+                .setComment(c.getComment())
+                .setCommentId(uuidToTimeUuid(c.getCommentid()))
+                .setVideoId(uuidToUuid(c.getVideoid()))
+                .setCommentTimestamp(instantToTimeStamp(c.getDateOfComment()))
+                .build();
+    }
+
     /**
      * Utility from exposition to Dse query.
      * 

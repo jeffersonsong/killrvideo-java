@@ -142,7 +142,7 @@ public class ServiceDiscoveryDaoEtcd implements ServiceDiscoveryDao {
         LOGGER.info("Accessing last port for endpoint with same host");
         for (String endpoint : lookup(serviceName)) {
             String[] endpointChunks = endpoint.split(":");
-            int endPointPort = Integer.valueOf(endpointChunks[1]);
+            int endPointPort = Integer.parseInt(endpointChunks[1]);
             String endPointHost = endpointChunks[0];
             if (hostName.equalsIgnoreCase(endPointHost)) {
                 if (endPointPort > targetPort) {
@@ -150,7 +150,7 @@ public class ServiceDiscoveryDaoEtcd implements ServiceDiscoveryDao {
                     LOGGER.info(" + Found {}", targetPort);
                 }
             }
-        } ;
+        }
         return (targetPort == -1) ? Optional.empty() : Optional.of(targetPort);
     }
     
@@ -178,7 +178,7 @@ public class ServiceDiscoveryDaoEtcd implements ServiceDiscoveryDao {
                 }
             }
             // Create new Key
-            String serviceKey = serviceDirectoryKey + UUID.randomUUID().toString();
+            String serviceKey = serviceDirectoryKey + UUID.randomUUID();
             etcdClient.set(serviceKey, endPoint);
             LOGGER.info(" + [OK] Endpoint registered with key '{}'", serviceKey);
             return serviceKey;

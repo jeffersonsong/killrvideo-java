@@ -51,7 +51,7 @@ public class MessagingUtils {
      * @return
      *      merged stack trace.
      */
-    private static final String mergeStackTrace(Throwable throwable) {
+    private static String mergeStackTrace(Throwable throwable) {
         StringJoiner joiner = new StringJoiner("\n\t", "\n", "\n");
         joiner.add(throwable.getMessage());
         Arrays.asList(throwable.getStackTrace()).forEach(stackTraceElement -> joiner.add(stackTraceElement.toString()));

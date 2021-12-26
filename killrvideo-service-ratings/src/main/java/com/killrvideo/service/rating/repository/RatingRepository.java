@@ -1,12 +1,6 @@
 package com.killrvideo.service.rating.repository;
 
-import com.datastax.oss.driver.api.core.ConsistencyLevel;
 import com.datastax.oss.driver.api.core.CqlSession;
-import com.datastax.oss.driver.api.core.cql.AsyncResultSet;
-import com.datastax.oss.driver.api.core.cql.BoundStatement;
-import com.datastax.oss.driver.api.core.cql.PreparedStatement;
-import com.datastax.oss.driver.api.core.cql.SimpleStatement;
-import com.datastax.oss.driver.api.querybuilder.QueryBuilder;
 import com.killrvideo.service.rating.dao.VideoRatingByUserDao;
 import com.killrvideo.service.rating.dao.VideoRatingDao;
 import com.killrvideo.service.rating.dao.VideoRatingMapper;
@@ -19,41 +13,37 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
 
+/**
+ * Implementations of operation for Videos.
+ *
+ * @author DataStax Developer Advocates team.
+ */
 @Repository
 public class RatingRepository {
     private static Logger LOGGER = LoggerFactory.getLogger(RatingRepository.class);
 
-    private CqlSession session;
     private VideoRatingDao videoRatingDao;
     private VideoRatingByUserDao videoRatingByUserDao;
-    /** Precompile statements to speed up queries. */
-    private PreparedStatement updateRating;
 
     public RatingRepository(CqlSession session) {
-        this.session = session;
         VideoRatingMapper mapper = VideoRatingMapper.build(session).build();
         this.videoRatingDao = mapper.getVideoRatingDao();
         this.videoRatingByUserDao = mapper.getVideoRatingByUserDao();
-        SimpleStatement updateStatement = QueryBuilder.update("video_ratings")
-                .increment(VideoRating.COLUMN_RATING_COUNTER)
-                .increment(VideoRating.COLUMN_RATING_TOTAL, QueryBuilder.bindMarker())
-                .whereColumn(VideoRating.COLUMN_VIDEOID).isEqualTo(QueryBuilder.bindMarker())
-                .build();
-        updateStatement.setConsistencyLevel(ConsistencyLevel.LOCAL_QUORUM);
-        updateRating = session.prepare(updateStatement);
     }
 
+    /**
+     * Create a rating.
+     *
+     * @param videoId current videoId
+     * @param userId  current userid
+     * @param rating  current rating
+     */
     public CompletableFuture<Void> rateVideo(UUID videoId, UUID userId, Integer rating) {
         // Param validations
         assertNotNull("rateVideo", "videoId", videoId);
         assertNotNull("rateVideo", "userId", userId);
         assertNotNull("rateVideo", "rating", rating);
-
-        BoundStatement statement = updateRating.bind()
-                .setLong(VideoRating.COLUMN_RATING_TOTAL, rating)
-                .setUuid(VideoRating.COLUMN_VIDEOID,      videoId);
 
         VideoRatingByUser entity = new VideoRatingByUser(videoId, userId, rating);
         // Logging at DEBUG
@@ -62,19 +52,18 @@ public class RatingRepository {
         }
 
         return CompletableFuture.allOf(
-                session.executeAsync(statement).toCompletableFuture().thenApply(s-> null),
-                videoRatingByUserDao.insert(entity));
+                videoRatingByUserDao.insert(entity),
+                videoRatingDao.increment(videoId, 1L, rating)
+        );
     }
 
     /**
      * VideoId matches the partition key set in the VideoRating class.
      *
-     * @param videoId
-     *      unique identifier for video.
-     * @return
-     *      find rating
+     * @param videoId unique identifier for video.
+     * @return find rating
      */
-    public CompletableFuture<Optional< VideoRating >> findRating(UUID videoId) {
+    public CompletableFuture<Optional<VideoRating>> findRating(UUID videoId) {
         assertNotNull("findRating", "videoId", videoId);
 
         return videoRatingDao.findRating(videoId);
@@ -83,14 +72,11 @@ public class RatingRepository {
     /**
      * Find rating from videoid and userid.
      *
-     * @param videoId
-     *      current videoId
-     * @param userid
-     *      current user unique identifier.
-     * @return
-     *      video rating is exist.
+     * @param videoId current videoId
+     * @param userid  current user unique identifier.
+     * @return video rating is exist.
      */
-    public CompletableFuture< Optional < VideoRatingByUser > > findUserRating(UUID videoId, UUID userid) {
+    public CompletableFuture<Optional<VideoRatingByUser>> findUserRating(UUID videoId, UUID userid) {
         assertNotNull("findUserRating", "videoId", videoId);
         assertNotNull("findUserRating", "userid", userid);
 

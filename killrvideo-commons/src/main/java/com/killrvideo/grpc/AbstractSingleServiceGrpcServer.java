@@ -58,17 +58,11 @@ public abstract class AbstractSingleServiceGrpcServer {
         grpcServerPort = getDefaultPort();
         Optional<Integer> maxUsedPort = serviceDiscoveryDao.lookupServicePorts(getServiceName(), 
                 killrVideoConfig.getApplicationHost());
-        if (maxUsedPort.isPresent()) {
-            grpcServerPort = maxUsedPort.get() + 1;
-        }
+        maxUsedPort.ifPresent(integer -> grpcServerPort = integer + 1);
         grpcServer = ServerBuilder.forPort(grpcServerPort)
                               .addService(getService())
                               .build();
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-                public void run() {
-                    stopGrpcServer();
-                }
-        });
+        Runtime.getRuntime().addShutdownHook(new Thread(this::stopGrpcServer));
         grpcServer.start();
         LOGGER.info("[OK] Grpc Server started on port: '{}'", grpcServerPort);
         serviceDiscoveryDao.register(getServiceName(), 

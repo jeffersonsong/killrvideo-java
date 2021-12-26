@@ -16,8 +16,6 @@ import com.google.common.collect.Lists;
  * @author DataStax Developer Advocates team.
  */
 public class CustomPagingState implements Serializable {
-
-    /** Serial. */
     private static final long serialVersionUID = 8160171855827276965L;
     
     /**  Constants. */

@@ -5,6 +5,7 @@ import java.util.UUID;
 import com.datastax.oss.driver.api.mapper.annotations.CqlName;
 import com.datastax.oss.driver.api.mapper.annotations.Entity;
 import com.datastax.oss.driver.api.mapper.annotations.PartitionKey;
+import lombok.NoArgsConstructor;
 
 /**
  * Specialization for USER.
@@ -13,15 +14,13 @@ import com.datastax.oss.driver.api.mapper.annotations.PartitionKey;
  */
 @Entity
 @CqlName("comments_by_user")
+@NoArgsConstructor
 public class CommentByUser extends Comment {
-    
-    /** Serial. */
     private static final long serialVersionUID = 1453554109222565840L;
-    
-    /**
-     * Default constructor.
-     */
-    public CommentByUser() {}
+
+    public static CommentByUser from(Comment comment) {
+        return new CommentByUser(comment);
+    }
     
     /**
      * Copy constructor.
@@ -29,10 +28,7 @@ public class CommentByUser extends Comment {
      * @param c comment.
      */
     public CommentByUser(Comment c) {
-        this.commentid  = c.getCommentid();
-        this.userid     = c.getUserid();
-        this.videoid    = c.getVideoid();
-        this.comment    = c.getComment();
+        super(c);
     }
 
     /**
@@ -47,11 +43,6 @@ public class CommentByUser extends Comment {
     }
 
     public Comment toComment() {
-        Comment comment = new Comment();
-        comment.setCommentid(this.commentid);
-        comment.setUserid(this.userid);
-        comment.setVideoid(this.videoid);
-        comment.setComment(this.comment);
-        return comment;
+        return new Comment(this);
     }
 }

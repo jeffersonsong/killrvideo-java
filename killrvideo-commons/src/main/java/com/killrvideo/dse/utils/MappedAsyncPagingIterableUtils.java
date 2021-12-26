@@ -9,7 +9,7 @@ import java.util.concurrent.ExecutionException;
 public class MappedAsyncPagingIterableUtils {
     private MappedAsyncPagingIterableUtils() {}
 
-    public static <T> List<T> toList(MappedAsyncPagingIterable<T> pagingIterable) {
+    public static <T> List<T> all(MappedAsyncPagingIterable<T> pagingIterable) {
         List<T> result = new ArrayList<>();
 
         MappedAsyncPagingIterable<T> iter = pagingIterable;

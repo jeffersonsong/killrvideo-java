@@ -46,7 +46,7 @@ import killrvideo.comments.events.CommentsEvents.UserCommentedOnVideo;
 public class CommentsServiceGrpc extends CommentsServiceImplBase {
      
     /** Loger for that class. */
-    private static Logger LOGGER = LoggerFactory.getLogger(CommentsServiceGrpc.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(CommentsServiceGrpc.class);
     
     /** Communications and queries to DSE (Comment). */
     @Autowired
@@ -72,11 +72,7 @@ public class CommentsServiceGrpc extends CommentsServiceImplBase {
         final Instant starts = Instant.now();
         
         // Mapping GRPC => Domain (Dao)
-        Comment q = new Comment();
-        q.setVideoid(fromString(grpcReq.getVideoId().getValue()));
-        q.setCommentid(fromString(grpcReq.getCommentId().getValue()));
-        q.setUserid(fromString(grpcReq.getUserId().getValue()));
-        q.setComment(grpcReq.getComment());
+        Comment q = newComment(grpcReq);
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Insert comment on video {} for user {} : {}",  q.getVideoid(), q.getUserid(), q);
         }
@@ -84,14 +80,13 @@ public class CommentsServiceGrpc extends CommentsServiceImplBase {
         CompletableFuture<Void> futureDse = dseCommentDao.insertCommentAsync(q);
         
         // If OK, then send Message to Kafka
-        CompletableFuture<Object> futureDseThensKafka = futureDse.thenCompose(rs -> {
-            return messagingDao.sendEvent(messageDestination, UserCommentedOnVideo.newBuilder()
-                    .setCommentId(grpcReq.getCommentId())
-                    .setVideoId(grpcReq.getVideoId())
-                    .setUserId(grpcReq.getUserId())
-                    .setCommentTimestamp(GrpcMappingUtils.instantToTimeStamp(Instant.now()))
-                    .build());
-        });
+        CompletableFuture<Object> futureDseThensKafka = futureDse.thenCompose(rs ->
+                messagingDao.sendEvent(messageDestination, UserCommentedOnVideo.newBuilder()
+                .setCommentId(grpcReq.getCommentId())
+                .setVideoId(grpcReq.getVideoId())
+                .setUserId(grpcReq.getUserId())
+                .setCommentTimestamp(GrpcMappingUtils.instantToTimeStamp(Instant.now()))
+                .build()));
         
         futureDseThensKafka.whenComplete((result, error) -> {
             if (error != null ) {
@@ -104,7 +99,16 @@ public class CommentsServiceGrpc extends CommentsServiceImplBase {
             }
          });
     }
-    
+
+    private Comment newComment(CommentOnVideoRequest grpcReq) {
+        Comment q = new Comment();
+        q.setVideoid(fromString(grpcReq.getVideoId().getValue()));
+        q.setCommentid(fromString(grpcReq.getCommentId().getValue()));
+        q.setUserid(fromString(grpcReq.getUserId().getValue()));
+        q.setComment(grpcReq.getComment());
+        return q;
+    }
+
     /** {@inheritDoc} */
     @Override
     public void getVideoComments(final GetVideoCommentsRequest grpcReq, StreamObserver<GetVideoCommentsResponse> responseObserver) {

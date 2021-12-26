@@ -2,6 +2,7 @@ package com.killrvideo.service.statistic.grpc;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -25,9 +26,9 @@ public class StatisticsServiceGrpcMapper {
     
     public static GetNumberOfPlaysResponse buildGetNumberOfPlayResponse(GetNumberOfPlaysRequest grpcReq, List<VideoPlaybackStats> videoList) {
         final Map<Uuid, PlayStats> result = videoList.stream()
-                .filter(x -> x != null)
+                .filter(Objects::nonNull)
                 .map(StatisticsServiceGrpcMapper::mapVideoPlayBacktoPlayStats)
-                .collect(Collectors.toMap(x -> x.getVideoId(), x -> x));
+                .collect(Collectors.toMap(PlayStats::getVideoId, x -> x));
 
         final GetNumberOfPlaysResponse.Builder builder = GetNumberOfPlaysResponse.newBuilder();
         for (Uuid requestedVideoId : grpcReq.getVideoIdsList()) {

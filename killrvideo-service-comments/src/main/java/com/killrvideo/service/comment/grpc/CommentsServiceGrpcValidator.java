@@ -32,8 +32,6 @@ public class CommentsServiceGrpcValidator {
      *      current GRPC Request
      * @param streamObserver
      *      response async
-     * @return
-     *      true if the query is valid
      */
     public static void validateGrpcRequestCommentOnVideo(Logger logger, CommentOnVideoRequest request, StreamObserver<?> streamObserver) {
         StringBuilder errorMessage = initErrorString(request);
@@ -52,8 +50,6 @@ public class CommentsServiceGrpcValidator {
      *      current GRPC Request
      * @param streamObserver
      *      response async
-     * @return
-     *      true if the query is valid
      */
     public static void validateGrpcRequestGetVideoComment(Logger logger, GetVideoCommentsRequest request, StreamObserver<?> streamObserver) {
         final StringBuilder errorMessage = initErrorString(request);
@@ -76,8 +72,6 @@ public class CommentsServiceGrpcValidator {
      *      current GRPC Request
      * @param streamObserver
      *      response async
-     * @return
-     *      true if the query is valid
      */
     public static void validateGrpcRequest_GetUserComments(Logger logger, GetUserCommentsRequest request, StreamObserver<?> streamObserver) {
         final StringBuilder errorMessage = initErrorString(request);

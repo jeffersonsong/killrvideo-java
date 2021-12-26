@@ -87,24 +87,23 @@ public class VideoCatalogServiceGrpc extends VideoCatalogServiceImplBase {
         // Mapping GRPC => Domain (Dao)
         Video video = mapSubmitYouTubeVideoRequestAsVideo(grpcReq);
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Insert youtube video for user {} : {}",  video.getVideoid(), video.getUserid(), video);
+            LOGGER.debug("Insert youtube video {} for user {} : {}",  video.getVideoid(), video.getUserid(), video);
         }
         
         // Execute query (ASYNC)
         CompletableFuture<Void> futureDse = videoCatalogDao.insertVideoAsync(video);
         
         // If OK, then send Message to Kafka
-        CompletableFuture<Object> futureAndKafka = futureDse.thenCompose(rs -> {
-            return messagingDao.sendEvent(topicVideoCreated, YouTubeVideoAdded.newBuilder()
-                            .setAddedDate(Timestamp.newBuilder().build())
-                            .setDescription(video.getDescription())
-                            .setLocation(video.getLocation())
-                            .setName(video.getName())
-                            .setPreviewImageLocation(video.getPreviewImageLocation())
-                            .setUserId(GrpcMappingUtils.uuidToUuid(video.getUserid()))
-                            .setVideoId(GrpcMappingUtils.uuidToUuid(video.getVideoid()))
-                            .build());
-        });
+        CompletableFuture<Object> futureAndKafka = futureDse.thenCompose(rs ->
+                messagingDao.sendEvent(topicVideoCreated, YouTubeVideoAdded.newBuilder()
+                        .setAddedDate(Timestamp.newBuilder().build())
+                        .setDescription(video.getDescription())
+                        .setLocation(video.getLocation())
+                        .setName(video.getName())
+                        .setPreviewImageLocation(video.getPreviewImageLocation())
+                        .setUserId(GrpcMappingUtils.uuidToUuid(video.getUserid()))
+                        .setVideoId(GrpcMappingUtils.uuidToUuid(video.getVideoid()))
+                        .build()));
         
         // Building Response
         futureAndKafka.whenComplete((result, error) -> { 
@@ -165,7 +164,7 @@ public class VideoCatalogServiceGrpc extends VideoCatalogServiceImplBase {
                 .map(x -> Instant.ofEpochSecond(x.getSeconds(), x.getNanos()));
         final Optional<UUID> startVideoId = Optional.ofNullable(grpcReq.getStartingVideoId())
                 .filter(x -> StringUtils.isNotBlank(x.toString()))
-                .map(x -> x.getValue())
+                .map(Uuid::getValue)
                 .filter(StringUtils::isNotBlank)
                 .map(UUID::fromString);
         int pageSize = grpcReq.getPageSize();

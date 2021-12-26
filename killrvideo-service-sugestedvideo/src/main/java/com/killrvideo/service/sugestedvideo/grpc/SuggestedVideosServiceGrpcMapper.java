@@ -44,7 +44,7 @@ public class SuggestedVideosServiceGrpcMapper {
         video.setAddedDate(GrpcMappingUtils.timestampToInstant(videoAdded.getAddedDate()));
         video.setUserid(UUID.fromString(videoAdded.getUserId().toString()));
         video.setName(videoAdded.getName());
-        video.setTags(new HashSet<String>(videoAdded.getTagsList()));
+        video.setTags(new HashSet<>(videoAdded.getTagsList()));
         video.setPreviewImageLocation(videoAdded.getPreviewImageLocation());
         video.setLocation(videoAdded.getLocation());
         return video;

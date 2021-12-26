@@ -9,12 +9,12 @@ import static com.killrvideo.service.comment.dto.Comment.*;
 @Component
 public class CommentRowMapper {
     public Comment map(Row row) {
-        Comment c = new Comment();
-        c.setComment(row.getString(COLUMN_COMMENT));
-        c.setUserid(row.getUuid(COLUMN_USERID));
-        c.setCommentid(row.getUuid(COLUMN_COMMENTID));
-        c.setVideoid(row.getUuid(COLUMN_VIDEOID));
-        c.setDateOfComment(row.getInstant("comment_timestamp"));
-        return c;
+        Comment comment = new Comment();
+        comment.setComment(row.getString(COLUMN_COMMENT));
+        comment.setUserid(row.getUuid(COLUMN_USERID));
+        comment.setCommentid(row.getUuid(COLUMN_COMMENTID));
+        comment.setVideoid(row.getUuid(COLUMN_VIDEOID));
+        comment.setDateOfComment(row.getInstant("comment_timestamp"));
+        return comment;
     }
 }

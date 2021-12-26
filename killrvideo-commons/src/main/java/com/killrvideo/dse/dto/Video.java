@@ -4,11 +4,11 @@ import com.datastax.oss.driver.api.mapper.annotations.CqlName;
 import com.datastax.oss.driver.api.mapper.annotations.Entity;
 import com.datastax.oss.driver.api.mapper.annotations.PartitionKey;
 import com.killrvideo.dse.utils.EmptyCollectionIfNull;
+import lombok.Getter;
 import org.hibernate.validator.constraints.Length;
 
 import javax.validation.constraints.NotNull;
 import java.time.Instant;
-import java.util.Date;
 import java.util.Set;
 import java.util.UUID;
 
@@ -19,9 +19,8 @@ import java.util.UUID;
  */
 @Entity
 @CqlName("videos")
+@Getter
 public class Video extends AbstractVideo {
-
-    /** Serial. */
     private static final long serialVersionUID = 7035802926837646137L;
 
     /** Column names in the DB. */

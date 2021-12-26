@@ -53,22 +53,21 @@ public class ServiceDiscoveryDaoStatic implements ServiceDiscoveryDao {
         List< String > endPointList = new ArrayList<>();
         LOGGER.info(" + Lookup for key '{}':", serviceName);
         if (kafkaServiceName.equalsIgnoreCase(serviceName)) {
-        	if (!kafkaBrokersEnvVar.isEmpty() && !kafkaBrokersEnvVar.get().isBlank()) {
+        	if (kafkaBrokersEnvVar.isPresent() && !kafkaBrokersEnvVar.get().isBlank()) {
         	    cassandraContactPoints = kafkaBrokersEnvVar.get();
         		LOGGER.info(" + Reading broker from KILLRVIDEO_KAFKA_BROKERS");
         	}
-        	Arrays.asList(kafkaBrokers.split(",")).stream()
+        	Arrays.stream(kafkaBrokers.split(","))
         		  .forEach(ip -> endPointList.add(ip + ":" + kafkaPort));
 
         } else if (cassandraServiceName.equalsIgnoreCase(serviceName)) {
         	// Explicit overwriting of contact points from env var
         	// Better than default spring : simpler
-        	if (!cassandraContactPointsEnvVar.isEmpty() && !cassandraContactPointsEnvVar.get().isBlank()) {
+        	if (cassandraContactPointsEnvVar.isPresent() && !cassandraContactPointsEnvVar.get().isBlank()) {
         		cassandraContactPoints = cassandraContactPointsEnvVar.get();
         		LOGGER.info(" + Reading contactPoints from KILLRVIDEO_DSE_CONTACT_POINTS");
         	}
-        	Arrays.asList(cassandraContactPoints.split(","))
-        	      .stream()
+        	Arrays.stream(cassandraContactPoints.split(","))
         		  .forEach(ip -> endPointList.add(ip + ":" + cassandraPort));
         }
         LOGGER.info(" + Endpoints retrieved '{}':", endPointList);

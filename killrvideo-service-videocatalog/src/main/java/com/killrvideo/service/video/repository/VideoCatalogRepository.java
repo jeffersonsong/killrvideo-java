@@ -6,10 +6,9 @@ import com.datastax.oss.driver.api.core.cql.*;
 import com.datastax.oss.protocol.internal.util.Bytes;
 import com.killrvideo.dse.dto.CustomPagingState;
 import com.killrvideo.dse.dto.ResultListPage;
+import com.killrvideo.dse.utils.PageableQuery;
 import com.killrvideo.service.video.dao.*;
-import com.killrvideo.service.video.dto.LatestVideo;
-import com.killrvideo.service.video.dto.LatestVideosPage;
-import com.killrvideo.service.video.dto.UserVideo;
+import com.killrvideo.service.video.dto.*;
 import com.killrvideo.dse.dto.Video;
 import com.killrvideo.dse.utils.MappedAsyncPagingIterableUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -20,6 +19,7 @@ import org.springframework.util.Assert;
 
 import java.time.Instant;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -30,27 +30,42 @@ import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 import java.util.stream.StreamSupport;
 
-import static com.killrvideo.dse.utils.PageableQueryUtils.buildStatement;
-import static com.killrvideo.dse.utils.PageableQueryUtils.queryAsyncWithPagination;
-
 /**
  * Implementations of operation for Videos.
  *
- * @author Jefferson Song
+ * @author DataStax Developer Advocates team.
  */
 @Repository
 public class VideoCatalogRepository {
-    /**
-     * Loger for that class.
-     */
     private static Logger LOGGER = LoggerFactory.getLogger(VideoCatalogRepository.class);
-    private static final DateTimeFormatter DATEFORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd");
+
+    private static final String QUERY_LATEST_VIDEO_PREVIEW_STARTING_POINT =
+            "SELECT * " +
+            "FROM killrvideo.latest_videos " +
+            "WHERE yyyymmdd = ? " +
+            "AND (added_date, videoid) <= (:ad, :vid)";
+    private static final String QUERY_LATEST_VIDEO_PREVIEW_NO_STARTING_POINT =
+            "SELECT * " +
+            "FROM killrvideo.latest_videos " +
+            "WHERE yyyymmdd = :ymd ";
+
+    private static final String QUERY_USER_VIDEO_PREVIEW_STARTING_POINT =
+            "SELECT * " +
+            "FROM killrvideo.user_videos " +
+            "WHERE userid = :uid " +
+            "AND (added_date, videoid) <= (:ad, :vid)";
+    private static final String QUERY_USER_VIDEO_PREVIEW_NO_STARTING_POINT =
+            "SELECT * " +
+            "FROM killrvideo.user_videos " +
+            "WHERE userid = :uid ";
+
+    private static final DateTimeFormatter DATEFORMATTER =
+            DateTimeFormatter.ofPattern("yyyyMMdd").withZone(ZoneId.from(ZoneOffset.UTC));
 
     private CqlSession session;
     private VideoDao videoDao;
-    private LatestVideoDao latestVideoDao;
     private UserVideoDao userVideoDao;
-    private UserVideoRowMapper userVideoRowMapper;
+    private LatestVideoDao latestVideoDao;
     private LatestVideoRowMapper latestVideoRowMapper;
 
     /**
@@ -62,14 +77,13 @@ public class VideoCatalogRepository {
     /**
      * Prepare Statements 'getUserVideo'.
      */
-    protected PreparedStatement userVideoPreview_startingPointPrepared;
-    protected PreparedStatement userVideoPreview_noStartingPointPrepared;
+    protected PageableQuery<UserVideo> userVideoPreview_startingPointPrepared;
+    protected PageableQuery<UserVideo> userVideoPreview_noStartingPointPrepared;
 
     public VideoCatalogRepository(CqlSession session,
                                   UserVideoRowMapper userVideoRowMapper,
                                   LatestVideoRowMapper latestVideoRowMapper) {
         this.session = session;
-        this.userVideoRowMapper = userVideoRowMapper;
         this.latestVideoRowMapper = latestVideoRowMapper;
         VideoCatalogMapper mapper = VideoCatalogMapper.build(session).build();
         this.videoDao = mapper.getVideoDao();
@@ -77,31 +91,35 @@ public class VideoCatalogRepository {
         this.latestVideoDao = mapper.getLatestVideoDao();
 
         this.latestVideoPreview_startingPointPrepared = session.prepare(
-                "SELECT * " +
-                        "FROM killrvideo.latest_videos " +
-                        "WHERE yyyymmdd = ? " +
-                        "AND (added_date, videoid) <= (:ad, :vid)");
+                QUERY_LATEST_VIDEO_PREVIEW_STARTING_POINT
+        );
         this.latestVideoPreview_noStartingPointPrepared = session.prepare(
-                "SELECT * " +
-                        "FROM killrvideo.latest_videos " +
-                        "WHERE yyyymmdd = :ymd ");
+                QUERY_LATEST_VIDEO_PREVIEW_NO_STARTING_POINT
+        );
 
-        this.userVideoPreview_startingPointPrepared = session.prepare(
-                "SELECT * " +
-                        "FROM killrvideo.user_videos " +
-                        "WHERE userid = :uid " +
-                        "AND (added_date, videoid) <= (:ad, :vid)");
-        this.userVideoPreview_noStartingPointPrepared = session.prepare(
-                "SELECT * " +
-                        "FROM killrvideo.user_videos " +
-                        "WHERE userid = :uid ");
+        this.userVideoPreview_startingPointPrepared = new PageableQuery<>(
+                QUERY_USER_VIDEO_PREVIEW_STARTING_POINT,
+                session, ConsistencyLevel.LOCAL_QUORUM,
+                userVideoRowMapper::map
+        );
+        this.userVideoPreview_noStartingPointPrepared = new PageableQuery<>(
+                QUERY_USER_VIDEO_PREVIEW_NO_STARTING_POINT,
+                session, ConsistencyLevel.LOCAL_QUORUM,
+                userVideoRowMapper::map
+        );
     }
 
     /**
      * Insert a VIDEO in the DB (ASYNC).
      */
     public CompletableFuture<Void> insertVideoAsync(Video v) {
-        return this.videoDao.insert(v);
+        Instant now = Instant.now();
+
+        return CompletableFuture.allOf(
+                this.videoDao.insert(v),
+                this.userVideoDao.insert(UserVideo.from(v, now)),
+                this.latestVideoDao.insert(LatestVideo.from(v, now))
+        );
     }
 
     public CompletableFuture<Video> getVideoById(UUID videoid) {
@@ -112,7 +130,7 @@ public class VideoCatalogRepository {
         Assert.notNull(listofVideoId, "videoid list cannot be null");
 
         return this.videoDao.getVideoPreview(listofVideoId)
-                .thenApply(MappedAsyncPagingIterableUtils::toList);
+                .thenApply(MappedAsyncPagingIterableUtils::all);
     }
 
     /**
@@ -129,45 +147,27 @@ public class VideoCatalogRepository {
                                                                              Optional<Instant> startingAddedDate,
                                                                              Optional<Integer> pageSize,
                                                                              Optional<String> pagingState) {
-        BoundStatement boundStatement = buildUserVideosPreviewStatement(userId, startingVideoId,
-                startingAddedDate, pageSize, pagingState);
-
-        return queryAsyncWithPagination(session, boundStatement, userVideoRowMapper::map);
-    }
-
-    private BoundStatement buildUserVideosPreviewStatement(
-            UUID userId,
-            Optional<UUID> startingVideoId,
-            Optional<Instant> startingAddedDate,
-            Optional<Integer> pageSize,
-            Optional<String> pagingState
-    ) {
         if (startingVideoId.isPresent() && startingAddedDate.isPresent()) {
-            return buildStatement(
-                    userVideoPreview_startingPointPrepared,
-                    stmt -> stmt.boundStatementBuilder(
-                            userId,
-                            startingAddedDate.get(),
-                            startingVideoId.get()
-                    ),
+            return userVideoPreview_startingPointPrepared.queryNext(
                     pageSize,
                     pagingState,
-                    ConsistencyLevel.LOCAL_QUORUM);
+                    userId,
+                    startingAddedDate.get(),
+                    startingVideoId.get()
+            );
         } else {
-            return buildStatement(
-                    userVideoPreview_noStartingPointPrepared,
-                    stmt -> stmt.boundStatementBuilder(
-                            userId
-                    ),
+            return userVideoPreview_noStartingPointPrepared.queryNext(
                     pageSize,
                     pagingState,
-                    ConsistencyLevel.LOCAL_QUORUM);
+                    userId
+            );
         }
     }
 
     /**
      * Build the first paging state if one does not already exist and return an object containing 3 elements
      * representing the initial state (List<String>, Integer, String).
+     *
      * @return CustomPagingState
      */
     public CustomPagingState buildFirstCustomPagingState() {
@@ -235,7 +235,7 @@ public class VideoCatalogRepository {
             LatestVideosPage currentPage = cfv.toCompletableFuture().get();
             returnedPage.getListOfPreview().addAll(currentPage.getListOfPreview());
             if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug(" + bucket:{}/{} with results:{}/{} and pagingState:{}",cpState.getCurrentBucket(),
+                LOGGER.debug(" + bucket:{}/{} with results:{}/{} and pagingState:{}", cpState.getCurrentBucket(),
                         cpState.getListOfBucketsSize(), returnedPage.getResultSize(), pageSize, returnedPage.getCassandraPagingState());
             }
 
@@ -285,6 +285,7 @@ public class VideoCatalogRepository {
 
     /**
      * Create a paging state string from the passed in parameters
+     *
      * @param buckets
      * @param bucketIndex
      * @param rowsPagingState
@@ -293,16 +294,14 @@ public class VideoCatalogRepository {
     private String createPagingState(List<String> buckets, int bucketIndex, String rowsPagingState) {
         StringJoiner joiner = new StringJoiner("_");
         buckets.forEach(joiner::add);
-        return joiner.toString() + "," + bucketIndex + "," + rowsPagingState;
+        return joiner + "," + bucketIndex + "," + rowsPagingState;
     }
 
     /**
      * Mapping for Cassandra Result to expected bean.
      *
-     * @param rs
-     *      current result set
-     * @return
-     *      expected bean
+     * @param rs current result set
+     * @return expected bean
      */
     private LatestVideosPage mapLatestVideosResultAsPage(AsyncResultSet rs) {
         LatestVideosPage resultPage = new LatestVideosPage();

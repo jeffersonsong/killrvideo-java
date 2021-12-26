@@ -1,15 +1,13 @@
 package com.killrvideo.service.user.grpc;
 
-import java.time.Instant;
-import java.util.Date;
-import java.util.UUID;
-
 import com.killrvideo.service.user.dto.User;
 import com.killrvideo.utils.GrpcMappingUtils;
-
 import killrvideo.user_management.UserManagementServiceOuterClass.CreateUserRequest;
 import killrvideo.user_management.UserManagementServiceOuterClass.UserProfile;
 import killrvideo.user_management.UserManagementServiceOuterClass.VerifyCredentialsResponse;
+
+import java.time.Instant;
+import java.util.UUID;
 
 /**
  * Mapping from interfaces GRPC to DTO

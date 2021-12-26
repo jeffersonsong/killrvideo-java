@@ -23,7 +23,7 @@ public abstract class AbstractEntity implements Serializable, CommonConstants  {
     public static final SimpleDateFormat FORMATTER_DAY = new SimpleDateFormat("yyyyMMdd");
     
     /** Helping Loging. */
-    private static ObjectMapper om = new ObjectMapper();
+    private static final ObjectMapper om = new ObjectMapper();
 
     /** {@inheritDoc} */
     @Override

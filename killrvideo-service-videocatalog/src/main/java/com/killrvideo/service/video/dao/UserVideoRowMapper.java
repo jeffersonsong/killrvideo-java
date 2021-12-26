@@ -4,8 +4,6 @@ import com.datastax.oss.driver.api.core.cql.Row;
 import com.killrvideo.service.video.dto.UserVideo;
 import org.springframework.stereotype.Component;
 
-import static com.killrvideo.dse.dto.AbstractVideo.COLUMN_NAME;
-import static com.killrvideo.dse.dto.AbstractVideo.COLUMN_PREVIEW;
 import static com.killrvideo.dse.dto.Video.*;
 
 @Component
