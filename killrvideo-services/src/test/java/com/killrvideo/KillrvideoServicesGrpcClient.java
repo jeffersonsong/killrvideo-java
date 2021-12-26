@@ -47,7 +47,7 @@ public class KillrvideoServicesGrpcClient {
      *      current grpc portnumber
      */
     public KillrvideoServicesGrpcClient(String grpcServer, int grpcPort) {
-       this(ManagedChannelBuilder.forAddress(grpcServer, grpcPort).usePlaintext(true).build());
+       this(ManagedChannelBuilder.forAddress(grpcServer, grpcPort).usePlaintext().build());
     }
     
     /**
