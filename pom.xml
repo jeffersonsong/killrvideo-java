@@ -81,7 +81,7 @@
 		<retry4j.version>0.14.0</retry4j.version>
 		<guava.version>19.0</guava.version>
 		<ff4j.version>1.7.1</ff4j.version>
-		<netty.version>4.1.23.Final</netty.version>
+		<netty.version>4.1.72.Final</netty.version>
         
 		<!-- Maven -->
 		<java.version>11</java.version>
