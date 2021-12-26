@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.stream.StreamSupport;
 
 import javax.annotation.PostConstruct;
@@ -76,7 +78,8 @@ public class MessagingDaoKafka implements MessagingDao {
                 JdkFutureAdapters.listenInPoolThread(
                         protobufProducer.send(
                                 new ProducerRecord<>(targetDestination, payload)));
-        Futures.addCallback(listenable, myCallback);
+        Executor executor = Executors.newFixedThreadPool(2);
+        Futures.addCallback(listenable, myCallback, executor);
         return cfv;
     }
    
