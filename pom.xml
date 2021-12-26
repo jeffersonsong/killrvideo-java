@@ -47,12 +47,11 @@
 		<tinkerpop.version>3.4.12</tinkerpop.version>
 
 		<!-- Spring -->
-		<spring.version>5.3.14</spring.version>
 		<spring-boot.version>2.6.2</spring-boot.version>
 		
    		<!-- Validation -->
         <javax.el.api.version>3.0.0</javax.el.api.version>
-        <validator.version>6.0.11.Final</validator.version>
+        <validator.version>7.0.2.Final</validator.version>
         <validation.api.version>2.0.1.Final</validation.api.version>
         
 		<!-- GRPC -->
@@ -81,7 +80,6 @@
 		<etcd4j.version>1.2</etcd4j.version>
 		<retry4j.version>0.14.0</retry4j.version>
 		<guava.version>19.0</guava.version>
-		<camel-spring-boot.version>2.21.0</camel-spring-boot.version>
 		<ff4j.version>1.7.1</ff4j.version>
 		<netty.version>4.1.23.Final</netty.version>
         
@@ -144,11 +142,13 @@
 	            <artifactId>hibernate-validator</artifactId>
 	            <version>${validator.version}</version>
 	        </dependency>
+			<!--
 	        <dependency>
 	            <groupId>org.hibernate.validator</groupId>
 	            <artifactId>hibernate-validator</artifactId>
 	            <version>${validator.version}</version>
 	        </dependency>
+	        -->
 	         <dependency>
 	   		   <groupId>org.glassfish</groupId>
 	   		   <artifactId>javax.el</artifactId>
@@ -213,7 +213,7 @@
 			</dependency>
 
 			<!-- Spring-Boot BOM -->
-			<dependency>
+	    	<dependency>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-dependencies</artifactId>
 				<version>${spring-boot.version}</version>
@@ -237,7 +237,6 @@
 			<dependency>
 				<groupId>org.springframework</groupId>
 				<artifactId>spring-test</artifactId>
-				<version>${spring.version}</version>
 			</dependency>
 			
 			<!-- Cassandra Unit -->
