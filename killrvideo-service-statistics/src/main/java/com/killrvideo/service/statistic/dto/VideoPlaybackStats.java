@@ -6,6 +6,9 @@ import java.util.UUID;
 import com.datastax.oss.driver.api.mapper.annotations.CqlName;
 import com.datastax.oss.driver.api.mapper.annotations.Entity;
 import com.datastax.oss.driver.api.mapper.annotations.PartitionKey;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 /**
  * Pojo representing DTO for table 'video_playback_stats'.
@@ -14,14 +17,11 @@ import com.datastax.oss.driver.api.mapper.annotations.PartitionKey;
  */
 @Entity
 @CqlName("video_playback_stats")
+@Getter
+@Setter
+@NoArgsConstructor
 public class VideoPlaybackStats implements Serializable {
-
-    /** Serial. */
     private static final long serialVersionUID = -8636413035520458200L;
-    
-    /** COLUNMNS NAMES. */
-    public static final String COLUMN_VIDEOID   = "videoid";
-    public static final String COLUMN_VIEWS     = "views";
 
     @PartitionKey
     private UUID videoid;
@@ -32,42 +32,4 @@ public class VideoPlaybackStats implements Serializable {
      * while using the QueryBuilder.  Something similar to with(QueryBuilder.incr("views")).
      */
     private Long views;
-
-    /**
-     * Getter for attribute 'videoid'.
-     *
-     * @return
-     *       current value of 'videoid'
-     */
-    public UUID getVideoid() {
-        return videoid;
-    }
-
-    /**
-     * Setter for attribute 'videoid'.
-     * @param videoid
-     * 		new value for 'videoid '
-     */
-    public void setVideoid(UUID videoid) {
-        this.videoid = videoid;
-    }
-
-    /**
-     * Getter for attribute 'views'.
-     *
-     * @return
-     *       current value of 'views'
-     */
-    public Long getViews() {
-        return views;
-    }
-
-    /**
-     * Setter for attribute 'views'.
-     * @param views
-     * 		new value for 'views '
-     */
-    public void setViews(Long views) {
-        this.views = views;
-    }
 }

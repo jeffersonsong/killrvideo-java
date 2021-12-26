@@ -53,7 +53,7 @@ public interface KillrVideoTraversalDsl<S, E> extends GraphTraversal.Admin<S, E>
      * Calls {@link #rated(int, int)} with both arguments as zero.
      * ASSUMES incoming traversal from User vertex
      */
-    public default GraphTraversal<S, Vertex> rated() {
+    default GraphTraversal<S, Vertex> rated() {
         return rated(0,0);
     }
 
@@ -65,7 +65,7 @@ public interface KillrVideoTraversalDsl<S, E> extends GraphTraversal.Admin<S, E>
      * @param min minimum rating to consider
      * @param max maximum rating to consider
      */
-    public default GraphTraversal<S, Vertex> rated(int min, int max) {
+    default GraphTraversal<S, Vertex> rated(int min, int max) {
         Assert.isTrue(min >= 0 && min <= 5, "min value must be between 0 and 5");
         Assert.isTrue(max >= 0 && max <= 5, "max value must be between 0 and 5");
         if (min > max) {
@@ -92,11 +92,11 @@ public interface KillrVideoTraversalDsl<S, E> extends GraphTraversal.Admin<S, E>
      * @return
      */
     @SuppressWarnings({ "unchecked", "rawtypes" })
-	public default GraphTraversal<S, Vertex> rated(UUID userId, Integer rating) {
+    default GraphTraversal<S, Vertex> rated(UUID userId, Integer rating) {
         Assert.notNull(userId, "The userId must not be null");
         Assert.isTrue(rating >= 1 && rating <= 5, "rating value must be between 1 and 5");
         
-        /**
+        /*
          * As mentioned in the javadocs this step assumes an incoming "video" vertex. it is immediately labelled as
          * "^video". the addition of the caret prefix has no meaning except to provide for a unique labelling space
          * within the DSL itself.
@@ -117,7 +117,7 @@ public interface KillrVideoTraversalDsl<S, E> extends GraphTraversal.Admin<S, E>
      * This method is here for readability in the DSL.
      * ASSUMES incoming traversal from User vertex
      */
-    public default GraphTraversal<S, Vertex> watched() {
+    default GraphTraversal<S, Vertex> watched() {
         return rated();
     }
 
@@ -125,7 +125,7 @@ public interface KillrVideoTraversalDsl<S, E> extends GraphTraversal.Admin<S, E>
      * Traverses from a "video" to a "user" over the "uploaded" edge.
      * ASSUMES incoming traversal from Video vertex
      */
-    public default GraphTraversal<S, Vertex> uploaders() {
+    default GraphTraversal<S, Vertex> uploaders() {
         return in(EDGE_UPLOADED).hasLabel(VERTEX_USER);
     }
 
@@ -137,7 +137,7 @@ public interface KillrVideoTraversalDsl<S, E> extends GraphTraversal.Admin<S, E>
      * @return
      */
     @SuppressWarnings({ "unchecked", "rawtypes" })
-	public default GraphTraversal<S, Vertex> user(UUID userId) {
+    default GraphTraversal<S, Vertex> user(UUID userId) {
         return (KillrVideoTraversal) __.V().has(VERTEX_USER, KEY_USER_ID, userId);
     }
 
@@ -149,9 +149,9 @@ public interface KillrVideoTraversalDsl<S, E> extends GraphTraversal.Admin<S, E>
      * @return
      */
     @SuppressWarnings({ "unchecked", "rawtypes" })
-	public default GraphTraversal<S, Vertex> uploaded(UUID userId) {
+    default GraphTraversal<S, Vertex> uploaded(UUID userId) {
         Assert.notNull(userId, "The userId must not be null");
-        /**
+        /*
          * As mentioned in the javadocs this step assumes an incoming "video" vertex. it is immediately labelled as
          * "^video". the addition of the caret prefix has no meaning except to provide for a unique labelling space
          * within the DSL itself.
@@ -165,7 +165,7 @@ public interface KillrVideoTraversalDsl<S, E> extends GraphTraversal.Admin<S, E>
      * Traverses from a "video" to a "tag" over the "taggedWith" edge.
      * ASSUMES incoming traversal from Video vertex
      */
-    public default GraphTraversal<S, Vertex> taggers() {
+    default GraphTraversal<S, Vertex> taggers() {
         return out(EDGE_TAGGED_WITH).hasLabel(VERTEX_TAG);
     }
 
@@ -179,7 +179,7 @@ public interface KillrVideoTraversalDsl<S, E> extends GraphTraversal.Admin<S, E>
      * @return
      */
     @SuppressWarnings("unchecked")
-	public default GraphTraversal<S, Vertex> tag(String name, Date tagged_date) {
+    default GraphTraversal<S, Vertex> tag(String name, Date tagged_date) {
         Assert.notNull(tagged_date, "The tagged_date must not be null");
         Assert.hasLength(name, "The name of the tag must not be null or empty");
         return coalesce(
@@ -198,8 +198,8 @@ public interface KillrVideoTraversalDsl<S, E> extends GraphTraversal.Admin<S, E>
      * @return
      */
     @SuppressWarnings({ "unchecked", "rawtypes" })
-	public default GraphTraversal<S, Vertex> taggedWith(String name, Date tagged_date) {
-        /**
+    default GraphTraversal<S, Vertex> taggedWith(String name, Date tagged_date) {
+        /*
          * no validation here as it would just duplicate what is happening in tag(). note the use of the
          * cast to KillrVideoTraversal. in this case, we want to use a DSL step within the DSL itself, but we want to
          * start the traversal with a GraphTraversal step which thus returns a GraphTraversal. The only ways to get
@@ -219,7 +219,7 @@ public interface KillrVideoTraversalDsl<S, E> extends GraphTraversal.Admin<S, E>
     /** This step is an alias for the {@code sideEffect()} step. As an alias, it makes certain aspects of the DSL more
      * readable.
      */
-     public default GraphTraversal<S,?> add(Traversal<?,?> mutationTraversal) {
+     default GraphTraversal<S,?> add(Traversal<?, ?> mutationTraversal) {
         return sideEffect(mutationTraversal);
      }
 
@@ -240,14 +240,14 @@ public interface KillrVideoTraversalDsl<S, E> extends GraphTraversal.Admin<S, E>
      * working code for me to start with.
      */
     @SuppressWarnings("deprecation")
-    public default GraphTraversal<S, Map<String, Object>> recommendByUserRating(
+    default GraphTraversal<S, Map<String, Object>> recommendByUserRating(
             int recommendations, int minRating, int numRatingsToSample, int localUserRatingsToSample)  {
         Assert.isTrue(recommendations > 0, "recommendations must be greater than zero");
         Assert.isTrue(minRating > 0, "minRating must be greater than zero");
         Assert.isTrue(numRatingsToSample > 0, "numRatingsToSample must be greater than zero");
         Assert.isTrue(localUserRatingsToSample > 0, "localUserRatingsToSample must be greater than zero");
         
-        /**
+        /*
          * Notice that I call killr.users() (<-- defined in KillrVideoTraversalSourceDsl) using our DSL and then ".as()" to set the result as "currentUser".
          * This comes into play within the traversal right below it as a way to keep the whole
          * traversal a "one-liner" that prevents us from having to store multiple traversals in separate

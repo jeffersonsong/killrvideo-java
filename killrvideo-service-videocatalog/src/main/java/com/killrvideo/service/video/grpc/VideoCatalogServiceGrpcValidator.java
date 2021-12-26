@@ -5,6 +5,8 @@ import static com.killrvideo.utils.ValidationUtils.validate;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
 import io.grpc.stub.StreamObserver;
@@ -20,24 +22,21 @@ import killrvideo.video_catalog.VideoCatalogServiceOuterClass.SubmitYouTubeVideo
  *
  * @author Cedrick LUNVEN (@clunven)
  */
+@Component
 public class VideoCatalogServiceGrpcValidator {
-    
-    /**
-     * Hide constructor for utility class.
-     */
-    private VideoCatalogServiceGrpcValidator() {}
-    
+    private static final Logger LOGGER = LoggerFactory.getLogger(VideoCatalogServiceGrpcValidator.class);
+
     /**
      * Validate arguments for 'SubmitYouTubeVideo'
      */
-    public static void validateGrpcRequest_submitYoutubeVideo(Logger logger, SubmitYouTubeVideoRequest request, StreamObserver<?> streamObserver) {
+    public void validateGrpcRequest_submitYoutubeVideo(SubmitYouTubeVideoRequest request, StreamObserver<?> streamObserver) {
         final StringBuilder errorMessage = initErrorString(request);
         boolean isValid = true;
-        if (request.getVideoId() == null || isBlank(request.getVideoId().getValue())) {
+        if (isBlank(request.getVideoId().getValue())) {
             errorMessage.append("\t\tvideo id should be provided for submit youtube video request\n");
             isValid = false;
         }
-        if (request.getUserId() == null || isBlank(request.getUserId().getValue())) {
+        if (isBlank(request.getUserId().getValue())) {
             errorMessage.append("\t\tuser id should be provided for submit youtube video request\n");
             isValid = false;
         }
@@ -53,33 +52,33 @@ public class VideoCatalogServiceGrpcValidator {
             errorMessage.append("\t\tvideo youtube id should be provided for submit youtube video request\n");
             isValid = false;
         }
-        Assert.isTrue(validate(logger, streamObserver, errorMessage, isValid), "Invalid parameter for 'submitVideo'");
+        Assert.isTrue(validate(LOGGER, streamObserver, errorMessage, isValid), "Invalid parameter for 'submitVideo'");
     }
     
     /**
      * Validate arguments for 'getLatestVideoPreview'
      */
-    public static void validateGrpcRequest_getLatestPreviews(Logger logger, GetLatestVideoPreviewsRequest request, StreamObserver<?> streamObserver) {
+    public void validateGrpcRequest_getLatestPreviews(GetLatestVideoPreviewsRequest request, StreamObserver<?> streamObserver) {
         final StringBuilder errorMessage = initErrorString(request);
         boolean isValid = true;
         if (request.getPageSize() <= 0) {
             errorMessage.append("\t\tpage size should be strictly positive for get latest preview video request\n");
             isValid = false;
         }
-        Assert.isTrue(validate(logger, streamObserver, errorMessage, isValid),  "Invalid parameter for 'getLatestVideoPreviews'");
+        Assert.isTrue(validate(LOGGER, streamObserver, errorMessage, isValid),  "Invalid parameter for 'getLatestVideoPreviews'");
     }
     
-    public static void validateGrpcRequest_getVideo(Logger logger,  GetVideoRequest request, StreamObserver<?> streamObserver) {
+    public void validateGrpcRequest_getVideo(GetVideoRequest request, StreamObserver<?> streamObserver) {
         final StringBuilder errorMessage = initErrorString(request);
         boolean isValid = true;
-        if (request.getVideoId() == null || isBlank(request.getVideoId().getValue())) {
+        if (isBlank(request.getVideoId().getValue())) {
             errorMessage.append("\t\tvideo id should be provided for submit youtube video request\n");
             isValid = false;
         }
-        Assert.isTrue(validate(logger, streamObserver, errorMessage, isValid),  "Invalid parameter for 'getVideo'");
+        Assert.isTrue(validate(LOGGER, streamObserver, errorMessage, isValid),  "Invalid parameter for 'getVideo'");
     }
     
-    public static void validateGrpcRequest_getVideoPreviews(Logger logger, GetVideoPreviewsRequest request, StreamObserver<?> streamObserver) {
+    public void validateGrpcRequest_getVideoPreviews(GetVideoPreviewsRequest request, StreamObserver<?> streamObserver) {
         final StringBuilder errorMessage = initErrorString(request);
         boolean isValid = true;
 
@@ -93,14 +92,14 @@ public class VideoCatalogServiceGrpcValidator {
                 isValid = false;
             }
         }
-        Assert.isTrue(validate(logger, streamObserver, errorMessage, isValid),  "Invalid parameter for 'getVideoPreview'");
+        Assert.isTrue(validate(LOGGER, streamObserver, errorMessage, isValid),  "Invalid parameter for 'getVideoPreview'");
     }
     
-    public static void validateGrpcRequest_getUserVideoPreviews(Logger logger, GetUserVideoPreviewsRequest request, StreamObserver<?> streamObserver) {
+    public void validateGrpcRequest_getUserVideoPreviews(GetUserVideoPreviewsRequest request, StreamObserver<?> streamObserver) {
         final StringBuilder errorMessage = initErrorString(request);
         boolean isValid = true;
 
-        if (request.getUserId() == null || isBlank(request.getUserId().getValue())) {
+        if (isBlank(request.getUserId().getValue())) {
             errorMessage.append("\t\tuser id should be provided for get user video previews request\n");
             isValid = false;
         }
@@ -109,7 +108,7 @@ public class VideoCatalogServiceGrpcValidator {
             errorMessage.append("\t\tpage size should be strictly positive for get user video previews request\n");
             isValid = false;
         }        
-        Assert.isTrue(validate(logger, streamObserver, errorMessage, isValid),  "Invalid parameter for 'getUserVideoPreview'");
+        Assert.isTrue(validate(LOGGER, streamObserver, errorMessage, isValid),  "Invalid parameter for 'getUserVideoPreview'");
     }
 
 }

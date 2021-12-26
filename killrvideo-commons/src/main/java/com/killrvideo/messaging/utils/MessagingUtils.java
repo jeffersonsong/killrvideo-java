@@ -27,7 +27,7 @@ public class MessagingUtils {
      * @return
      */
     public static ErrorEvent mapError(Throwable t) {
-        return killrvideo.common.CommonEvents.ErrorEvent.newBuilder()
+        return ErrorEvent.newBuilder()
                 .setErrorMessage(t.getMessage())
                 .setErrorClassname(t.getClass().getName())
                 .setErrorStack(mergeStackTrace(t))
@@ -36,7 +36,7 @@ public class MessagingUtils {
     }
     
     public static ErrorEvent mapCustomError(String customError) {
-        return killrvideo.common.CommonEvents.ErrorEvent.newBuilder()
+        return ErrorEvent.newBuilder()
                 .setErrorMessage(customError)
                 .setErrorClassname(Exception.class.getName())
                 .setErrorTimestamp(Timestamp.newBuilder())
@@ -51,7 +51,7 @@ public class MessagingUtils {
      * @return
      *      merged stack trace.
      */
-    private static final String mergeStackTrace(Throwable throwable) {
+    private static String mergeStackTrace(Throwable throwable) {
         StringJoiner joiner = new StringJoiner("\n\t", "\n", "\n");
         joiner.add(throwable.getMessage());
         Arrays.asList(throwable.getStackTrace()).forEach(stackTraceElement -> joiner.add(stackTraceElement.toString()));

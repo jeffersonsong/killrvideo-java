@@ -21,7 +21,7 @@ public interface MessagingDao {
      * @param event
      *          event serialized as binary
      */
-    CompletableFuture<Object> sendEvent(String targetDestination, Object event);
+    CompletableFuture<?> sendEvent(String targetDestination, Object event);
     
     /** 
      * Channel to send errors.
@@ -32,18 +32,16 @@ public interface MessagingDao {
      * Send errors to bus.
      * 
      * @param serviceName
-     * @param param
      * @param t
      */
-    default CompletableFuture<Object> sendErrorEvent(String serviceName, Throwable t) {
+    default CompletableFuture<?> sendErrorEvent(String serviceName, Throwable t) {
         return sendEvent(getErrorDestination(), mapError(t)); 
     }
    
     /**
      * Send error event to bus.
      */
-    default Future<? extends Object> sendErrorEvent(String serviceName, String customError) {
+    default Future<?> sendErrorEvent(String serviceName, String customError) {
         return sendEvent(getErrorDestination(), mapCustomError(customError));
     }
-    
 }

@@ -4,10 +4,10 @@ import java.util.Optional;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
+import javax.inject.Inject;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.killrvideo.conf.KillrVideoConfiguration;
 import com.killrvideo.discovery.ServiceDiscoveryDaoEtcd;
@@ -27,11 +27,11 @@ public abstract class AbstractSingleServiceGrpcServer {
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractSingleServiceGrpcServer.class);
    
     /** Global Configuration. s*/
-    @Autowired
+    @Inject
     protected KillrVideoConfiguration killrVideoConfig;
     
     /** Connectivity to ETCD Service discovery. */
-    @Autowired
+    @Inject
     protected ServiceDiscoveryDaoEtcd serviceDiscoveryDao;
     
     /** GRPC Server to start. */
@@ -58,17 +58,11 @@ public abstract class AbstractSingleServiceGrpcServer {
         grpcServerPort = getDefaultPort();
         Optional<Integer> maxUsedPort = serviceDiscoveryDao.lookupServicePorts(getServiceName(), 
                 killrVideoConfig.getApplicationHost());
-        if (maxUsedPort.isPresent()) {
-            grpcServerPort = maxUsedPort.get() + 1;
-        }
+        maxUsedPort.ifPresent(integer -> grpcServerPort = integer + 1);
         grpcServer = ServerBuilder.forPort(grpcServerPort)
                               .addService(getService())
                               .build();
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-                public void run() {
-                    stopGrpcServer();
-                }
-        });
+        Runtime.getRuntime().addShutdownHook(new Thread(this::stopGrpcServer));
         grpcServer.start();
         LOGGER.info("[OK] Grpc Server started on port: '{}'", grpcServerPort);
         serviceDiscoveryDao.register(getServiceName(), 

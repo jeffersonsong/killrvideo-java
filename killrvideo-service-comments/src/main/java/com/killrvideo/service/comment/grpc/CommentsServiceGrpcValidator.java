@@ -3,6 +3,8 @@ package com.killrvideo.service.comment.grpc;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
 import io.grpc.Status;
@@ -17,14 +19,10 @@ import killrvideo.comments.CommentsServiceOuterClass.GetVideoCommentsRequest;
  *
  * @author DataStax Developer Advocates team.
  */
+@Component
 public class CommentsServiceGrpcValidator {
-    
-    /**
-     * Hide constructor.
-     */
-    private CommentsServiceGrpcValidator() {
-    }
-    
+    private static final Logger LOGGER = LoggerFactory.getLogger(CommentsServiceGrpcValidator.class);
+
     /**
      * Validate comment On video comment query.
      * 
@@ -32,17 +30,15 @@ public class CommentsServiceGrpcValidator {
      *      current GRPC Request
      * @param streamObserver
      *      response async
-     * @return
-     *      true if the query is valid
      */
-    public static void validateGrpcRequestCommentOnVideo(Logger logger, CommentOnVideoRequest request, StreamObserver<?> streamObserver) {
+    public void validateGrpcRequestCommentOnVideo(CommentOnVideoRequest request, StreamObserver<?> streamObserver) {
         StringBuilder errorMessage = initErrorString(request);
         boolean isValid = 
                   notEmpty(!request.hasUserId()    || isBlank(request.getUserId().getValue()),  "userId",  "video request",errorMessage) &&
                   notEmpty(!request.hasVideoId()   || isBlank(request.getVideoId().getValue()), "videoId", "video request",errorMessage) &&
                   notEmpty(!request.hasCommentId() || isBlank(request.getCommentId().getValue()), "commentId", "video request",errorMessage) &&
                   notEmpty(isBlank(request.getComment()), "comment", "video request",errorMessage);
-        Assert.isTrue(validate(logger, streamObserver, errorMessage, isValid), "Invalid parameter for 'commentOnVideo'");
+        Assert.isTrue(validate(LOGGER, streamObserver, errorMessage, isValid), "Invalid parameter for 'commentOnVideo'");
     }
     
     /**
@@ -52,10 +48,8 @@ public class CommentsServiceGrpcValidator {
      *      current GRPC Request
      * @param streamObserver
      *      response async
-     * @return
-     *      true if the query is valid
      */
-    public static void validateGrpcRequestGetVideoComment(Logger logger, GetVideoCommentsRequest request, StreamObserver<?> streamObserver) {
+    public void validateGrpcRequestGetVideoComment(GetVideoCommentsRequest request, StreamObserver<?> streamObserver) {
         final StringBuilder errorMessage = initErrorString(request);
         boolean isValid = true;
         if (!request.hasVideoId() || isBlank(request.getVideoId().getValue())) {
@@ -66,7 +60,7 @@ public class CommentsServiceGrpcValidator {
             errorMessage.append("\t\tpage size should be strictly positive for get video comment request");
             isValid = false;
         }
-        Assert.isTrue(validate(logger, streamObserver, errorMessage, isValid), "Invalid parameter for 'getVideoComments'");
+        Assert.isTrue(validate(LOGGER, streamObserver, errorMessage, isValid), "Invalid parameter for 'getVideoComments'");
     }
     
     /**
@@ -76,15 +70,13 @@ public class CommentsServiceGrpcValidator {
      *      current GRPC Request
      * @param streamObserver
      *      response async
-     * @return
-     *      true if the query is valid
      */
-    public static void validateGrpcRequest_GetUserComments(Logger logger, GetUserCommentsRequest request, StreamObserver<?> streamObserver) {
+    public void validateGrpcRequest_GetUserComments(GetUserCommentsRequest request, StreamObserver<?> streamObserver) {
         final StringBuilder errorMessage = initErrorString(request);
         boolean isValid = 
                   notEmpty(!request.hasUserId() || isBlank(request.getUserId().getValue()),  "userId",  "comment request",errorMessage) &&
                   positive(request.getPageSize() <= 0,  "page size",  "comment request",errorMessage);
-        Assert.isTrue(validate(logger, streamObserver, errorMessage, isValid), "Invalid parameter for 'getUserComments'");
+        Assert.isTrue(validate(LOGGER, streamObserver, errorMessage, isValid), "Invalid parameter for 'getUserComments'");
     }
     
     /**

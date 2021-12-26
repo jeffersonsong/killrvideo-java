@@ -3,6 +3,8 @@ package com.killrvideo.service.statistic.grpc;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
 import io.grpc.stub.StreamObserver;
@@ -13,15 +15,11 @@ import killrvideo.statistics.StatisticsServiceOuterClass.RecordPlaybackStartedRe
 import static com.killrvideo.utils.ValidationUtils.initErrorString;
 import static com.killrvideo.utils.ValidationUtils.validate;
 
+@Component
 public class StatisticsServiceGrpcValidator {
-
-    /**
-     * Hide Constructor
-     */
-    private StatisticsServiceGrpcValidator() {
-    }
+    private static final Logger LOGGER = LoggerFactory.getLogger(StatisticsServiceGrpcValidator.class);
     
-    public static void validateGrpcRequest_GetNumberPlays(Logger logger, GetNumberOfPlaysRequest request, StreamObserver<?> streamObserver) {
+    public void validateGrpcRequest_GetNumberPlays(GetNumberOfPlaysRequest request, StreamObserver<?> streamObserver) {
         final StringBuilder errorMessage = initErrorString(request);
         boolean isValid = true;
         if (request.getVideoIdsCount() <= 0) {
@@ -38,17 +36,17 @@ public class StatisticsServiceGrpcValidator {
                 isValid = false;
             }
         }
-        Assert.isTrue(validate(logger, streamObserver, errorMessage, isValid), "Invalid parameter for 'getNumberPlays'");
+        Assert.isTrue(validate(LOGGER, streamObserver, errorMessage, isValid), "Invalid parameter for 'getNumberPlays'");
     }
     
-    public static void validateGrpcRequest_RecordPlayback(Logger logger, RecordPlaybackStartedRequest request, StreamObserver<?> streamObserver) {
+    public void validateGrpcRequest_RecordPlayback(RecordPlaybackStartedRequest request, StreamObserver<?> streamObserver) {
         final StringBuilder errorMessage = initErrorString(request);
         boolean isValid = true;
 
-        if (request.getVideoId() == null || isBlank(request.getVideoId().getValue())) {
+        if (isBlank(request.getVideoId().getValue())) {
             errorMessage.append("\t\tvideo id should be provided for record playback started request\n");
             isValid = false;
         }
-        Assert.isTrue(validate(logger, streamObserver, errorMessage, isValid), "Invalid parameter for 'recordPlaybackStarted'");
+        Assert.isTrue(validate(LOGGER, streamObserver, errorMessage, isValid), "Invalid parameter for 'recordPlaybackStarted'");
     } 
 }

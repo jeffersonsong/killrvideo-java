@@ -39,7 +39,7 @@ public class ServiceDiscoveryDaoEtcd implements ServiceDiscoveryDao {
     private static final Logger LOGGER = LoggerFactory.getLogger(ServiceDiscoveryDaoEtcd.class);
     
     /** Namespace. */
-    public static String KILLRVIDEO_SERVICE_NAMESPACE = "/killrvideo/services/";
+    public static final String KILLRVIDEO_SERVICE_NAMESPACE = "/killrvideo/services/";
    
     @Value("${killrvideo.discovery.etcd.host: 10.0.75.1}")
     private String etcdServerHost;
@@ -69,10 +69,6 @@ public class ServiceDiscoveryDaoEtcd implements ServiceDiscoveryDao {
     /**
      * Read from ETCD using a retry mecanism.
      *
-     * @param key
-     *      current key to look in ETCD.
-     * @param required
-     *      key is required if not returning empty list
      * @return
      */
     private void waitForEtcd() {
@@ -95,9 +91,8 @@ public class ServiceDiscoveryDaoEtcd implements ServiceDiscoveryDao {
                 .withFixedBackoff()
                 .build();
         new CallExecutor<List <EtcdNode>>(etcdRetryConfig)
-                .afterFailedTry(s -> { 
-                    LOGGER.info("Attempt #{}/{} : ETCD is not ready (retry in {}s)", 
-                             atomicCount.getAndIncrement(), maxNumberOfTriesEtcd, delayBetweenTriesEtcd); })
+                .afterFailedTry(s -> LOGGER.info("Attempt #{}/{} : ETCD is not ready (retry in {}s)",
+                         atomicCount.getAndIncrement(), maxNumberOfTriesEtcd, delayBetweenTriesEtcd))
                 .onFailure(s -> {
                     LOGGER.error("ETCD is not ready after {} attempts, exiting", maxNumberOfTriesEtcd);
                     System.err.println("ETCD is not ready after " + maxNumberOfTriesEtcd + " attempts, exiting now.");
@@ -146,7 +141,7 @@ public class ServiceDiscoveryDaoEtcd implements ServiceDiscoveryDao {
         LOGGER.info("Accessing last port for endpoint with same host");
         for (String endpoint : lookup(serviceName)) {
             String[] endpointChunks = endpoint.split(":");
-            int endPointPort = Integer.valueOf(endpointChunks[1]);
+            int endPointPort = Integer.parseInt(endpointChunks[1]);
             String endPointHost = endpointChunks[0];
             if (hostName.equalsIgnoreCase(endPointHost)) {
                 if (endPointPort > targetPort) {
@@ -154,7 +149,7 @@ public class ServiceDiscoveryDaoEtcd implements ServiceDiscoveryDao {
                     LOGGER.info(" + Found {}", targetPort);
                 }
             }
-        } ;
+        }
         return (targetPort == -1) ? Optional.empty() : Optional.of(targetPort);
     }
     
@@ -182,7 +177,7 @@ public class ServiceDiscoveryDaoEtcd implements ServiceDiscoveryDao {
                 }
             }
             // Create new Key
-            String serviceKey = serviceDirectoryKey + UUID.randomUUID().toString();
+            String serviceKey = serviceDirectoryKey + UUID.randomUUID();
             etcdClient.set(serviceKey, endPoint);
             LOGGER.info(" + [OK] Endpoint registered with key '{}'", serviceKey);
             return serviceKey;

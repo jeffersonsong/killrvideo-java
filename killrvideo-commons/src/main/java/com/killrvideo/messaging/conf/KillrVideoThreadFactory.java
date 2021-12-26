@@ -6,6 +6,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.validation.constraints.NotNull;
+
 /**
  * Custom ThreadFactory.
  *
@@ -26,7 +28,7 @@ public class KillrVideoThreadFactory implements ThreadFactory {
     }
 
     /** {@inheritDoc} */
-    public Thread newThread(Runnable r) {
+    public Thread newThread(@NotNull Runnable r) {
         Thread thread = new Thread(r);
         thread.setName("killrvideo-default-executor-" + this.threadNumber.incrementAndGet());
         thread.setDaemon(true);
@@ -37,9 +39,6 @@ public class KillrVideoThreadFactory implements ThreadFactory {
     /**
      * Overriding error handling providing logging.
      */
-    private Thread.UncaughtExceptionHandler uncaughtExceptionHandler = (t, e) -> {
-        LOGGER.error("Uncaught asynchronous exception : " + e.getMessage(), e);
-    };
-
-
+    private final Thread.UncaughtExceptionHandler uncaughtExceptionHandler = (t, e) ->
+            LOGGER.error("Uncaught asynchronous exception : " + e.getMessage(), e);
 }

@@ -6,13 +6,14 @@ import com.datastax.oss.driver.api.mapper.annotations.Select;
 import com.datastax.oss.driver.api.mapper.annotations.StatementAttributes;
 import com.killrvideo.service.user.dto.UserCredentials;
 
+import java.sql.ResultSet;
 import java.util.concurrent.CompletableFuture;
 
 @Dao
 public interface UserCredentialsDao {
-    @Insert
+    @Insert(ifNotExists = true)
     @StatementAttributes(consistencyLevel = "LOCAL_QUORUM")
-    CompletableFuture<Void> insert(UserCredentials userCredentials);
+    CompletableFuture<Boolean> insert(UserCredentials userCredentials);
 
     @Select
     @StatementAttributes(consistencyLevel = "LOCAL_ONE")

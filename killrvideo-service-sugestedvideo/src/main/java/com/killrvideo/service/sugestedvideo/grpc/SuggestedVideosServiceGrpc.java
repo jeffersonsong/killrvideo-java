@@ -1,26 +1,17 @@
 package com.killrvideo.service.sugestedvideo.grpc;
 
-import static com.killrvideo.service.sugestedvideo.grpc.SuggestedVideosServiceGrpcMapper.validateGrpcRequest_getRelatedVideo;
-import static com.killrvideo.service.sugestedvideo.grpc.SuggestedVideosServiceGrpcMapper.validateGrpcRequest_getUserSuggestedVideo;
 import static com.killrvideo.utils.GrpcMappingUtils.uuidToUuid;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 
-import com.killrvideo.dse.dto.Video;
+import com.killrvideo.service.sugestedvideo.request.GetRelatedVideosRequestData;
 import com.killrvideo.service.sugestedvideo.repository.SuggestedVideosRepository;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-
-import com.killrvideo.dse.dto.ResultListPage;
 
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
@@ -40,63 +31,55 @@ import killrvideo.suggested_videos.SuggestedVideosService.GetSuggestedForUserRes
 public class SuggestedVideosServiceGrpc extends SuggestedVideoServiceImplBase {
     
     /** Loger for that class. */
-    private static Logger LOGGER = LoggerFactory.getLogger(SuggestedVideosServiceGrpc.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SuggestedVideosServiceGrpc.class);
      
     @Value("${killrvideo.discovery.services.suggestedVideo : SuggestedVideoService}")
     private String serviceKey;
-    
-    @Autowired
-    private SuggestedVideosRepository suggestedVideosDseDao;
-    
+
+    private final SuggestedVideosRepository suggestedVideosRepository;
+    private final SuggestedVideosServiceGrpcValidator validator;
+    private final SuggestedVideosServiceGrpcMapper mapper;
+
+    public SuggestedVideosServiceGrpc(SuggestedVideosRepository suggestedVideosRepository, SuggestedVideosServiceGrpcValidator validator, SuggestedVideosServiceGrpcMapper mapper) {
+        this.suggestedVideosRepository = suggestedVideosRepository;
+        this.validator = validator;
+        this.mapper = mapper;
+    }
+
     /** {@inheritDoc} */
     @Override
     public void getRelatedVideos(GetRelatedVideosRequest grpcReq, StreamObserver<GetRelatedVideosResponse> grpcResObserver) {
-        
         // Validate Parameters
-        validateGrpcRequest_getRelatedVideo(LOGGER, grpcReq, grpcResObserver);
+        validator.validateGrpcRequest_getRelatedVideo(grpcReq, grpcResObserver);
         
         // Stands as stopwatch for logging and messaging 
         final Instant starts = Instant.now();
         
         // Mapping GRPC => Domain (Dao)
-        final UUID       videoId = UUID.fromString(grpcReq.getVideoId().getValue());
-        int              videoPageSize = grpcReq.getPageSize();
-        Optional<String> videoPagingState = Optional.ofNullable(grpcReq.getPagingState()).filter(StringUtils::isNotBlank);
-        
+        GetRelatedVideosRequestData requestData = mapper.parseGetRelatedVideosRequestData(grpcReq);
+
         // Invoke DAO Async
-        CompletableFuture<ResultListPage<Video>> futureDao =
-                suggestedVideosDseDao.getRelatedVideos(videoId, videoPageSize, videoPagingState);
-        
-        // Map Result back to GRPC
-        futureDao.whenComplete((resultPage, error) -> {
-            
+        suggestedVideosRepository.getRelatedVideos(requestData)
+        .whenComplete((resultPage, error) -> {
+            // Map Result back to GRPC
             if (error != null ) {
                 traceError("getRelatedVideos", starts, error);
                 grpcResObserver.onError(Status.INTERNAL.withCause(error).asRuntimeException());
                 
             } else {
-                
                 traceSuccess( "getRelatedVideos", starts);
-                Uuid videoGrpcUUID = uuidToUuid(videoId);
-                final GetRelatedVideosResponse.Builder builder = 
-                        GetRelatedVideosResponse.newBuilder().setVideoId(videoGrpcUUID);
-                resultPage.getResults().stream()
-                      .map(SuggestedVideosServiceGrpcMapper::mapVideotoSuggestedVideoPreview)
-                      .filter(preview -> !preview.getVideoId().equals(videoGrpcUUID))
-                      .forEach(builder::addVideos);
-                resultPage.getPagingState().ifPresent(builder::setPagingState);
-                grpcResObserver.onNext(builder.build());
+                grpcResObserver.onNext(mapper.mapToGetRelatedVideosResponse(resultPage, requestData.getVideoid()));
                 grpcResObserver.onCompleted();
             }
         });
     }
 
+
     /** {@inheritDoc} */
     @Override
     public void getSuggestedForUser(GetSuggestedForUserRequest grpcReq, StreamObserver<GetSuggestedForUserResponse> grpcResObserver) {
-        
         // Validate Parameters
-        validateGrpcRequest_getUserSuggestedVideo(LOGGER, grpcReq, grpcResObserver);
+        validator.validateGrpcRequest_getUserSuggestedVideo(grpcReq, grpcResObserver);
         
         // Stands as stopwatch for logging and messaging 
         final Instant starts = Instant.now();
@@ -105,11 +88,9 @@ public class SuggestedVideosServiceGrpc extends SuggestedVideoServiceImplBase {
         final UUID userid = UUID.fromString(grpcReq.getUserId().getValue());
         
         // Invoke DAO Async
-        CompletableFuture<List<Video>> futureDao = suggestedVideosDseDao.getSuggestedVideosForUser(userid);
-        
-        // Map Result back to GRPC
-        futureDao.whenComplete((videos, error) -> {
-            
+        suggestedVideosRepository.getSuggestedVideosForUser(userid)
+        .whenComplete((videos, error) -> {
+            // Map Result back to GRPC
             if (error != null ) {
                 traceError("getSuggestedForUser", starts, error);
                 grpcResObserver.onError(Status.INTERNAL.withCause(error).asRuntimeException());
@@ -118,7 +99,7 @@ public class SuggestedVideosServiceGrpc extends SuggestedVideoServiceImplBase {
                 traceSuccess("getSuggestedForUser", starts);
                 Uuid userGrpcUUID = uuidToUuid(userid);
                 final GetSuggestedForUserResponse.Builder builder = GetSuggestedForUserResponse.newBuilder().setUserId(userGrpcUUID);
-                videos.stream().map(SuggestedVideosServiceGrpcMapper::mapVideotoSuggestedVideoPreview).forEach(builder::addVideos);
+                videos.stream().map(mapper::mapVideotoSuggestedVideoPreview).forEach(builder::addVideos);
                 grpcResObserver.onNext(builder.build());
                 grpcResObserver.onCompleted();
             }

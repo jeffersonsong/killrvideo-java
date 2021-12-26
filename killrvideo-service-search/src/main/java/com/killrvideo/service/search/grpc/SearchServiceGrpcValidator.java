@@ -5,21 +5,19 @@ import static com.killrvideo.utils.ValidationUtils.validate;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
 import io.grpc.stub.StreamObserver;
 import killrvideo.search.SearchServiceOuterClass.GetQuerySuggestionsRequest;
 import killrvideo.search.SearchServiceOuterClass.SearchVideosRequest;
 
+@Component
 public class SearchServiceGrpcValidator  {
+    private static final Logger LOGGER = LoggerFactory.getLogger(SearchServiceGrpcValidator.class);
 
-    /**
-     * Hide constructor.
-     */
-    private SearchServiceGrpcValidator() {
-    }
-    
-    public static void validateGrpcRequest_GetQuerySuggestions(Logger logger, GetQuerySuggestionsRequest request, StreamObserver<?> streamObserver) {
+    public void validateGrpcRequest_GetQuerySuggestions(GetQuerySuggestionsRequest request, StreamObserver<?> streamObserver) {
         final StringBuilder errorMessage = initErrorString(request);
         boolean isValid = true;
         if (isBlank(request.getQuery())) {
@@ -30,14 +28,14 @@ public class SearchServiceGrpcValidator  {
             errorMessage.append("\t\tpage size should be strictly positive for get video suggestions request\n");
             isValid = false;
         }
-        Assert.isTrue(validate(logger, streamObserver, errorMessage, isValid), 
+        Assert.isTrue(validate(LOGGER, streamObserver, errorMessage, isValid),
                 "Invalid parameter for 'getQuerySuggestions'");
     }
     
     /**
      * Validation for search.
      */
-    public static void validateGrpcRequest_SearchVideos(Logger logger, SearchVideosRequest request, StreamObserver<?> streamObserver) {
+    public void validateGrpcRequest_SearchVideos(SearchVideosRequest request, StreamObserver<?> streamObserver) {
         final StringBuilder errorMessage = initErrorString(request);
         boolean isValid = true;
         if (isBlank(request.getQuery())) {
@@ -48,10 +46,6 @@ public class SearchServiceGrpcValidator  {
             errorMessage.append("\t\tpage size should be strictly positive for search videos request\n");
             isValid = false;
         }
-        Assert.isTrue(validate(logger, streamObserver, errorMessage, isValid), "Invalid parameter for 'searchVideos'");
+        Assert.isTrue(validate(LOGGER, streamObserver, errorMessage, isValid), "Invalid parameter for 'searchVideos'");
     }
-    
-    
-   
-    
 }

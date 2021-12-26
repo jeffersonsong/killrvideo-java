@@ -27,7 +27,7 @@ import killrvideo.video_catalog.VideoCatalogServiceGrpc.VideoCatalogServiceBlock
 public class KillrvideoServicesGrpcClient {
     
     /** Grpc Endpoint */
-    private ManagedChannel grpcEndPoint;
+    private final ManagedChannel grpcEndPoint;
    
     /** Clients for different services in GRPC. */
     public CommentsServiceBlockingStub         commentServiceGrpcClient;
@@ -47,7 +47,7 @@ public class KillrvideoServicesGrpcClient {
      *      current grpc portnumber
      */
     public KillrvideoServicesGrpcClient(String grpcServer, int grpcPort) {
-       this(ManagedChannelBuilder.forAddress(grpcServer, grpcPort).usePlaintext(true).build());
+       this(ManagedChannelBuilder.forAddress(grpcServer, grpcPort).usePlaintext().build());
     }
     
     /**

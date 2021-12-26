@@ -1,88 +1,38 @@
 package com.killrvideo.service.comment.dto;
 
+import com.killrvideo.dse.dto.QueryDefinition;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import java.util.Optional;
 import java.util.UUID;
-
-import com.killrvideo.dse.dto.QueryDefinition;
 
 /**
  * Query to search comments for a User.
  *
  * @author DataStax Developer Advocates team.
  */
+@Getter
+@Setter
+@NoArgsConstructor
 public class QueryCommentByVideo extends QueryDefinition {
-    
-    /** Serial. */
     private static final long serialVersionUID = 7721676513515347779L;
 
-    /** User uniaue identifier. */
+    /**
+     * Video unique identifier.
+     */
     private UUID videoId = null;
-    
-    /** Comment offset if specified (Optional) */
-    private Optional< UUID > commentId = Optional.empty();
-    
-    /**
-     * Default constructor.
-     */
-    public QueryCommentByVideo() {
-    }
-    
-    /**
-     * Init with videoid.
-     * 
-     * @param svideoId
-     *  target videoid
-     */
-    public QueryCommentByVideo(UUID svideoId) {
-        this.videoId = svideoId;
-    }
-    
-    /**
-     * Init with videoid.
-     * 
-     * @param svideoId
-     *  target videoid
-     */
-    public QueryCommentByVideo(String svideoId) {
-       this(UUID.fromString(svideoId));
-    }
 
     /**
-     * Getter for attribute 'commentId'.
-     *
-     * @return
-     *       current value of 'commentId'
+     * Comment offset if specified (Optional)
      */
-    public Optional<UUID> getCommentId() {
-        return commentId;
-    }
+    @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
+    private Optional<UUID> commentId = Optional.empty();
 
-    /**
-     * Setter for attribute 'commentId'.
-     * @param commentId
-     * 		new value for 'commentId '
-     */
-    public void setCommentId(Optional<UUID> commentId) {
+    public QueryCommentByVideo(UUID videoId, Optional<UUID> commentId, int pageSize, Optional<String> pageState) {
+        super(pageSize, pageState);
+        this.videoId = videoId;
         this.commentId = commentId;
     }
-
-    /**
-     * Getter for attribute 'videoId'.
-     *
-     * @return
-     *       current value of 'videoId'
-     */
-    public UUID getVideoId() {
-        return videoId;
-    }
-
-    /**
-     * Setter for attribute 'videoId'.
-     * @param videoId
-     * 		new value for 'videoId '
-     */
-    public void setVideoId(UUID videoId) {
-        this.videoId = videoId;
-    }
-    
 }

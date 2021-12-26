@@ -5,6 +5,7 @@ import java.util.UUID;
 import com.datastax.oss.driver.api.mapper.annotations.CqlName;
 import com.datastax.oss.driver.api.mapper.annotations.Entity;
 import com.datastax.oss.driver.api.mapper.annotations.PartitionKey;
+import lombok.NoArgsConstructor;
 
 /**
  * Specialization for VIDEO.
@@ -13,38 +14,24 @@ import com.datastax.oss.driver.api.mapper.annotations.PartitionKey;
  */
 @Entity
 @CqlName("comments_by_video")
+@NoArgsConstructor
 public class CommentByVideo extends Comment {
-    
-    /** Serial. */
     private static final long serialVersionUID = -6738790629520080307L;
-    
-    public CommentByVideo() {
+
+    public static CommentByVideo from(Comment comment) {
+        return new CommentByVideo(comment);
     }
     
-    public CommentByVideo(Comment c) {
-        this.commentid  = c.getCommentid();
-        this.userid     = c.getUserid();
-        this.videoid    = c.getVideoid();
-        this.comment    = c.getComment();
+    private CommentByVideo(Comment c) {
+        super(c);
     }
 
-    /**
-     * Getter for attribute 'videoid'.
-     *
-     * @return
-     *       current value of 'videoid'
-     */
     @PartitionKey
     public UUID getVideoid() {
         return videoid;
     }
 
     public Comment toComment() {
-        Comment comment = new Comment();
-        comment.setCommentid(this.commentid);
-        comment.setUserid(this.userid);
-        comment.setVideoid(this.videoid);
-        comment.setComment(this.comment);
-        return comment;
+        return new Comment(this);
     }
 }

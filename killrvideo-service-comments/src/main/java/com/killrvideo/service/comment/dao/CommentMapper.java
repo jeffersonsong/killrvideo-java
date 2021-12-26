@@ -13,7 +13,7 @@ public interface CommentMapper {
     @DaoFactory
     CommentByVideoDao getCommentByVideoDao();
 
-    public static MapperBuilder<CommentMapper> build(CqlSession session) {
+    static MapperBuilder<CommentMapper> build(CqlSession session) {
         return new CommentMapperBuilder(session);
     }
 }

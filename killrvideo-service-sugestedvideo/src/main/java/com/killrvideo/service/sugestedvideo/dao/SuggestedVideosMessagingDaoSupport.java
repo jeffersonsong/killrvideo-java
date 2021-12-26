@@ -1,14 +1,12 @@
 package com.killrvideo.service.sugestedvideo.dao;
 
-import static com.killrvideo.service.sugestedvideo.grpc.SuggestedVideosServiceGrpcMapper.mapVideoAddedtoVideoDTO;
-
 import java.util.Date;
 import java.util.UUID;
 
+import com.killrvideo.service.sugestedvideo.grpc.SuggestedVideosServiceGrpcMapper;
 import com.killrvideo.service.sugestedvideo.repository.SuggestedVideosRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.killrvideo.utils.GrpcMappingUtils;
 
@@ -22,13 +20,16 @@ import killrvideo.video_catalog.events.VideoCatalogEvents.YouTubeVideoAdded;
  * @author Cedrick LUNVEN (@clunven)
  */
 public abstract class SuggestedVideosMessagingDaoSupport {
+    private static final Logger LOGGER = LoggerFactory.getLogger(SuggestedVideosMessagingDaoSupport.class);
     
-    /** Loger for that class. */
-    private static Logger LOGGER = LoggerFactory.getLogger(SuggestedVideosMessagingDaoSupport.class);
-    
-    @Autowired
-    protected SuggestedVideosRepository suggestedVideosRepository;
-    
+    protected final SuggestedVideosRepository suggestedVideosRepository;
+    private final SuggestedVideosServiceGrpcMapper mapper;
+
+    public SuggestedVideosMessagingDaoSupport(SuggestedVideosRepository suggestedVideosRepository, SuggestedVideosServiceGrpcMapper mapper) {
+        this.suggestedVideosRepository = suggestedVideosRepository;
+        this.mapper = mapper;
+    }
+
     /**
      * Message is consumed from specialized class but treatment is the same, updating graph.
      * 
@@ -68,8 +69,6 @@ public abstract class SuggestedVideosMessagingDaoSupport {
      *      a video has been created
      */
     protected void onYoutubeVideoAddingMessage(YouTubeVideoAdded videoAdded) {
-       suggestedVideosRepository.updateGraphNewVideo(mapVideoAddedtoVideoDTO(videoAdded));
+       suggestedVideosRepository.updateGraphNewVideo(mapper.mapVideoAddedtoVideoDTO(videoAdded));
     }
-    
-
 }

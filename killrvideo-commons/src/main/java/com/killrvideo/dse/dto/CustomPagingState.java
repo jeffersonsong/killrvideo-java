@@ -8,20 +8,21 @@ import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.google.common.collect.Lists;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 /**
  * Entity handling pagination.
  *
  * @author DataStax Developer Advocates team.
  */
+@Getter @Setter @NoArgsConstructor
 public class CustomPagingState implements Serializable {
-
-    /** Serial. */
     private static final long serialVersionUID = 8160171855827276965L;
     
     /**  Constants. */
-    public static final Pattern PARSE_LATEST_PAGING_STATE = Pattern.compile("((?:[0-9]{8}_){7}[0-9]{8}),([0-9]),(.*)");
+    private static final Pattern PARSE_LATEST_PAGING_STATE = Pattern.compile("((?:[0-9]{8}_){7}[0-9]{8}),([0-9]),(.*)");
    
     /** List of Buckets. */
     private List<String> listOfBuckets = new ArrayList<>();
@@ -31,26 +32,7 @@ public class CustomPagingState implements Serializable {
     
     /** Paging. */
     private String cassandraPagingState;
-    
-    /** Default constructor. */
-    public CustomPagingState() {}
-    
-    /**
-     * Full fledge constructor.
-     * 
-     * @param currentBucket
-     *      current offset
-     * @param pagingState
-     *      state
-     * @param buckets
-     *      set of buckets
-     */
-    public CustomPagingState(int currentBucket, String pagingState, String ...buckets) {
-        this.cassandraPagingState = pagingState;
-        this.currentBucket = currentBucket;
-        listOfBuckets.addAll(Arrays.asList(buckets));
-    }
-    
+
     /**
      * Map Paging State.
      *
@@ -67,87 +49,12 @@ public class CustomPagingState implements Serializable {
                 pagingState = new CustomPagingState()
                         .cassandraPagingState( matcher.group(3))
                         .currentBucket(Integer.parseInt(matcher.group(2)))
-                        .listOfBuckets(Lists.newArrayList(matcher.group(1).split("_")));
+                        .listOfBuckets(Arrays.asList(matcher.group(1).split("_")));
             }
         }
         return Optional.ofNullable(pagingState);
     }
-    
-    /** {@inheritDoc} */
-    public String toString() {
-        StringBuilder sb = new StringBuilder("{");
-        sb.append("\"currentBucket\":").append(currentBucket).append(",");
-        sb.append("\"cassandraPagingState\":").append("\"" + cassandraPagingState).append("\",");
-        sb.append("\"listOfBuckets\":[");
-        boolean first = true;
-        for (String bucket : listOfBuckets) {
-            if (!first) {
-                sb.append(",");
-            }
-            sb.append("\"" + bucket + "\"");
-            first = false;
-        }
-        return sb.append("}").toString();
-    }
-   
-    /**
-     * Syntaxic sugar.
-     *
-     * @param bucketName
-     *          current bucketName
-     */
-    public void addBucket(String bucketName) {
-        listOfBuckets.add(bucketName);
-    }
-    
-    /**
-     * Getter for attribute 'currentBucket'.
-     *
-     * @return
-     *       current value of 'currentBucket'
-     */
-    public int getCurrentBucket() {
-        return currentBucket;
-    }
 
-    /**
-     * Setter for attribute 'currentBucket'.
-     * @param currentBucket
-     * 		new value for 'currentBucket '
-     */
-    public void setCurrentBucket(int currentBucket) {
-        this.currentBucket = currentBucket;
-    }
-
-    /**
-     * Getter for attribute 'cassandraPagingState'.
-     *
-     * @return
-     *       current value of 'cassandraPagingState'
-     */
-    public String getCassandraPagingState() {
-        return cassandraPagingState;
-    }
-
-    /**
-     * Setter for attribute 'cassandraPagingState'.
-     * @param cassandraPagingState
-     * 		new value for 'cassandraPagingState '
-     */
-    public void setCassandraPagingState(String cassandraPagingState) {
-        this.cassandraPagingState = cassandraPagingState;
-    }
-
-    /**
-     * Getter for attribute 'listOfBuckets'.
-     *
-     * @return
-     *       current value of 'listOfBuckets'
-     */
-    public List<String> getListOfBuckets() {
-        return listOfBuckets;
-    }
-    
     /**
      * Get size of bucket list.
      */
@@ -156,17 +63,8 @@ public class CustomPagingState implements Serializable {
     }
 
     /**
-     * Setter for attribute 'listOfBuckets'.
-     * @param listOfBuckets
-     * 		new value for 'listOfBuckets '
-     */
-    public void setListOfBuckets(List<String> listOfBuckets) {
-        this.listOfBuckets = listOfBuckets;
-    }
-    
-    /**
      * Builder pattern.
-     * 
+     *
      * @param cassandraPagingState
      *      last state
      * @return
@@ -176,12 +74,12 @@ public class CustomPagingState implements Serializable {
         setCassandraPagingState(cassandraPagingState);
         return this;
     }
-    
+
     /**
      * Builder pattern.
-     * 
-     * @param cassandraPagingState
-     *      last state
+     *
+     * @param listOfBuckets
+     *      list of buckets.
      * @return
      *      current object reference
      */
@@ -189,12 +87,12 @@ public class CustomPagingState implements Serializable {
         setListOfBuckets(listOfBuckets);
         return this;
     }
-    
+
     /**
      * Builder pattern.
-     * 
-     * @param cassandraPagingState
-     *      last state
+     *
+     * @param currentBucket
+     *      current bucket.
      * @return
      *      current object reference
      */
@@ -203,19 +101,35 @@ public class CustomPagingState implements Serializable {
         this.currentBucket = currentBucket;
         return this;
     }
-    
+
     /**
      * Increment index.
      */
     public void incCurrentBucketIndex() {
         currentBucket++;
     }
-    
+
     /**
      * Current bucket value.
      */
     public String getCurrentBucketValue() {
          return getListOfBuckets().get(getCurrentBucket());
     }
-    
+
+    /** {@inheritDoc} */
+    public String toString() {
+        StringBuilder sb = new StringBuilder("{");
+        sb.append("\"currentBucket\":").append(currentBucket).append(",");
+        sb.append("\"cassandraPagingState\":").append("\"").append(cassandraPagingState).append("\",");
+        sb.append("\"listOfBuckets\":[");
+        boolean first = true;
+        for (String bucket : listOfBuckets) {
+            if (!first) {
+                sb.append(",");
+            }
+            sb.append("\"").append(bucket).append("\"");
+            first = false;
+        }
+        return sb.append("}").toString();
+    }
 }

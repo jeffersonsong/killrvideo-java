@@ -12,7 +12,7 @@ import java.util.concurrent.CompletableFuture;
 public interface VideoDao {
     @Insert
     @StatementAttributes(consistencyLevel = "LOCAL_QUORUM")
-    CompletableFuture<Void> insert(Video video);
+    CompletableFuture<Video> insert(Video video);
 
     @Select
     @StatementAttributes(consistencyLevel = "LOCAL_ONE")

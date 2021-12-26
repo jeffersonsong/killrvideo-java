@@ -1,8 +1,6 @@
 package com.killrvideo.service.statistic.grpc;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
@@ -23,11 +21,11 @@ import killrvideo.statistics.StatisticsServiceOuterClass.PlayStats;
 @Component
 public class StatisticsServiceGrpcMapper {
     
-    public static GetNumberOfPlaysResponse buildGetNumberOfPlayResponse(GetNumberOfPlaysRequest grpcReq, List<VideoPlaybackStats> videoList) {
+    public GetNumberOfPlaysResponse buildGetNumberOfPlayResponse(GetNumberOfPlaysRequest grpcReq, List<VideoPlaybackStats> videoList) {
         final Map<Uuid, PlayStats> result = videoList.stream()
-                .filter(x -> x != null)
-                .map(StatisticsServiceGrpcMapper::mapVideoPlayBacktoPlayStats)
-                .collect(Collectors.toMap(x -> x.getVideoId(), x -> x));
+                .filter(Objects::nonNull)
+                .map(this::mapVideoPlayBacktoPlayStats)
+                .collect(Collectors.toMap(PlayStats::getVideoId, x -> x));
 
         final GetNumberOfPlaysResponse.Builder builder = GetNumberOfPlaysResponse.newBuilder();
         for (Uuid requestedVideoId : grpcReq.getVideoIdsList()) {
@@ -47,11 +45,17 @@ public class StatisticsServiceGrpcMapper {
     /**
      * Mapping to generated GPRC beans.
      */
-    private static PlayStats mapVideoPlayBacktoPlayStats(VideoPlaybackStats v) {
+    private PlayStats mapVideoPlayBacktoPlayStats(VideoPlaybackStats v) {
         return PlayStats.newBuilder()
                 .setVideoId(GrpcMappingUtils.uuidToUuid(v.getVideoid()))
                 .setViews(Optional.ofNullable(v.getViews()).orElse(0L)).build();
     }
-    
 
+    public List<UUID> parseGetNumberOfPlaysRequest(GetNumberOfPlaysRequest grpcReq) {
+        return grpcReq.getVideoIdsList()
+                .stream()
+                .map(Uuid::getValue)
+                .map(UUID::fromString)
+                .collect(Collectors.toList());
+    }
 }
