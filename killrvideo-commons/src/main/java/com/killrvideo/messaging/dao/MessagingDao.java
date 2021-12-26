@@ -32,7 +32,6 @@ public interface MessagingDao {
      * Send errors to bus.
      * 
      * @param serviceName
-     * @param param
      * @param t
      */
     default CompletableFuture<Object> sendErrorEvent(String serviceName, Throwable t) {

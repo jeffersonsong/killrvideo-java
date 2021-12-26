@@ -8,9 +8,9 @@ import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.cql.BoundStatement;
 import com.datastax.oss.driver.api.core.cql.BoundStatementBuilder;
 import com.datastax.oss.driver.api.core.cql.PreparedStatement;
-import com.datastax.oss.driver.api.core.cql.Row;
 import com.datastax.oss.protocol.internal.util.Bytes;
 import com.google.common.collect.Sets;
+import com.killrvideo.dse.dao.VideoRowMapper;
 import com.killrvideo.dse.dto.ResultListPage;
 import com.killrvideo.dse.graph.KillrVideoTraversal;
 import com.killrvideo.dse.graph.KillrVideoTraversalSource;
@@ -34,8 +34,6 @@ import java.util.stream.StreamSupport;
 
 import static com.killrvideo.dse.graph.KillrVideoTraversalConstants.VERTEX_USER;
 import static com.killrvideo.dse.graph.KillrVideoTraversalConstants.VERTEX_VIDEO;
-import static com.killrvideo.dse.dto.AbstractVideo.COLUMN_NAME;
-import static com.killrvideo.dse.dto.Video.*;
 
 @Repository
 public class SuggestedVideosRepository {
@@ -44,6 +42,7 @@ public class SuggestedVideosRepository {
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(SuggestedVideosRepository.class);
     private CqlSession session;
+    private VideoRowMapper videoRowMapper;
     private VideoDao videoDao;
 
     /**
@@ -71,8 +70,9 @@ public class SuggestedVideosRepository {
     @Value("#{'${killrvideo.search.ignoredWords}'.split(',')}")
     private Set<String> ignoredWords = new HashSet<>();
 
-    public SuggestedVideosRepository(CqlSession session) {
+    public SuggestedVideosRepository(CqlSession session, VideoRowMapper videoRowMapper) {
         this.session = session;
+        this.videoRowMapper = videoRowMapper;
         VideoMapper mapper = VideoMapper.build(session).build();
         this.videoDao = mapper.getVideoDao();
         this.findRelatedVideos = session.prepare(
@@ -89,7 +89,7 @@ public class SuggestedVideosRepository {
         return findVideoById(videoId).thenCompose(video -> {
             BoundStatement stmt = createStatementToSearchVideos(video, fetchSize, pagingState);
             return session.executeAsync(stmt).toCompletableFuture();
-        }).thenApply(rs -> new ResultListPage<>(rs, this::mapToVideo));
+        }).thenApply(rs -> new ResultListPage<>(rs, videoRowMapper::map));
     }
 
     private CompletableFuture<Video> findVideoById(UUID videoId) {
@@ -138,27 +138,12 @@ public class SuggestedVideosRepository {
         return statement;
     }
 
-    private Video mapToVideo(Row row) {
-        return new Video(
-                row.getUuid(COLUMN_VIDEOID),
-                row.getUuid(COLUMN_USERID),
-                row.getString(COLUMN_NAME),
-                row.getString(COLUMN_DESCRIPTION),
-                row.getString(COLUMN_LOCATION),
-                row.getInt(COLUMN_LOCATIONTYPE),
-                row.getString(COLUMN_PREVIEW),
-                row.getSet(COLUMN_TAGS, String.class),
-                row.getInstant(COLUMN_ADDED_DATE)
-        );
-    }
-
     /**
      * Search for videos.
      *
      * @param userid current userid,
      * @return Async Page
      */
-    @SuppressWarnings({"rawtypes", "unchecked"})
     public CompletableFuture<List<Video>> getSuggestedVideosForUser(UUID userid) {
         // Parameters validation
         Assert.notNull(userid, "videoid is required to update statistics");
@@ -170,7 +155,7 @@ public class SuggestedVideosRepository {
         //}
 
         // Execute Sync
-        CompletableFuture<AsyncGraphResultSet> futureRs =session.executeAsync(graphStatement).toCompletableFuture();
+        CompletableFuture<AsyncGraphResultSet> futureRs = session.executeAsync(graphStatement).toCompletableFuture();
 
         // Mapping to expected List
         return futureRs.thenApply(
@@ -196,66 +181,66 @@ public class SuggestedVideosRepository {
     /**
      * Subscription is done in dedicated service
      * {@link EventConsumerService}. (killrvideo-messaging)
-     *
+     * <p>
      * Below we are using our KillrVideoTraversal DSL (Domain Specific Language)
      * to create our video vertex, then within add() we connect up the user responsible
      * for uploading the video with the "uploaded" edge, and then follow up with
      * any and all tags using the "taggedWith" edge.  Since we may have multiple
      * tags make sure to loop through and get them all in there.
-     *
+     * <p>
      * Also note the use of add().  Take a look at Stephen's blog here
      * -> https://www.datastax.com/dev/blog/gremlin-dsls-in-java-with-dse-graph for more information.
      * This essentially allows us to chain multiple commands (uploaded and (n * taggedWith) in this case)
      * while "preserving" our initial video traversal position. Since the video vertex passes
      * through each step we do not need to worry about traversing back to video for each step
      * in the chain.
-     *
+     * <p>
      * May be relevant to have a full sample traversal:
      * g.V().has("video","videoId", 6741b34e-03c7-4d83-bf55-deed496d6e03)
-     *  .fold()
-     *  .coalesce(__.unfold(),
-     *   __.addV("video")
-     *     .property("videoId",6741b34e-03c7-4d83-bf55-deed496d6e03))
-     *     .property("added_date",Thu Aug 09 11:00:44 CEST 2018)
-     *     .property("name","Paris JHipster Meetup #9")
-     *     .property("description","xxxxxx")
-     *     .property("preview_image_location","//img.youtube.com/vi/hOTjLOPXg48/hqdefault.jpg")
-     *     // Add Edge
-     *     .sideEffect(
-     *        __.as("^video").coalesce(
-     *           __.in("uploaded")
-     *             .hasLabel("user")
-     *             .has("userId",8a70e329-59f8-4e2e-aae8-1788c94e8410),
-     *           __.V()
-     *             .has("user","userId",8a70e329-59f8-4e2e-aae8-1788c94e8410)
-     *             .addE("uploaded")
-     *             .to("^video").inV())
-     *      )
-     *      // Tag with X (multiple times)
-     *      .sideEffect(
-     *        __.as("^video").coalesce(
-     *          __.out("taggedWith")
-     *            .hasLabel("tag")
-     *            .has("name","X"),
-     *          __.coalesce(
-     *            __.V().has("tag","name","X"),
-     *            __.addV("tag")
-     *              .property("name","X")
-     *               .property("tagged_date",Thu Aug 09 11:00:44 CEST 2018)
-     *              ).addE("taggedWith").from("^video").inV())
-     *       )
-     *       // Tag with FF4j
-     *       .sideEffect(
-     *         __.as("^video").coalesce(
-     *           __.out("taggedWith")
-     *             .hasLabel("tag")
-     *             .has("name","ff4j"),
-     *           __.coalesce(
-     *            __.V().has("tag","name","ff4j"),
-     *            __.addV("tag")
-     *              .property("name","ff4j")
-     *              .property("tagged_date",Thu Aug 09 11:00:44 CEST 2018))
-     *              .addE("taggedWith").from("^video").inV()))
+     * .fold()
+     * .coalesce(__.unfold(),
+     * __.addV("video")
+     * .property("videoId",6741b34e-03c7-4d83-bf55-deed496d6e03))
+     * .property("added_date",Thu Aug 09 11:00:44 CEST 2018)
+     * .property("name","Paris JHipster Meetup #9")
+     * .property("description","xxxxxx")
+     * .property("preview_image_location","//img.youtube.com/vi/hOTjLOPXg48/hqdefault.jpg")
+     * // Add Edge
+     * .sideEffect(
+     * __.as("^video").coalesce(
+     * __.in("uploaded")
+     * .hasLabel("user")
+     * .has("userId",8a70e329-59f8-4e2e-aae8-1788c94e8410),
+     * __.V()
+     * .has("user","userId",8a70e329-59f8-4e2e-aae8-1788c94e8410)
+     * .addE("uploaded")
+     * .to("^video").inV())
+     * )
+     * // Tag with X (multiple times)
+     * .sideEffect(
+     * __.as("^video").coalesce(
+     * __.out("taggedWith")
+     * .hasLabel("tag")
+     * .has("name","X"),
+     * __.coalesce(
+     * __.V().has("tag","name","X"),
+     * __.addV("tag")
+     * .property("name","X")
+     * .property("tagged_date",Thu Aug 09 11:00:44 CEST 2018)
+     * ).addE("taggedWith").from("^video").inV())
+     * )
+     * // Tag with FF4j
+     * .sideEffect(
+     * __.as("^video").coalesce(
+     * __.out("taggedWith")
+     * .hasLabel("tag")
+     * .has("name","ff4j"),
+     * __.coalesce(
+     * __.V().has("tag","name","ff4j"),
+     * __.addV("tag")
+     * .property("name","ff4j")
+     * .property("tagged_date",Thu Aug 09 11:00:44 CEST 2018))
+     * .addE("taggedWith").from("^video").inV()))
      */
     public void updateGraphNewVideo(Video video) {
         final KillrVideoTraversal traversal =
@@ -265,9 +250,9 @@ public class SuggestedVideosRepository {
                         .add(__.uploaded(video.getUserid()));
         // Add Tags Nodes and edges
         Sets.newHashSet(video.getTags()).forEach(tag -> {
-            traversal.add(__.taggedWith(tag,  new Date()));
+            traversal.add(__.taggedWith(tag, new Date()));
         });
-        /**
+        /*
          * Now that our video is successfully applied lets
          * insert that video into our graph for the recommendation engine
          */
@@ -287,13 +272,13 @@ public class SuggestedVideosRepository {
     /**
      * Subscription is done in dedicated service
      * {@link EventConsumerService}. (killrvideo-messaging)
-     *
+     * <p>
      * This will create a user vertex in our graph if it does not already exist.
      *
-     * @param user
-     *      current user
+     * @param userId       current user
+     * @param email
+     * @param userCreation
      */
-    @SuppressWarnings({"rawtypes","unchecked"})
     public void updateGraphNewUser(UUID userId, String email, Date userCreation) {
         final KillrVideoTraversal traversal = traversalSource.user(userId, email, userCreation);
         FluentGraphStatement gStatement = FluentGraphStatement.newInstance(traversal);
@@ -311,24 +296,23 @@ public class SuggestedVideosRepository {
     /**
      * Subscription is done in dedicated service
      * {@link EventConsumerService}. (killrvideo-messaging)
-     *
+     * <p>
      * Note that if either the user or video does not exist in the graph
      * the rating will not be applied nor will the user or video be
      * automatically created in this case.  This assumes both the user and video
      * already exist.
      */
-    @SuppressWarnings({"rawtypes","unchecked"})
     public void updateGraphNewUserRating(String videoId, UUID userId, int rate) {
         final KillrVideoTraversal traversal = traversalSource.videos(videoId).add(__.rated(userId, rate));
         FluentGraphStatement gStatement = FluentGraphStatement.newInstance(traversal);
         //LOGGER.info("Executed transversal for 'updateGraphNewUserRating' : {}", DseUtils.displayGraphTranserval(traversal));
         session.executeAsync(gStatement).whenComplete((graphResultSet, ex) -> {
-            if (graphResultSet != null) {
-                LOGGER.debug("Added rating between user and video: " + graphResultSet.one());
-            } else {
-                //TODO: Potentially add some robustness code here
-                LOGGER.warn("Error Adding rating between user and video: " + ex);
-            }
+                    if (graphResultSet != null) {
+                        LOGGER.debug("Added rating between user and video: " + graphResultSet.one());
+                    } else {
+                        //TODO: Potentially add some robustness code here
+                        LOGGER.warn("Error Adding rating between user and video: " + ex);
+                    }
                 }
         );
     }

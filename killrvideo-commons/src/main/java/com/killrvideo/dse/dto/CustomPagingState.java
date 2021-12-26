@@ -180,8 +180,8 @@ public class CustomPagingState implements Serializable {
     /**
      * Builder pattern.
      * 
-     * @param cassandraPagingState
-     *      last state
+     * @param listOfBuckets
+     *      list of buckets.
      * @return
      *      current object reference
      */
@@ -193,8 +193,8 @@ public class CustomPagingState implements Serializable {
     /**
      * Builder pattern.
      * 
-     * @param cassandraPagingState
-     *      last state
+     * @param currentBucket
+     *      current bucket.
      * @return
      *      current object reference
      */

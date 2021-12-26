@@ -1,4 +1,4 @@
-package com.killrvideo.utils;
+package com.killrvideo.dse.utils;
 
 import com.datastax.oss.driver.api.core.ConsistencyLevel;
 import com.datastax.oss.driver.api.core.CqlSession;
@@ -60,19 +60,7 @@ public class PageableQueryUtils {
     public static <T> CompletableFuture<ResultListPage<T>> queryAsyncWithPagination(
             CqlSession session, BoundStatement boundStatement, Function<Row, T> mapper
     ) {
-        CompletionStage<AsyncResultSet> resultSetFuture = session.executeAsync(boundStatement);
-        return resultSetFuture.toCompletableFuture().thenApply(s -> mapToResultListPage(s, mapper));
-    }
-
-    public static <T> ResultListPage<T> mapToResultListPage(AsyncResultSet rs, Function<Row, T> mapper) {
-        ResultListPage<T> result = new ResultListPage<>();
-        List<T> commentList = StreamSupport.stream(rs.currentPage().spliterator(), false)
-                .map(mapper).collect(Collectors.toList());
-        result.setresults(commentList);
-        if (rs.hasMorePages()) {
-            String nextPage = Bytes.toHexString(rs.getExecutionInfo().getPagingState());
-            result.setPagingState(Optional.ofNullable(nextPage));
-        }
-        return result;
+        return session.executeAsync(boundStatement).toCompletableFuture()
+                .thenApply(rs -> new ResultListPage<>(rs, mapper));
     }
 }

@@ -10,7 +10,7 @@ import com.datastax.oss.driver.api.querybuilder.QueryBuilder;
 import com.killrvideo.service.statistic.dao.VideoPlaybackStatsDao;
 import com.killrvideo.service.statistic.dao.VideoPlaybackStatsMapper;
 import com.killrvideo.service.statistic.dto.VideoPlaybackStats;
-import com.killrvideo.utils.MappedAsyncPagingIterableUtils;
+import com.killrvideo.dse.utils.MappedAsyncPagingIterableUtils;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.Assert;
 

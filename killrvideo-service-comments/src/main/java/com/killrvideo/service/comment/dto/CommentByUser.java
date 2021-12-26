@@ -26,7 +26,7 @@ public class CommentByUser extends Comment {
     /**
      * Copy constructor.
      *
-     * @param c
+     * @param c comment.
      */
     public CommentByUser(Comment c) {
         this.commentid  = c.getCommentid();

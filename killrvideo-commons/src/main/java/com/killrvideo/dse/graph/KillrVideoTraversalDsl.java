@@ -96,7 +96,7 @@ public interface KillrVideoTraversalDsl<S, E> extends GraphTraversal.Admin<S, E>
         Assert.notNull(userId, "The userId must not be null");
         Assert.isTrue(rating >= 1 && rating <= 5, "rating value must be between 1 and 5");
         
-        /**
+        /*
          * As mentioned in the javadocs this step assumes an incoming "video" vertex. it is immediately labelled as
          * "^video". the addition of the caret prefix has no meaning except to provide for a unique labelling space
          * within the DSL itself.
@@ -151,7 +151,7 @@ public interface KillrVideoTraversalDsl<S, E> extends GraphTraversal.Admin<S, E>
     @SuppressWarnings({ "unchecked", "rawtypes" })
 	public default GraphTraversal<S, Vertex> uploaded(UUID userId) {
         Assert.notNull(userId, "The userId must not be null");
-        /**
+        /*
          * As mentioned in the javadocs this step assumes an incoming "video" vertex. it is immediately labelled as
          * "^video". the addition of the caret prefix has no meaning except to provide for a unique labelling space
          * within the DSL itself.
@@ -199,7 +199,7 @@ public interface KillrVideoTraversalDsl<S, E> extends GraphTraversal.Admin<S, E>
      */
     @SuppressWarnings({ "unchecked", "rawtypes" })
 	public default GraphTraversal<S, Vertex> taggedWith(String name, Date tagged_date) {
-        /**
+        /*
          * no validation here as it would just duplicate what is happening in tag(). note the use of the
          * cast to KillrVideoTraversal. in this case, we want to use a DSL step within the DSL itself, but we want to
          * start the traversal with a GraphTraversal step which thus returns a GraphTraversal. The only ways to get
@@ -247,7 +247,7 @@ public interface KillrVideoTraversalDsl<S, E> extends GraphTraversal.Admin<S, E>
         Assert.isTrue(numRatingsToSample > 0, "numRatingsToSample must be greater than zero");
         Assert.isTrue(localUserRatingsToSample > 0, "localUserRatingsToSample must be greater than zero");
         
-        /**
+        /*
          * Notice that I call killr.users() (<-- defined in KillrVideoTraversalSourceDsl) using our DSL and then ".as()" to set the result as "currentUser".
          * This comes into play within the traversal right below it as a way to keep the whole
          * traversal a "one-liner" that prevents us from having to store multiple traversals in separate

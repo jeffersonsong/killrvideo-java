@@ -61,12 +61,9 @@ public class RatingRepository {
             LOGGER.debug("Rating {} on video {} for user {}", rating, videoId, userId);
         }
 
-        CompletionStage<AsyncResultSet> future1 = session.executeAsync(statement);
-        CompletableFuture<Void> future2 = videoRatingByUserDao.insert(entity);
-
         return CompletableFuture.allOf(
-                future1.toCompletableFuture().thenApply(s-> null),
-                future2);
+                session.executeAsync(statement).toCompletableFuture().thenApply(s-> null),
+                videoRatingByUserDao.insert(entity));
     }
 
     /**

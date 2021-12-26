@@ -118,7 +118,7 @@ public class StatisticsServiceGrpc extends StatisticsServiceImplBase {
      *
      * @param method
      *      current operation
-     * @param start
+     * @param starts
      *      timestamp for starting
      */
     private void traceSuccess(String method, Instant starts) {
@@ -132,7 +132,7 @@ public class StatisticsServiceGrpc extends StatisticsServiceImplBase {
      *
      * @param method
      *      current operation
-     * @param start
+     * @param starts
      *      timestamp for starting
      */
     private void traceError(String method, Instant starts, Throwable t) {

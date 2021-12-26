@@ -1,4 +1,4 @@
-package com.killrvideo.utils;
+package com.killrvideo.dse.utils;
 
 import com.datastax.oss.driver.api.core.MappedAsyncPagingIterable;
 

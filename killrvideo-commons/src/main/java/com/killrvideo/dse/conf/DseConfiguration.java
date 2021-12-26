@@ -26,8 +26,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 @Configuration
 public class DseConfiguration {
-    /** Internal logger. */
+
+	/** Internal logger. */
     private static final Logger LOGGER = LoggerFactory.getLogger(DseConfiguration.class);
+
     @Value("${killrvideo.discovery.service.cassandra: cassandra}")
     private String cassandraServiceName;
 
@@ -120,6 +122,17 @@ public class DseConfiguration {
                     long timeElapsed = System.currentTimeMillis() - top;
                     LOGGER.info("[OK] Connection established to Cassandra Cluster in {} millis.", timeElapsed);})
                 .execute(connectionToCassandra).getResult();
+    }
+
+    /**
+     * Graph Traversal for suggested videos.
+     *
+     * @return
+     *      traversal
+     */
+    @Bean
+    public KillrVideoTraversalSource initializeGraphTraversalSource() {
+        return DseGraph.g.getGraph().traversal(KillrVideoTraversalSource.class);
     }
 
     /**
@@ -218,16 +231,5 @@ public class DseConfiguration {
         } else {
             LOGGER.info(" + Connection is not authenticated (no username/password)");
         }
-    }
-
-    /**
-     * Graph Traversal for suggested videos.
-     *
-     * @return
-     *      traversal
-     */
-    @Bean
-    public KillrVideoTraversalSource initializeGraphTraversalSource() {
-        return DseGraph.g.getGraph().traversal(KillrVideoTraversalSource.class);
     }
 }

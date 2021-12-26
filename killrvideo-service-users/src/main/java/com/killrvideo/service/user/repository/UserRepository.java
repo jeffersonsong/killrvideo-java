@@ -7,7 +7,7 @@ import com.killrvideo.service.user.dao.UserDao;
 import com.killrvideo.service.user.dao.UserMapper;
 import com.killrvideo.service.user.dto.User;
 import com.killrvideo.service.user.dto.UserCredentials;
-import com.killrvideo.utils.MappedAsyncPagingIterableUtils;
+import com.killrvideo.dse.utils.MappedAsyncPagingIterableUtils;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;

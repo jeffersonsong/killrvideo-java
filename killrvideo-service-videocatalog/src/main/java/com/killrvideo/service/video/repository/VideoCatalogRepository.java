@@ -11,7 +11,7 @@ import com.killrvideo.service.video.dto.LatestVideo;
 import com.killrvideo.service.video.dto.LatestVideosPage;
 import com.killrvideo.service.video.dto.UserVideo;
 import com.killrvideo.dse.dto.Video;
-import com.killrvideo.utils.MappedAsyncPagingIterableUtils;
+import com.killrvideo.dse.utils.MappedAsyncPagingIterableUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,12 +30,8 @@ import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 import java.util.stream.StreamSupport;
 
-import static com.killrvideo.dse.dto.AbstractVideo.COLUMN_NAME;
-import static com.killrvideo.dse.dto.AbstractVideo.COLUMN_PREVIEW;
-import static com.killrvideo.service.video.dto.LatestVideo.COLUMN_YYYYMMDD;
-import static com.killrvideo.dse.dto.Video.*;
-import static com.killrvideo.utils.PageableQueryUtils.buildStatement;
-import static com.killrvideo.utils.PageableQueryUtils.queryAsyncWithPagination;
+import static com.killrvideo.dse.utils.PageableQueryUtils.buildStatement;
+import static com.killrvideo.dse.utils.PageableQueryUtils.queryAsyncWithPagination;
 
 /**
  * Implementations of operation for Videos.
@@ -54,6 +50,8 @@ public class VideoCatalogRepository {
     private VideoDao videoDao;
     private LatestVideoDao latestVideoDao;
     private UserVideoDao userVideoDao;
+    private UserVideoRowMapper userVideoRowMapper;
+    private LatestVideoRowMapper latestVideoRowMapper;
 
     /**
      * Prepare Statements 'getLatestVideso'.
@@ -67,8 +65,12 @@ public class VideoCatalogRepository {
     protected PreparedStatement userVideoPreview_startingPointPrepared;
     protected PreparedStatement userVideoPreview_noStartingPointPrepared;
 
-    public VideoCatalogRepository(CqlSession session) {
+    public VideoCatalogRepository(CqlSession session,
+                                  UserVideoRowMapper userVideoRowMapper,
+                                  LatestVideoRowMapper latestVideoRowMapper) {
         this.session = session;
+        this.userVideoRowMapper = userVideoRowMapper;
+        this.latestVideoRowMapper = latestVideoRowMapper;
         VideoCatalogMapper mapper = VideoCatalogMapper.build(session).build();
         this.videoDao = mapper.getVideoDao();
         this.userVideoDao = mapper.getUserVideoDao();
@@ -130,7 +132,7 @@ public class VideoCatalogRepository {
         BoundStatement boundStatement = buildUserVideosPreviewStatement(userId, startingVideoId,
                 startingAddedDate, pageSize, pagingState);
 
-        return queryAsyncWithPagination(session, boundStatement, this::mapToUserVideo);
+        return queryAsyncWithPagination(session, boundStatement, userVideoRowMapper::map);
     }
 
     private BoundStatement buildUserVideosPreviewStatement(
@@ -308,30 +310,9 @@ public class VideoCatalogRepository {
             resultPage.setCassandraPagingState(Bytes.toHexString(rs.getExecutionInfo().getPagingState()));
         }
         List<LatestVideo> listOfVideos = StreamSupport.stream(rs.currentPage().spliterator(), false)
-                .map(this::mapToLatestVideo)
+                .map(this.latestVideoRowMapper::map)
                 .collect(Collectors.toList());
         resultPage.setListOfPreview(listOfVideos);
         return resultPage;
-    }
-
-    private UserVideo mapToUserVideo(Row row) {
-        return new UserVideo(
-                row.getUuid(COLUMN_USERID),
-                row.getUuid(COLUMN_VIDEOID),
-                row.getString(COLUMN_NAME),
-                row.getString(COLUMN_PREVIEW),
-                row.getInstant(COLUMN_ADDED_DATE)
-        );
-    }
-
-    private LatestVideo mapToLatestVideo(Row row) {
-        return new LatestVideo(
-                row.getString(COLUMN_YYYYMMDD),
-                row.getUuid(COLUMN_USERID),
-                row.getUuid(COLUMN_VIDEOID),
-                row.getString(COLUMN_NAME),
-                row.getString(COLUMN_PREVIEW),
-                row.getInstant(COLUMN_ADDED_DATE)
-        );
     }
 }

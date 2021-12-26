@@ -152,6 +152,4 @@ public class Comment extends AbstractEntity {
     public UUID getVideoid() {
         return videoid;
     }
-    
-
 }

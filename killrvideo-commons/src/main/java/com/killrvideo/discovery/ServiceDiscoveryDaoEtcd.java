@@ -69,10 +69,6 @@ public class ServiceDiscoveryDaoEtcd implements ServiceDiscoveryDao {
     /**
      * Read from ETCD using a retry mecanism.
      *
-     * @param key
-     *      current key to look in ETCD.
-     * @param required
-     *      key is required if not returning empty list
      * @return
      */
     private void waitForEtcd() {

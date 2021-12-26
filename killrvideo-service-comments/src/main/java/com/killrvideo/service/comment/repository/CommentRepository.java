@@ -7,14 +7,13 @@ import com.killrvideo.dse.dto.ResultListPage;
 import com.killrvideo.service.comment.dao.CommentByUserDao;
 import com.killrvideo.service.comment.dao.CommentByVideoDao;
 import com.killrvideo.service.comment.dao.CommentMapper;
+import com.killrvideo.service.comment.dao.CommentRowMapper;
 import com.killrvideo.service.comment.dto.*;
 import org.springframework.stereotype.Repository;
 
 import java.util.concurrent.CompletableFuture;
 
-import static com.killrvideo.service.comment.dto.Comment.*;
-import static com.killrvideo.service.comment.dto.Comment.COLUMN_COMMENT;
-import static com.killrvideo.utils.PageableQueryUtils.*;
+import static com.killrvideo.dse.utils.PageableQueryUtils.*;
 
 /**
  * Implementation of queries and related to {@link Comment} objects within DataStax Enterprise.
@@ -24,39 +23,40 @@ import static com.killrvideo.utils.PageableQueryUtils.*;
  */
 @Repository
 public class CommentRepository {
-    private static final String QUERY_COMMENTS_BY_USER =
-            "SELECT userid, commentid, videoid, comment, toTimestamp(commentid) as comment_timestamp " +
-                    "FROM killrvideo.comments_by_user " +
-                    "WHERE userid = :userid";
-    public static final String QUERY_COMMENTS_BY_VIDEO =
-            "SELECT videoid, commentid, userid, comment, toTimestamp(commentid) as comment_timestamp " +
-                    "FROM killrvideo.comments_by_video " +
-                    "WHERE videoid = :videoid";
     private final CqlSession session;
     private final CommentByUserDao commentByUserDao;
     private final CommentByVideoDao commentByVideoDao;
     private final PreparedStatement findCommentsByUser;
     private final PreparedStatement findCommentsByVideo;
+    private final CommentRowMapper commentRowMapper;
 
-    public CommentRepository(CqlSession session) {
+    public CommentRepository(CqlSession session, CommentRowMapper commentRowMapper) {
         this.session = session;
+        this.commentRowMapper = commentRowMapper;
         CommentMapper mapper = CommentMapper.build(session).build();
         this.commentByUserDao = mapper.getCommentByUserDao();
         this.commentByVideoDao = mapper.getCommentByVideoDao();
 
-        findCommentsByUser = session.prepare(QUERY_COMMENTS_BY_USER);
-        findCommentsByVideo = session.prepare(QUERY_COMMENTS_BY_VIDEO);
+        findCommentsByUser = session.prepare(
+                "SELECT userid, commentid, videoid, comment, toTimestamp(commentid) as comment_timestamp " +
+                "FROM killrvideo.comments_by_user " +
+                "WHERE userid = :userid"
+        );
+        findCommentsByVideo = session.prepare(
+                "SELECT videoid, commentid, userid, comment, toTimestamp(commentid) as comment_timestamp " +
+                        "FROM killrvideo.comments_by_video " +
+                        "WHERE videoid = :videoid"
+        );
     }
 
     public CompletableFuture<Void> insertCommentAsync(final Comment comment) {
         CommentByUser commentByUser = new CommentByUser(comment);
         CommentByVideo commentByVideo = new CommentByVideo(comment);
 
-        CompletableFuture<Void> future1 = commentByUserDao.insert(commentByUser);
-        CompletableFuture<Void> future2 = commentByVideoDao.insert(commentByVideo);
-
-
-        return CompletableFuture.allOf(future1, future2);
+        return CompletableFuture.allOf(
+                commentByUserDao.insert(commentByUser),
+                commentByVideoDao.insert(commentByVideo)
+        );
     }
 
     /**
@@ -73,9 +73,9 @@ public class CommentRepository {
                             stmt -> stmt.boundStatementBuilder(query.getVideoId()),
                             query.getPageSize(),
                             query.getPageState(),
-                            ConsistencyLevel.QUORUM
+                            ConsistencyLevel.LOCAL_ONE
                     );
-            return queryAsyncWithPagination(session, boundStatement, CommentRepository::mapToComment);
+            return queryAsyncWithPagination(session, boundStatement, commentRowMapper::map);
         }
     }
 
@@ -93,19 +93,9 @@ public class CommentRepository {
                             stmt -> stmt.boundStatementBuilder(query.getUserId()),
                             query.getPageSize(),
                             query.getPageState(),
-                            ConsistencyLevel.QUORUM
+                            ConsistencyLevel.LOCAL_ONE
                     );
-            return queryAsyncWithPagination(session, boundStatement, CommentRepository::mapToComment);
+            return queryAsyncWithPagination(session, boundStatement, commentRowMapper::map);
         }
-    }
-
-    private static Comment mapToComment(Row row) {
-        Comment c = new Comment();
-        c.setComment(row.getString(COLUMN_COMMENT));
-        c.setUserid(row.getUuid(COLUMN_USERID));
-        c.setCommentid(row.getUuid(COLUMN_COMMENTID));
-        c.setVideoid(row.getUuid(COLUMN_VIDEOID));
-        c.setDateOfComment(row.getInstant("comment_timestamp"));
-        return c;
     }
 }

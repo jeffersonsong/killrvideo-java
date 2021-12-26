@@ -4,6 +4,7 @@ import com.datastax.oss.driver.api.core.ConsistencyLevel;
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.cql.*;
 import com.datastax.oss.protocol.internal.util.Bytes;
+import com.killrvideo.dse.dao.VideoRowMapper;
 import com.killrvideo.dse.dto.ResultListPage;
 import com.killrvideo.dse.dto.Video;
 import org.slf4j.Logger;
@@ -18,9 +19,6 @@ import java.util.TreeSet;
 import java.util.concurrent.CompletableFuture;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import static com.killrvideo.dse.dto.AbstractVideo.COLUMN_NAME;
-import static com.killrvideo.dse.dto.Video.*;
 
 @Repository
 public class SearchRepository {
@@ -50,8 +48,10 @@ public class SearchRepository {
     final private String pagingDriverEnd = "\", \"paging\":\"driver\"}";
 
     private CqlSession session;
+    private VideoRowMapper videoRowMapper;
 
-    public SearchRepository(CqlSession session) {
+    public SearchRepository(CqlSession session, VideoRowMapper videoRowMapper) {
+        this.videoRowMapper = videoRowMapper;
         this.session = session;
 
         // Statement for tags
@@ -82,7 +82,7 @@ public class SearchRepository {
     public CompletableFuture<ResultListPage<Video>> searchVideosAsync(String query, int fetchSize, Optional<String> pagingState) {
         return session.executeAsync(createStatementToSearchVideos(query, fetchSize, pagingState))
                 .toCompletableFuture()
-                .thenApply(rs -> new ResultListPage<Video>(rs, this::mapToVideo));
+                .thenApply(rs -> new ResultListPage<Video>(rs, videoRowMapper::map));
     }
 
     /**
@@ -101,7 +101,7 @@ public class SearchRepository {
         // Escaping special characters for query
         final String replaceFind = " ";
         final String replaceWith = " AND ";
-        /**
+        /*
          * Perform a query using DSE search to find videos. Query the
          * name, tags, and description columns in the videos table giving a boost to matches in the name and tags
          * columns as opposed to the description column.
@@ -109,7 +109,7 @@ public class SearchRepository {
         String requestQuery = query.trim()
                 .replaceAll(replaceFind, Matcher.quoteReplacement(replaceWith));
 
-        /**
+        /*
          * In this case we are using DSE Search to query across the name, tags, and
          * description columns with a boost on name and tags.  The boost will put
          * more priority on the name column, then tags, and finally description.
@@ -139,20 +139,6 @@ public class SearchRepository {
         BoundStatement stmt = builder.build();
         LOGGER.debug("Executed query is {} with solr_query: {}", stmt.getPreparedStatement().getQuery(),solrQuery);
         return stmt;
-    }
-
-    private Video mapToVideo(Row row) {
-        return new Video(
-                row.getUuid(COLUMN_VIDEOID),
-                row.getUuid(COLUMN_USERID),
-                row.getString(COLUMN_NAME),
-                row.getString(COLUMN_DESCRIPTION),
-                row.getString(COLUMN_LOCATION),
-                row.getInt(COLUMN_LOCATIONTYPE),
-                row.getString(COLUMN_PREVIEW),
-                row.getSet(COLUMN_TAGS, String.class),
-                row.getInstant(COLUMN_ADDED_DATE)
-        );
     }
 
     /**
@@ -214,7 +200,7 @@ public class SearchRepository {
         final Pattern checkRegex = Pattern.compile("(?i)\\b" + requestQuery + "[a-z]*\\b");
         TreeSet< String > suggestionSet = new TreeSet<>();
         for (Row row : rs.currentPage()) {
-            /**
+            /*
              * Since I simply want matches from both the name and tags fields
              * concatenate them together, apply regex, and add any results into
              * our suggestionSet TreeSet.  The TreeSet will handle any duplicates.
