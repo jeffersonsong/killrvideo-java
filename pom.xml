@@ -213,6 +213,7 @@
 			</dependency>
 
 			<!-- Spring* -->
+			<!--
 			<dependency>
 				<groupId>org.springframework</groupId>
 				<artifactId>spring-core</artifactId>
@@ -238,6 +239,7 @@
 				<artifactId>spring-expression</artifactId>
 				<version>${spring.version}</version>
 			</dependency>
+			-->
 
 			<!-- Spring-Boot BOM -->
 			<dependency>
