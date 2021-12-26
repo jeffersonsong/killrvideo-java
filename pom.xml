@@ -68,9 +68,9 @@
 		<cassandra-all.version>3.11.2</cassandra-all.version>
 		<junit-platform.version>1.2.0</junit-platform.version>
 		<junit-jupiter.version>5.2.0</junit-jupiter.version>
-		<cucumber.version>1.2.5</cucumber.version>
+		<cucumber.version>1.2.6</cucumber.version>
 		<mockito.version>1.9.5</mockito.version>
-        <assertj-core.version>1.7.0</assertj-core.version>
+        <assertj-core.version>3.21.0</assertj-core.version>
         
         <!-- Utilities -->
         <commons.lang3.version>3.12.0</commons.lang3.version>
