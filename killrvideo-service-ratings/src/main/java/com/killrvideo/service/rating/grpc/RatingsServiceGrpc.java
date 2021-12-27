@@ -2,9 +2,6 @@ package com.killrvideo.service.rating.grpc;
 
 import static com.killrvideo.service.rating.grpc.RatingsServiceGrpcMapper.maptoRatingResponse;
 import static com.killrvideo.service.rating.grpc.RatingsServiceGrpcMapper.maptoUserRatingResponse;
-import static com.killrvideo.service.rating.grpc.RatingsServiceGrpcValidator.validateGrpcRequest_GetRating;
-import static com.killrvideo.service.rating.grpc.RatingsServiceGrpcValidator.validateGrpcRequest_GetUserRating;
-import static com.killrvideo.service.rating.grpc.RatingsServiceGrpcValidator.validateGrpcRequest_RateVideo;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -54,13 +51,16 @@ public class RatingsServiceGrpc extends RatingsServiceImplBase {
     
     @Autowired
     private RatingRepository ratingRepository;
+
+    @Autowired
+    private RatingsServiceGrpcValidator validator;
     
     /** {@inheritDoc} */
     @Override
     public void rateVideo(final RateVideoRequest grpcReq, final StreamObserver<RateVideoResponse> grpcResObserver) {
         
         // Validate Parameters
-        validateGrpcRequest_RateVideo(LOGGER, grpcReq, grpcResObserver);
+        validator.validateGrpcRequest_RateVideo(grpcReq, grpcResObserver);
         
         // Stands as stopwatch for logging and messaging 
         final Instant starts = Instant.now();
@@ -92,9 +92,8 @@ public class RatingsServiceGrpc extends RatingsServiceImplBase {
     /** {@inheritDoc} */
     @Override
     public void getRating(GetRatingRequest grpcReq, StreamObserver<GetRatingResponse> grpcResObserver) {
-        
         // Validate Parameters
-        validateGrpcRequest_GetRating(LOGGER, grpcReq, grpcResObserver);
+        validator.validateGrpcRequest_GetRating(grpcReq, grpcResObserver);
         
         // Stands as stopwatch for logging and messaging 
         final Instant starts = Instant.now();
@@ -126,9 +125,8 @@ public class RatingsServiceGrpc extends RatingsServiceImplBase {
     /** {@inheritDoc} */
     @Override
     public void getUserRating(GetUserRatingRequest grpcReq, StreamObserver<GetUserRatingResponse> grpcResObserver) {
-        
         // Validate Parameters
-        validateGrpcRequest_GetUserRating(LOGGER, grpcReq, grpcResObserver);
+        validator.validateGrpcRequest_GetUserRating(grpcReq, grpcResObserver);
         
         // Stands as stopwatch for logging and messaging 
         final Instant starts = Instant.now();
@@ -193,6 +191,4 @@ public class RatingsServiceGrpc extends RatingsServiceImplBase {
     public String getServiceKey() {
         return serviceKey;
     }
-    
-
 }
