@@ -5,6 +5,7 @@ import com.killrvideo.utils.GrpcMappingUtils;
 import killrvideo.user_management.UserManagementServiceOuterClass.CreateUserRequest;
 import killrvideo.user_management.UserManagementServiceOuterClass.UserProfile;
 import killrvideo.user_management.UserManagementServiceOuterClass.VerifyCredentialsResponse;
+import org.springframework.stereotype.Component;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -14,13 +15,10 @@ import java.util.UUID;
  *
  * @author Cedrick LUNVEN (@clunven)
  */
+@Component
 public class UserManagementServiceGrpcMapper {
-    
-    /** Hide constructor for utility class. */
-    private UserManagementServiceGrpcMapper() {
-    }
-    
-    public static User mapUserRequest2User(CreateUserRequest grpcReq) {
+
+    public User mapUserRequest2User(CreateUserRequest grpcReq) {
         User user = new User();
         user.setEmail(grpcReq.getEmail());
         user.setCreatedDate(Instant.now());
@@ -30,7 +28,7 @@ public class UserManagementServiceGrpcMapper {
         return user;
     }
     
-    public static UserProfile mapUserToGrpcUserProfile(User user) {
+    public UserProfile mapUserToGrpcUserProfile(User user) {
        return UserProfile.newBuilder()
                     .setEmail(user.getEmail())
                     .setFirstName(user.getFirstname())
@@ -39,7 +37,7 @@ public class UserManagementServiceGrpcMapper {
                     .build();
     }
     
-    public static VerifyCredentialsResponse mapResponseVerifyCredentials(UUID userid) {
+    public VerifyCredentialsResponse mapResponseVerifyCredentials(UUID userid) {
         return VerifyCredentialsResponse.newBuilder().setUserId(GrpcMappingUtils.uuidToUuid(userid)).build();
     }
 

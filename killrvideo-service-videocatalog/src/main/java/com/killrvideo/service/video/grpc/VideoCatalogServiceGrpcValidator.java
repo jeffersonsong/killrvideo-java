@@ -24,7 +24,7 @@ import killrvideo.video_catalog.VideoCatalogServiceOuterClass.SubmitYouTubeVideo
  */
 @Component
 public class VideoCatalogServiceGrpcValidator {
-    private static final Logger logger = LoggerFactory.getLogger(VideoCatalogServiceGrpcValidator.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(VideoCatalogServiceGrpcValidator.class);
 
     /**
      * Validate arguments for 'SubmitYouTubeVideo'
@@ -52,7 +52,7 @@ public class VideoCatalogServiceGrpcValidator {
             errorMessage.append("\t\tvideo youtube id should be provided for submit youtube video request\n");
             isValid = false;
         }
-        Assert.isTrue(validate(logger, streamObserver, errorMessage, isValid), "Invalid parameter for 'submitVideo'");
+        Assert.isTrue(validate(LOGGER, streamObserver, errorMessage, isValid), "Invalid parameter for 'submitVideo'");
     }
     
     /**
@@ -65,7 +65,7 @@ public class VideoCatalogServiceGrpcValidator {
             errorMessage.append("\t\tpage size should be strictly positive for get latest preview video request\n");
             isValid = false;
         }
-        Assert.isTrue(validate(logger, streamObserver, errorMessage, isValid),  "Invalid parameter for 'getLatestVideoPreviews'");
+        Assert.isTrue(validate(LOGGER, streamObserver, errorMessage, isValid),  "Invalid parameter for 'getLatestVideoPreviews'");
     }
     
     public void validateGrpcRequest_getVideo(GetVideoRequest request, StreamObserver<?> streamObserver) {
@@ -75,7 +75,7 @@ public class VideoCatalogServiceGrpcValidator {
             errorMessage.append("\t\tvideo id should be provided for submit youtube video request\n");
             isValid = false;
         }
-        Assert.isTrue(validate(logger, streamObserver, errorMessage, isValid),  "Invalid parameter for 'getVideo'");
+        Assert.isTrue(validate(LOGGER, streamObserver, errorMessage, isValid),  "Invalid parameter for 'getVideo'");
     }
     
     public void validateGrpcRequest_getVideoPreviews(GetVideoPreviewsRequest request, StreamObserver<?> streamObserver) {
@@ -92,7 +92,7 @@ public class VideoCatalogServiceGrpcValidator {
                 isValid = false;
             }
         }
-        Assert.isTrue(validate(logger, streamObserver, errorMessage, isValid),  "Invalid parameter for 'getVideoPreview'");
+        Assert.isTrue(validate(LOGGER, streamObserver, errorMessage, isValid),  "Invalid parameter for 'getVideoPreview'");
     }
     
     public void validateGrpcRequest_getUserVideoPreviews(GetUserVideoPreviewsRequest request, StreamObserver<?> streamObserver) {
@@ -108,7 +108,7 @@ public class VideoCatalogServiceGrpcValidator {
             errorMessage.append("\t\tpage size should be strictly positive for get user video previews request\n");
             isValid = false;
         }        
-        Assert.isTrue(validate(logger, streamObserver, errorMessage, isValid),  "Invalid parameter for 'getUserVideoPreview'");
+        Assert.isTrue(validate(LOGGER, streamObserver, errorMessage, isValid),  "Invalid parameter for 'getUserVideoPreview'");
     }
 
 }

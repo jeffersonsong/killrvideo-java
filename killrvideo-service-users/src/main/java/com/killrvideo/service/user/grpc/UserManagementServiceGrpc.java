@@ -1,11 +1,5 @@
 package com.killrvideo.service.user.grpc;
 
-import static com.killrvideo.service.user.grpc.UserManagementServiceGrpcMapper.mapResponseVerifyCredentials;
-import static com.killrvideo.service.user.grpc.UserManagementServiceGrpcMapper.mapUserRequest2User;
-import static com.killrvideo.service.user.grpc.UserManagementServiceGrpcValidator.validateGrpcRequest_VerifyCredentials;
-import static com.killrvideo.service.user.grpc.UserManagementServiceGrpcValidator.validateGrpcRequest_createUser;
-import static com.killrvideo.service.user.grpc.UserManagementServiceGrpcValidator.validateGrpcRequest_getUserProfile;
-
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Arrays;
@@ -60,6 +54,11 @@ public class UserManagementServiceGrpc extends UserManagementServiceImplBase {
     
     @Autowired
     private MessagingDao messagingDao;
+
+    @Autowired
+    private UserManagementServiceGrpcValidator validator;
+    @Autowired
+    private UserManagementServiceGrpcMapper mapper;
     
      /** {@inheritDoc} */
     @Override
@@ -68,13 +67,13 @@ public class UserManagementServiceGrpc extends UserManagementServiceImplBase {
             final StreamObserver<CreateUserResponse> grpcResObserver) {
       
         // Validate Parameters
-        validateGrpcRequest_createUser(LOGGER, grpcReq, grpcResObserver);
+        validator.validateGrpcRequest_createUser(grpcReq, grpcResObserver);
         
         // Stands as stopwatch for logging and messaging 
         final Instant starts = Instant.now();
         
         // Mapping GRPC => Domain (Dao)
-        User user = mapUserRequest2User(grpcReq);
+        User user = mapper.mapUserRequest2User(grpcReq);
         final String hashedPassword = HashUtils.hashPassword(grpcReq.getPassword().trim());
         
          // Invoke DAO Async
@@ -104,7 +103,7 @@ public class UserManagementServiceGrpc extends UserManagementServiceImplBase {
             final StreamObserver<VerifyCredentialsResponse> grpcResObserver) {
         
         // Validate Parameters
-        validateGrpcRequest_VerifyCredentials(LOGGER, grpcReq, grpcResObserver);
+        validator.validateGrpcRequest_VerifyCredentials(grpcReq, grpcResObserver);
         
         // Stands as stopwatch for logging and messaging 
         final Instant starts = Instant.now();
@@ -127,7 +126,7 @@ public class UserManagementServiceGrpc extends UserManagementServiceImplBase {
                 }
             } else {
                 traceSuccess("verifyCredentials", starts);
-                grpcResObserver.onNext(mapResponseVerifyCredentials(credential.getUserid()));
+                grpcResObserver.onNext(mapper.mapResponseVerifyCredentials(credential.getUserid()));
                 grpcResObserver.onCompleted();
             }
         });
@@ -140,7 +139,7 @@ public class UserManagementServiceGrpc extends UserManagementServiceImplBase {
             final StreamObserver<GetUserProfileResponse> grpcResObserver) {
         
         // Validate Parameters
-        validateGrpcRequest_getUserProfile(LOGGER, grpcReq, grpcResObserver);
+        validator.validateGrpcRequest_getUserProfile(grpcReq, grpcResObserver);
         
         // Stands as stopwatch for logging and messaging 
         final Instant starts = Instant.now();
@@ -172,7 +171,7 @@ public class UserManagementServiceGrpc extends UserManagementServiceImplBase {
                 } else {
                     traceSuccess("getUserProfile", starts);
                     users.stream()
-                         .map(UserManagementServiceGrpcMapper::mapUserToGrpcUserProfile)
+                         .map(mapper::mapUserToGrpcUserProfile)
                          .forEach(builder::addProfiles);    
                     grpcResObserver.onNext(builder.build());
                     grpcResObserver.onCompleted();
