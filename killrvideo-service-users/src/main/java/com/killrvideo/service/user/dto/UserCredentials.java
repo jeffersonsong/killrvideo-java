@@ -7,9 +7,9 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.validator.constraints.Length;
 
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.io.Serializable;
 import java.util.UUID;
 
@@ -27,7 +27,7 @@ public class UserCredentials implements Serializable {
     @PartitionKey
     private String email;
 
-    @Length(min = 1, message = "password must not be empty")
+    @Size(min = 1, message = "password must not be empty")
     private String password;
 
     @NotNull

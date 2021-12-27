@@ -5,9 +5,9 @@ import com.datastax.oss.driver.api.mapper.annotations.Entity;
 import com.datastax.oss.driver.api.mapper.annotations.PartitionKey;
 import com.killrvideo.dse.utils.EmptyCollectionIfNull;
 import lombok.Getter;
-import org.hibernate.validator.constraints.Length;
 
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.time.Instant;
 import java.util.Set;
 import java.util.UUID;
@@ -37,10 +37,10 @@ public class Video extends AbstractVideo {
     @NotNull
     private UUID userid;
 
-    @Length(min = 1, message = "description must not be empty")
+    @Size(min = 1, message = "description must not be empty")
     private String description;
 
-    @Length(min = 1, message = "location must not be empty")
+    @Size(min = 1, message = "location must not be empty")
     private String location;
 
     private int locationType;

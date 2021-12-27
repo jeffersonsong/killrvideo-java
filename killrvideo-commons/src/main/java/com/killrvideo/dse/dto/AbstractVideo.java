@@ -4,7 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.validator.constraints.Length;
+
+import javax.validation.constraints.Size;
 
 /**
  * Bean representing shared attributes in videos.
@@ -20,7 +21,7 @@ public abstract class AbstractVideo extends AbstractEntity {
     public static final String COLUMN_TAGS    = "tags";
     public static final String COLUMN_PREVIEW = "preview_image_location";
     
-    @Length(min = 1, message = "The video name must not be empty")
+    @Size(min = 1, message = "The video name must not be empty")
     protected String name;
 
     protected String previewImageLocation;

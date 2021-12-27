@@ -6,9 +6,9 @@ import com.killrvideo.dse.dto.AbstractEntity;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.validator.constraints.Length;
 
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -39,7 +39,7 @@ public class Comment extends AbstractEntity {
     @ClusteringColumn
     protected UUID commentid;
 
-    @Length(min = 1, message = "The comment must not be empty")
+    @Size(min = 1, message = "The comment must not be empty")
     protected String comment;
 
     @NotNull
