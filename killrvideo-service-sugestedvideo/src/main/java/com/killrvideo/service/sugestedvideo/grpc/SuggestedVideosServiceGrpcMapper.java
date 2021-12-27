@@ -30,14 +30,7 @@ import killrvideo.video_catalog.events.VideoCatalogEvents.YouTubeVideoAdded;
  */
 @Component
 public class SuggestedVideosServiceGrpcMapper {
-    
-    /**
-     * Hide constructor of utility class.
-     */
-    private SuggestedVideosServiceGrpcMapper() {
-    }
-    
-    public static Video mapVideoAddedtoVideoDTO(YouTubeVideoAdded videoAdded) {
+    public Video mapVideoAddedtoVideoDTO(YouTubeVideoAdded videoAdded) {
         // Convert Stub to Dto, dao must not be related to interface GRPC
         Video video = new Video();
         video.setVideoid(UUID.fromString(videoAdded.getVideoId().toString()));
@@ -50,7 +43,7 @@ public class SuggestedVideosServiceGrpcMapper {
         return video;
     }
     
-    public static void validateGrpcRequest_getRelatedVideo(Logger logger, GetRelatedVideosRequest request, StreamObserver<GetRelatedVideosResponse> streamObserver) {
+    public void validateGrpcRequest_getRelatedVideo(Logger logger, GetRelatedVideosRequest request, StreamObserver<GetRelatedVideosResponse> streamObserver) {
         final StringBuilder errorMessage = initErrorString(request);
         boolean isValid = true;
 
@@ -61,7 +54,7 @@ public class SuggestedVideosServiceGrpcMapper {
         Assert.isTrue(validate(logger, streamObserver, errorMessage, isValid), "Invalid parameter for 'getRelatedVideo'");
     }
     
-    public static void validateGrpcRequest_getUserSuggestedVideo(Logger logger, GetSuggestedForUserRequest request, StreamObserver<GetSuggestedForUserResponse> streamObserver) {
+    public void validateGrpcRequest_getUserSuggestedVideo(Logger logger, GetSuggestedForUserRequest request, StreamObserver<GetSuggestedForUserResponse> streamObserver) {
         final StringBuilder errorMessage = initErrorString(request);
         boolean isValid = true;
         if (request.getUserId() == null || isBlank(request.getUserId().getValue())) {
@@ -74,7 +67,7 @@ public class SuggestedVideosServiceGrpcMapper {
     /**
      * Mapping to generated GPRC beans. (Suggested videos special)
      */
-    public static SuggestedVideoPreview mapVideotoSuggestedVideoPreview(Video v) {
+    public SuggestedVideoPreview mapVideotoSuggestedVideoPreview(Video v) {
         return SuggestedVideoPreview.newBuilder()
                 .setName(v.getName())
                 .setVideoId(uuidToUuid(v.getVideoid()))

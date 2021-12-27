@@ -1,7 +1,5 @@
 package com.killrvideo.service.sugestedvideo.grpc;
 
-import static com.killrvideo.service.sugestedvideo.grpc.SuggestedVideosServiceGrpcMapper.validateGrpcRequest_getRelatedVideo;
-import static com.killrvideo.service.sugestedvideo.grpc.SuggestedVideosServiceGrpcMapper.validateGrpcRequest_getUserSuggestedVideo;
 import static com.killrvideo.utils.GrpcMappingUtils.uuidToUuid;
 
 import java.time.Duration;
@@ -47,13 +45,16 @@ public class SuggestedVideosServiceGrpc extends SuggestedVideoServiceImplBase {
     
     @Autowired
     private SuggestedVideosRepository suggestedVideosDseDao;
+    @Autowired
+    private SuggestedVideosServiceGrpcValidator validator;
+    @Autowired
+    private SuggestedVideosServiceGrpcMapper mapper;
     
     /** {@inheritDoc} */
     @Override
     public void getRelatedVideos(GetRelatedVideosRequest grpcReq, StreamObserver<GetRelatedVideosResponse> grpcResObserver) {
-        
         // Validate Parameters
-        validateGrpcRequest_getRelatedVideo(LOGGER, grpcReq, grpcResObserver);
+        validator.validateGrpcRequest_getRelatedVideo(grpcReq, grpcResObserver);
         
         // Stands as stopwatch for logging and messaging 
         final Instant starts = Instant.now();
@@ -81,7 +82,7 @@ public class SuggestedVideosServiceGrpc extends SuggestedVideoServiceImplBase {
                 final GetRelatedVideosResponse.Builder builder = 
                         GetRelatedVideosResponse.newBuilder().setVideoId(videoGrpcUUID);
                 resultPage.getResults().stream()
-                      .map(SuggestedVideosServiceGrpcMapper::mapVideotoSuggestedVideoPreview)
+                      .map(mapper::mapVideotoSuggestedVideoPreview)
                       .filter(preview -> !preview.getVideoId().equals(videoGrpcUUID))
                       .forEach(builder::addVideos);
                 resultPage.getPagingState().ifPresent(builder::setPagingState);
@@ -94,9 +95,8 @@ public class SuggestedVideosServiceGrpc extends SuggestedVideoServiceImplBase {
     /** {@inheritDoc} */
     @Override
     public void getSuggestedForUser(GetSuggestedForUserRequest grpcReq, StreamObserver<GetSuggestedForUserResponse> grpcResObserver) {
-        
         // Validate Parameters
-        validateGrpcRequest_getUserSuggestedVideo(LOGGER, grpcReq, grpcResObserver);
+        validator.validateGrpcRequest_getUserSuggestedVideo(grpcReq, grpcResObserver);
         
         // Stands as stopwatch for logging and messaging 
         final Instant starts = Instant.now();
@@ -118,7 +118,7 @@ public class SuggestedVideosServiceGrpc extends SuggestedVideoServiceImplBase {
                 traceSuccess("getSuggestedForUser", starts);
                 Uuid userGrpcUUID = uuidToUuid(userid);
                 final GetSuggestedForUserResponse.Builder builder = GetSuggestedForUserResponse.newBuilder().setUserId(userGrpcUUID);
-                videos.stream().map(SuggestedVideosServiceGrpcMapper::mapVideotoSuggestedVideoPreview).forEach(builder::addVideos);
+                videos.stream().map(mapper::mapVideotoSuggestedVideoPreview).forEach(builder::addVideos);
                 grpcResObserver.onNext(builder.build());
                 grpcResObserver.onCompleted();
             }
