@@ -5,6 +5,7 @@ import static com.killrvideo.service.comment.grpc.CommentsServiceGrpcValidator.n
 import static com.killrvideo.service.comment.grpc.CommentsServiceGrpcValidator.positive;
 import static com.killrvideo.service.comment.grpc.CommentsServiceGrpcValidator.validate;
 import static com.killrvideo.utils.GrpcMappingUtils.*;
+import static java.util.UUID.fromString;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import java.time.Instant;
@@ -176,6 +177,15 @@ public class CommentsServiceGrpcMapper {
         targetQuery.setPageSize(grpcReq.getPageSize());
         targetQuery.setPageState(Optional.ofNullable(grpcReq.getPagingState()));
         return targetQuery;
+    }
+
+    public Comment mapToComment(CommentOnVideoRequest grpcReq) {
+        Comment comment = new Comment();
+        comment.setVideoid(fromString(grpcReq.getVideoId().getValue()));
+        comment.setCommentid(fromString(grpcReq.getCommentId().getValue()));
+        comment.setUserid(fromString(grpcReq.getUserId().getValue()));
+        comment.setComment(grpcReq.getComment());
+        return comment;
     }
 
     public CommentsEvents.UserCommentedOnVideo createUserCommentedOnVideoEvent(Comment comment) {

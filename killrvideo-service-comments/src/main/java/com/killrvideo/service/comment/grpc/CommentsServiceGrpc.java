@@ -1,32 +1,22 @@
 package com.killrvideo.service.comment.grpc;
 
-import static java.util.UUID.fromString;
-
-import java.time.Duration;
-import java.time.Instant;
-
+import com.killrvideo.messaging.dao.MessagingDao;
+import com.killrvideo.service.comment.dto.Comment;
+import com.killrvideo.service.comment.dto.QueryCommentByUser;
+import com.killrvideo.service.comment.dto.QueryCommentByVideo;
 import com.killrvideo.service.comment.repository.CommentRepository;
+import io.grpc.Status;
+import io.grpc.stub.StreamObserver;
+import killrvideo.comments.CommentsServiceGrpc.CommentsServiceImplBase;
+import killrvideo.comments.CommentsServiceOuterClass.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import com.killrvideo.messaging.dao.MessagingDao;
-import com.killrvideo.service.comment.dto.Comment;
-import com.killrvideo.service.comment.dto.QueryCommentByUser;
-import com.killrvideo.service.comment.dto.QueryCommentByVideo;
-
-import io.grpc.Status;
-import io.grpc.stub.StreamObserver;
-import killrvideo.comments.CommentsServiceGrpc.CommentsServiceImplBase;
-import killrvideo.comments.CommentsServiceOuterClass.CommentOnVideoRequest;
-import killrvideo.comments.CommentsServiceOuterClass.CommentOnVideoResponse;
-import killrvideo.comments.CommentsServiceOuterClass.GetUserCommentsRequest;
-import killrvideo.comments.CommentsServiceOuterClass.GetUserCommentsResponse;
-import killrvideo.comments.CommentsServiceOuterClass.GetVideoCommentsRequest;
-import killrvideo.comments.CommentsServiceOuterClass.GetVideoCommentsResponse;
-
 import javax.inject.Inject;
+import java.time.Duration;
+import java.time.Instant;
 
 /**
  * Exposition of comment services with GPRC Technology & Protobuf Interface
@@ -47,7 +37,7 @@ public class CommentsServiceGrpc extends CommentsServiceImplBase {
     
     /** Communications and queries to DSE (Comment). */
     @Inject
-    private CommentRepository dseCommentDao;
+    private CommentRepository commentRepository;
     
     @Inject
     private MessagingDao messagingDao;
@@ -67,12 +57,12 @@ public class CommentsServiceGrpc extends CommentsServiceImplBase {
         final Instant starts = Instant.now();
         
         // Mapping GRPC => Domain (Dao)
-        Comment comment = newComment(grpcReq);
+        Comment comment = mapper.mapToComment(grpcReq);
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Insert comment on video {} for user {} : {}",  comment.getVideoid(), comment.getUserid(), comment);
         }
         
-        dseCommentDao.insertCommentAsync(comment)
+        commentRepository.insertCommentAsync(comment)
         .thenCompose(rs ->
                 // If OK, then send Message to Kafka
                 messagingDao.sendEvent(messageDestination, mapper.createUserCommentedOnVideoEvent(rs))
@@ -89,15 +79,6 @@ public class CommentsServiceGrpc extends CommentsServiceImplBase {
          });
     }
 
-    private Comment newComment(CommentOnVideoRequest grpcReq) {
-        Comment q = new Comment();
-        q.setVideoid(fromString(grpcReq.getVideoId().getValue()));
-        q.setCommentid(fromString(grpcReq.getCommentId().getValue()));
-        q.setUserid(fromString(grpcReq.getUserId().getValue()));
-        q.setComment(grpcReq.getComment());
-        return q;
-    }
-
     /** {@inheritDoc} */
     @Override
     public void getVideoComments(final GetVideoCommentsRequest grpcReq, StreamObserver<GetVideoCommentsResponse> responseObserver) {
@@ -112,7 +93,7 @@ public class CommentsServiceGrpc extends CommentsServiceImplBase {
         QueryCommentByVideo query = mapper.mapFromGrpcVideoCommentToDseQuery(grpcReq);
              
         // ASYNCHRONOUS works with ComputableFuture
-        dseCommentDao.findCommentsByVideosIdAsync(query).whenComplete((result, error) -> {
+        commentRepository.findCommentsByVideosIdAsync(query).whenComplete((result, error) -> {
             if (result != null) {
                 traceSuccess( "getVideoComments", starts);
                 responseObserver.onNext(mapper.mapFromDseVideoCommentToGrpcResponse(result));
@@ -128,7 +109,6 @@ public class CommentsServiceGrpc extends CommentsServiceImplBase {
     /** {@inheritDoc} */
     @Override
     public void getUserComments(final GetUserCommentsRequest grpcReq, StreamObserver<GetUserCommentsResponse> responseObserver) {
-
         // GRPC Parameters Validation
         validator.validateGrpcRequest_GetUserComments(grpcReq, responseObserver);
         
@@ -142,7 +122,7 @@ public class CommentsServiceGrpc extends CommentsServiceImplBase {
         }
        
         // ASYNCHRONOUS works with ComputableFuture
-        dseCommentDao.findCommentsByUserIdAsync(query).whenComplete((result, error) -> {
+        commentRepository.findCommentsByUserIdAsync(query).whenComplete((result, error) -> {
             if (result != null) {
                 traceSuccess("getUserComments", starts);
                 responseObserver.onNext(mapper.mapFromDseUserCommentToGrpcResponse(result));
