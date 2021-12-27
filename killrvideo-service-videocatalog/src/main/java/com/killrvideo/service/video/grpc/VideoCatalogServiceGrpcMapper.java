@@ -5,16 +5,19 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import com.google.common.collect.Sets;
+import com.google.protobuf.Timestamp;
 import com.killrvideo.service.video.dto.LatestVideo;
 import com.killrvideo.service.video.dto.LatestVideosPage;
 import com.killrvideo.service.video.dto.UserVideo;
 
 import com.killrvideo.dse.dto.Video;
+import com.killrvideo.utils.GrpcMappingUtils;
 import killrvideo.video_catalog.VideoCatalogServiceOuterClass.GetLatestVideoPreviewsResponse;
 import killrvideo.video_catalog.VideoCatalogServiceOuterClass.GetVideoResponse;
 import killrvideo.video_catalog.VideoCatalogServiceOuterClass.SubmitYouTubeVideoRequest;
 import killrvideo.video_catalog.VideoCatalogServiceOuterClass.VideoLocationType;
 import killrvideo.video_catalog.VideoCatalogServiceOuterClass.VideoPreview;
+import killrvideo.video_catalog.events.VideoCatalogEvents;
 import org.springframework.stereotype.Component;
 
 import static com.killrvideo.utils.GrpcMappingUtils.*;
@@ -102,6 +105,18 @@ public class VideoCatalogServiceGrpcMapper {
                 .setUserId(uuidToUuid(v.getUserid()))
                 .setVideoId(uuidToUuid(v.getVideoid()))
                 .addAllTags(v.getTags())
+                .build();
+    }
+
+    public VideoCatalogEvents.YouTubeVideoAdded createYouTubeVideoAddedEvent(Video video) {
+        return VideoCatalogEvents.YouTubeVideoAdded.newBuilder()
+                .setAddedDate(Timestamp.newBuilder().build())
+                .setDescription(video.getDescription())
+                .setLocation(video.getLocation())
+                .setName(video.getName())
+                .setPreviewImageLocation(video.getPreviewImageLocation())
+                .setUserId(uuidToUuid(video.getUserid()))
+                .setVideoId(uuidToUuid(video.getVideoid()))
                 .build();
     }
 }

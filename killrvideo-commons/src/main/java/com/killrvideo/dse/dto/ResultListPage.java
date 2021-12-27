@@ -1,9 +1,10 @@
 package com.killrvideo.dse.dto;
 
+import lombok.AllArgsConstructor;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import lombok.AllArgsConstructor;
 
 /**
  * Ease usage of the paginState.

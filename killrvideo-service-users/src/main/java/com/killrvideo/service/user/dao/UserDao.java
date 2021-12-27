@@ -12,7 +12,7 @@ import java.util.concurrent.CompletableFuture;
 public interface UserDao {
     @Insert
     @StatementAttributes(consistencyLevel = "LOCAL_QUORUM")
-    CompletableFuture<Void> insert(User user);
+    CompletableFuture<User> insert(User user);
 
     @Select(customWhereClause = "userid in :userids")
     @StatementAttributes(consistencyLevel = "LOCAL_ONE")

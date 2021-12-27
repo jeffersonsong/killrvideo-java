@@ -39,7 +39,7 @@ public class RatingRepository {
      * @param userId  current userid
      * @param rating  current rating
      */
-    public CompletableFuture<Void> rateVideo(UUID videoId, UUID userId, Integer rating) {
+    public CompletableFuture<VideoRatingByUser> rateVideo(UUID videoId, UUID userId, Integer rating) {
         // Param validations
         assertNotNull("rateVideo", "videoId", videoId);
         assertNotNull("rateVideo", "userId", userId);
@@ -51,10 +51,8 @@ public class RatingRepository {
             LOGGER.debug("Rating {} on video {} for user {}", rating, videoId, userId);
         }
 
-        return CompletableFuture.allOf(
-                videoRatingByUserDao.insert(entity),
-                videoRatingDao.increment(videoId, 1L, rating)
-        );
+        return videoRatingDao.increment(videoId, 1L, rating)
+                .thenCompose(rs -> videoRatingByUserDao.insert(entity));
     }
 
     /**

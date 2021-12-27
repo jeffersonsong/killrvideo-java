@@ -1,14 +1,17 @@
 package com.killrvideo.service.user.grpc;
 
+import com.google.protobuf.Timestamp;
 import com.killrvideo.service.user.dto.User;
-import com.killrvideo.utils.GrpcMappingUtils;
 import killrvideo.user_management.UserManagementServiceOuterClass.CreateUserRequest;
 import killrvideo.user_management.UserManagementServiceOuterClass.UserProfile;
 import killrvideo.user_management.UserManagementServiceOuterClass.VerifyCredentialsResponse;
+import killrvideo.user_management.events.UserManagementEvents;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
 import java.util.UUID;
+
+import static com.killrvideo.utils.GrpcMappingUtils.uuidToUuid;
 
 /**
  * Mapping from interfaces GRPC to DTO
@@ -33,12 +36,21 @@ public class UserManagementServiceGrpcMapper {
                     .setEmail(user.getEmail())
                     .setFirstName(user.getFirstname())
                     .setLastName(user.getLastname())
-                    .setUserId(GrpcMappingUtils.uuidToUuid(user.getUserid()))
+                    .setUserId(uuidToUuid(user.getUserid()))
                     .build();
     }
     
     public VerifyCredentialsResponse mapResponseVerifyCredentials(UUID userid) {
-        return VerifyCredentialsResponse.newBuilder().setUserId(GrpcMappingUtils.uuidToUuid(userid)).build();
+        return VerifyCredentialsResponse.newBuilder().setUserId(uuidToUuid(userid)).build();
     }
 
+    public UserManagementEvents.UserCreated createUserCreatedEvent(User user) {
+        return UserManagementEvents.UserCreated.newBuilder()
+                .setEmail(user.getEmail())
+                .setFirstName(user.getFirstname())
+                .setLastName(user.getLastname())
+                .setUserId(uuidToUuid(user.getUserid()))
+                .setTimestamp(Timestamp.newBuilder().build())
+                .build();
+    }
 }

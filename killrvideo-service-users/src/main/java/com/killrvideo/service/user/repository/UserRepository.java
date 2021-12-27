@@ -36,11 +36,9 @@ public class UserRepository {
      * @param hashedPassword hashed Password
      * @return
      */
-    public CompletableFuture<Void> createUserAsync(User user, String hashedPassword) {
-        return CompletableFuture.allOf(
-                userDao.insert(user),
-                userCredentialsDao.insert(UserCredentials.from(user, hashedPassword))
-        );
+    public CompletableFuture<User> createUserAsync(User user, String hashedPassword) {
+        return userCredentialsDao.insert(UserCredentials.from(user, hashedPassword))
+                .thenCompose(rs -> userDao.insert(user));
     }
 
     /**

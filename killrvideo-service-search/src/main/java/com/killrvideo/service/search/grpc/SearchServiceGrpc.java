@@ -2,8 +2,7 @@ package com.killrvideo.service.search.grpc;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Optional;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 import com.killrvideo.dse.dto.Video;
@@ -106,13 +105,9 @@ public class SearchServiceGrpc extends SearchServiceImplBase {
         
         // Mapping back to GRPC beans
         futureDao.whenComplete((suggestionSet, error) -> {
-                        
           if (error == null) {
               traceSuccess("getQuerySuggestions", starts);
-              final GetQuerySuggestionsResponse.Builder builder = GetQuerySuggestionsResponse.newBuilder();
-              builder.setQuery(grpcReq.getQuery());
-              builder.addAllSuggestions(suggestionSet);
-              grpcResObserver.onNext(builder.build());
+              grpcResObserver.onNext(buildQuerySuggestionsResponse(grpcReq.getQuery(), suggestionSet));
               grpcResObserver.onCompleted();
           } else {
               traceError("getQuerySuggestions", starts, error);
@@ -120,7 +115,16 @@ public class SearchServiceGrpc extends SearchServiceImplBase {
           }             
         });
     }
-    
+
+    private GetQuerySuggestionsResponse buildQuerySuggestionsResponse(
+            String query, Iterable<String> suggestionSet
+    ) {
+        return GetQuerySuggestionsResponse.newBuilder()
+                .setQuery(query)
+                .addAllSuggestions(suggestionSet)
+                .build();
+    }
+
     /**
      * Utility to TRACE.
      *

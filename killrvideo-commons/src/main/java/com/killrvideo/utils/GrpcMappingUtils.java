@@ -48,5 +48,4 @@ public class GrpcMappingUtils {
     public static Timestamp instantToTimeStamp(Instant instant) {
         return Timestamp.newBuilder().setSeconds(instant.getEpochSecond()).setNanos(instant.getNano()).build();
     }
-
 }

@@ -14,7 +14,7 @@ import java.util.concurrent.CompletableFuture;
 public interface VideoRatingByUserDao {
     @Insert
     @StatementAttributes(consistencyLevel = "LOCAL_QUORUM")
-    CompletableFuture<Void> insert(VideoRatingByUser videoRatingByUser);
+    CompletableFuture<VideoRatingByUser> insert(VideoRatingByUser videoRatingByUser);
 
     @Select
     @StatementAttributes(consistencyLevel = "LOCAL_ONE")

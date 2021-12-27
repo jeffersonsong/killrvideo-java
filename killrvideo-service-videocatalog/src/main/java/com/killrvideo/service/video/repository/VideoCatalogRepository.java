@@ -112,14 +112,13 @@ public class VideoCatalogRepository {
     /**
      * Insert a VIDEO in the DB (ASYNC).
      */
-    public CompletableFuture<Void> insertVideoAsync(Video v) {
+    public CompletableFuture<Video> insertVideoAsync(Video v) {
         Instant now = Instant.now();
 
         return CompletableFuture.allOf(
-                this.videoDao.insert(v),
                 this.userVideoDao.insert(UserVideo.from(v, now)),
                 this.latestVideoDao.insert(LatestVideo.from(v, now))
-        );
+        ).thenCompose(rs -> this.videoDao.insert(v));
     }
 
     public CompletableFuture<Video> getVideoById(UUID videoid) {
