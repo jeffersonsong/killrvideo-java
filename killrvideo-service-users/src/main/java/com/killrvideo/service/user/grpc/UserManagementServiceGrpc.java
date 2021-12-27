@@ -32,6 +32,8 @@ import killrvideo.user_management.UserManagementServiceOuterClass.VerifyCredenti
 import killrvideo.user_management.UserManagementServiceOuterClass.VerifyCredentialsResponse;
 import killrvideo.user_management.events.UserManagementEvents.UserCreated;
 
+import javax.inject.Inject;
+
 /**
  * Create or update users.
  *
@@ -49,15 +51,15 @@ public class UserManagementServiceGrpc extends UserManagementServiceImplBase {
     @Value("${killrvideo.discovery.services.user : UserManagementService}")
     private String serviceKey;
     
-    @Autowired
+    @Inject
     private UserRepository userRepository;
-    
-    @Autowired
+
+    @Inject
     private MessagingDao messagingDao;
 
-    @Autowired
+    @Inject
     private UserManagementServiceGrpcValidator validator;
-    @Autowired
+    @Inject
     private UserManagementServiceGrpcMapper mapper;
     
      /** {@inheritDoc} */
