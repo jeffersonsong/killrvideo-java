@@ -7,9 +7,12 @@ import static com.killrvideo.service.comment.grpc.CommentsServiceGrpcValidator.v
 import static com.killrvideo.utils.GrpcMappingUtils.*;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
+import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 
+import com.killrvideo.utils.GrpcMappingUtils;
+import killrvideo.comments.events.CommentsEvents;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
@@ -175,4 +178,12 @@ public class CommentsServiceGrpcMapper {
         return targetQuery;
     }
 
+    public CommentsEvents.UserCommentedOnVideo createUserCommentedOnVideoEvent(Comment comment) {
+        return CommentsEvents.UserCommentedOnVideo.newBuilder()
+                .setCommentId(uuidToTimeUuid(comment.getCommentid()))
+                .setVideoId(uuidToUuid(comment.getVideoid()))
+                .setUserId(uuidToUuid(comment.getUserid()))
+                .setCommentTimestamp(GrpcMappingUtils.instantToTimeStamp(Instant.now()))
+                .build();
+    }
 }

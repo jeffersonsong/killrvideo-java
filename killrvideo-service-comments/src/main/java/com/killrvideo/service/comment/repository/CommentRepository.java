@@ -61,11 +61,11 @@ public class CommentRepository {
      *
      * @param comment comment to be inserted by signup user.
      */
-    public CompletableFuture<Void> insertCommentAsync(final Comment comment) {
+    public CompletableFuture<Comment> insertCommentAsync(final Comment comment) {
         return CompletableFuture.allOf(
                 commentByUserDao.insert(CommentByUser.from(comment)),
                 commentByVideoDao.insert(CommentByVideo.from(comment))
-        );
+        ).thenApply(rs -> comment);
     }
 
     /**

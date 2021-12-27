@@ -76,18 +76,12 @@ public class CommentsServiceGrpc extends CommentsServiceImplBase {
             LOGGER.debug("Insert comment on video {} for user {} : {}",  q.getVideoid(), q.getUserid(), q);
         }
         
-        CompletableFuture<Void> futureDse = dseCommentDao.insertCommentAsync(q);
-        
-        // If OK, then send Message to Kafka
-        CompletableFuture<Object> futureDseThensKafka = futureDse.thenCompose(rs ->
-                messagingDao.sendEvent(messageDestination, UserCommentedOnVideo.newBuilder()
-                .setCommentId(grpcReq.getCommentId())
-                .setVideoId(grpcReq.getVideoId())
-                .setUserId(grpcReq.getUserId())
-                .setCommentTimestamp(GrpcMappingUtils.instantToTimeStamp(Instant.now()))
-                .build()));
-        
-        futureDseThensKafka.whenComplete((result, error) -> {
+        dseCommentDao.insertCommentAsync(q)
+        .thenCompose(rs ->
+                // If OK, then send Message to Kafka
+                messagingDao.sendEvent(messageDestination, mapper.createUserCommentedOnVideoEvent(rs))
+        )
+        .whenComplete((result, error) -> {
             if (error != null ) {
                 traceError("commentOnVideo", starts, error);
                 grpcResObserver.onError(Status.INTERNAL.withCause(error).asRuntimeException());
