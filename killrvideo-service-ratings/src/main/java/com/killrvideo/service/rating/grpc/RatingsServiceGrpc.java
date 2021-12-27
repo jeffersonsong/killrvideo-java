@@ -1,8 +1,5 @@
 package com.killrvideo.service.rating.grpc;
 
-import static com.killrvideo.service.rating.grpc.RatingsServiceGrpcMapper.maptoRatingResponse;
-import static com.killrvideo.service.rating.grpc.RatingsServiceGrpcMapper.maptoUserRatingResponse;
-
 import java.time.Duration;
 import java.time.Instant;
 import java.util.UUID;
@@ -14,7 +11,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.killrvideo.messaging.dao.MessagingDao;
-import com.killrvideo.utils.GrpcMappingUtils;
 
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
@@ -25,7 +21,6 @@ import killrvideo.ratings.RatingsServiceOuterClass.GetUserRatingRequest;
 import killrvideo.ratings.RatingsServiceOuterClass.GetUserRatingResponse;
 import killrvideo.ratings.RatingsServiceOuterClass.RateVideoRequest;
 import killrvideo.ratings.RatingsServiceOuterClass.RateVideoResponse;
-import killrvideo.ratings.events.RatingsEvents.UserRatedVideo;
 
 import javax.inject.Inject;
 
@@ -55,6 +50,7 @@ public class RatingsServiceGrpc extends RatingsServiceImplBase {
 
     @Inject
     private RatingsServiceGrpcValidator validator;
+    @Inject RatingsServiceGrpcMapper mapper;
     
     /** {@inheritDoc} */
     @Override
@@ -75,12 +71,7 @@ public class RatingsServiceGrpc extends RatingsServiceImplBase {
         ratingRepository.rateVideo(videoid, userid, rate).whenComplete((result, error) -> {
             if (error == null) {
                 traceSuccess("rateVideo", starts);
-                messagingDao.sendEvent(topicvideoRated, 
-                        UserRatedVideo.newBuilder()
-                        .setRating(grpcReq.getRating())
-                        .setRatingTimestamp(GrpcMappingUtils.instantToTimeStamp(Instant.now()))
-                        .setUserId(grpcReq.getUserId())
-                        .setVideoId(grpcReq.getVideoId()).build());
+                messagingDao.sendEvent(topicvideoRated, mapper.createUserRatedVideoEvent(result));
                 grpcResObserver.onNext(RateVideoResponse.newBuilder().build());
                 grpcResObserver.onCompleted();
             } else {
@@ -107,7 +98,7 @@ public class RatingsServiceGrpc extends RatingsServiceImplBase {
             if (error == null) {
                 traceSuccess("getRating", starts);
                 if (videoRating.isPresent()) {
-                    grpcResObserver.onNext(maptoRatingResponse(videoRating.get()));
+                    grpcResObserver.onNext(mapper.maptoRatingResponse(videoRating.get()));
                 } else {
                     grpcResObserver.onNext(GetRatingResponse.newBuilder()
                             .setVideoId(grpcReq.getVideoId())
@@ -141,7 +132,7 @@ public class RatingsServiceGrpc extends RatingsServiceImplBase {
             if (error == null) {
                 traceSuccess("getUserRating" , starts);
                 if (videoRating.isPresent()) {
-                    grpcResObserver.onNext(maptoUserRatingResponse(videoRating.get()));
+                    grpcResObserver.onNext(mapper.maptoUserRatingResponse(videoRating.get()));
                 } else {
                     grpcResObserver.onNext(GetUserRatingResponse.newBuilder()
                             .setUserId(grpcReq.getUserId())
