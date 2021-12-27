@@ -1,8 +1,10 @@
 package com.killrvideo.service.search.grpc;
 
+import com.killrvideo.dse.dto.ResultListPage;
 import com.killrvideo.dse.dto.Video;
 import com.killrvideo.utils.GrpcMappingUtils;
 
+import killrvideo.search.SearchServiceOuterClass.*;
 import killrvideo.search.SearchServiceOuterClass.SearchResultsVideoPreview;
 import killrvideo.search.SearchServiceOuterClass.SearchResultsVideoPreview.Builder;
 import org.springframework.stereotype.Component;
@@ -31,9 +33,25 @@ public class SearchServiceGrpcMapper {
         }
         return builder.build();
     }
-    
-    
-    
 
+    public SearchVideosResponse buildSearchGrpcResponse(ResultListPage<Video> resultPage,
+                                                        SearchVideosRequest initialRequest) {
+        final SearchVideosResponse.Builder builder = SearchVideosResponse.newBuilder();
+        builder.setQuery(initialRequest.getQuery());
+        resultPage.getPagingState().ifPresent(builder::setPagingState);
+        resultPage.getResults().stream()
+                .map(this::maptoResultVideoPreview)
+                .forEach(builder::addVideos);
+        return builder.build();
+    }
+
+    public GetQuerySuggestionsResponse buildQuerySuggestionsResponse(
+            Iterable<String> suggestionSet, String query
+    ) {
+        return GetQuerySuggestionsResponse.newBuilder()
+                .setQuery(query)
+                .addAllSuggestions(suggestionSet)
+                .build();
+    }
     
 }

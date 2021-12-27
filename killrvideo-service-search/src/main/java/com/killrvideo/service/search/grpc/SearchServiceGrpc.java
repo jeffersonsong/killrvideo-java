@@ -5,15 +5,12 @@ import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
-import com.killrvideo.dse.dto.Video;
 import com.killrvideo.service.search.repository.SearchRepository;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-
-import com.killrvideo.dse.dto.ResultListPage;
 
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
@@ -58,15 +55,14 @@ public class SearchServiceGrpc extends SearchServiceImplBase {
         // Mapping GRPC => Domain (Dao)
         String           searchQuery = grpcReq.getQuery();
         int              searchPageSize = grpcReq.getPageSize();
-        Optional<String> searchPagingState = Optional.ofNullable(grpcReq.getPagingState()).filter(StringUtils::isNotBlank);
+        Optional<String> searchPagingState = Optional.of(grpcReq.getPagingState()).filter(StringUtils::isNotBlank);
         
         // Map Result back to GRPC
-        searchRepository
-            .searchVideosAsync(searchQuery, searchPageSize,searchPagingState)
+        searchRepository.searchVideosAsync(searchQuery, searchPageSize, searchPagingState)
             .whenComplete((resultPage, error) -> {
               if (error == null) {
                   traceSuccess("searchVideos", starts);
-                  grpcResObserver.onNext(buildSearchGrpcResponse(resultPage, grpcReq));
+                  grpcResObserver.onNext(mapper.buildSearchGrpcResponse(resultPage, grpcReq));
                   grpcResObserver.onCompleted();
                   
                } else {
@@ -74,16 +70,6 @@ public class SearchServiceGrpc extends SearchServiceImplBase {
                   grpcResObserver.onError(Status.INTERNAL.withCause(error).asRuntimeException());
                }
         });
-    }
-    
-    private SearchVideosResponse buildSearchGrpcResponse(ResultListPage<Video> resultPage, SearchVideosRequest initialRequest) {
-        final SearchVideosResponse.Builder builder = SearchVideosResponse.newBuilder();
-        builder.setQuery(initialRequest.getQuery());
-        resultPage.getPagingState().ifPresent(builder::setPagingState);
-        resultPage.getResults().stream()
-                  .map(mapper::maptoResultVideoPreview)
-                  .forEach(builder::addVideos);
-        return builder.build();
     }
 
     /** {@inheritDoc} */
@@ -100,29 +86,18 @@ public class SearchServiceGrpc extends SearchServiceImplBase {
         int              searchPageSize = grpcReq.getPageSize();
         
         // Invoke Dao (Async)
-        CompletableFuture<TreeSet<String>> futureDao = 
-                searchRepository.getQuerySuggestionsAsync(searchQuery, searchPageSize);
-        
-        // Mapping back to GRPC beans
-        futureDao.whenComplete((suggestionSet, error) -> {
+        searchRepository.getQuerySuggestionsAsync(searchQuery, searchPageSize)
+        .whenComplete((suggestionSet, error) -> {
+            // Mapping back to GRPC beans
           if (error == null) {
               traceSuccess("getQuerySuggestions", starts);
-              grpcResObserver.onNext(buildQuerySuggestionsResponse(grpcReq.getQuery(), suggestionSet));
+              grpcResObserver.onNext(mapper.buildQuerySuggestionsResponse(suggestionSet, grpcReq.getQuery()));
               grpcResObserver.onCompleted();
           } else {
               traceError("getQuerySuggestions", starts, error);
               grpcResObserver.onError(Status.INTERNAL.withCause(error).asRuntimeException());
           }             
         });
-    }
-
-    private GetQuerySuggestionsResponse buildQuerySuggestionsResponse(
-            String query, Iterable<String> suggestionSet
-    ) {
-        return GetQuerySuggestionsResponse.newBuilder()
-                .setQuery(query)
-                .addAllSuggestions(suggestionSet)
-                .build();
     }
 
     /**

@@ -150,7 +150,7 @@ public class SearchRepository {
      * @param fetchSize numbner of results to retrieve
      * @return
      */
-    public CompletableFuture<TreeSet<String>> getQuerySuggestionsAsync(String query, int fetchSize) {
+    public CompletableFuture<Set<String>> getQuerySuggestionsAsync(String query, int fetchSize) {
         BoundStatement stmt = createStatementToQuerySuggestions(query, fetchSize);
         return this.session.executeAsync(stmt).toCompletableFuture()
                 .thenApply(rs -> mapTagSet(rs, query));
