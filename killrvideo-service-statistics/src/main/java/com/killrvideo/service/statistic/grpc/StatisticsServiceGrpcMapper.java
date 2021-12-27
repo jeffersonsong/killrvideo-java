@@ -24,10 +24,10 @@ import killrvideo.statistics.StatisticsServiceOuterClass.PlayStats;
 @Component
 public class StatisticsServiceGrpcMapper {
     
-    public static GetNumberOfPlaysResponse buildGetNumberOfPlayResponse(GetNumberOfPlaysRequest grpcReq, List<VideoPlaybackStats> videoList) {
+    public GetNumberOfPlaysResponse buildGetNumberOfPlayResponse(GetNumberOfPlaysRequest grpcReq, List<VideoPlaybackStats> videoList) {
         final Map<Uuid, PlayStats> result = videoList.stream()
                 .filter(Objects::nonNull)
-                .map(StatisticsServiceGrpcMapper::mapVideoPlayBacktoPlayStats)
+                .map(this::mapVideoPlayBacktoPlayStats)
                 .collect(Collectors.toMap(PlayStats::getVideoId, x -> x));
 
         final GetNumberOfPlaysResponse.Builder builder = GetNumberOfPlaysResponse.newBuilder();
@@ -48,7 +48,7 @@ public class StatisticsServiceGrpcMapper {
     /**
      * Mapping to generated GPRC beans.
      */
-    private static PlayStats mapVideoPlayBacktoPlayStats(VideoPlaybackStats v) {
+    private PlayStats mapVideoPlayBacktoPlayStats(VideoPlaybackStats v) {
         return PlayStats.newBuilder()
                 .setVideoId(GrpcMappingUtils.uuidToUuid(v.getVideoid()))
                 .setViews(Optional.ofNullable(v.getViews()).orElse(0L)).build();

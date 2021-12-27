@@ -1,9 +1,5 @@
 package com.killrvideo.service.statistic.grpc;
 
-import static com.killrvideo.service.statistic.grpc.StatisticsServiceGrpcMapper.buildGetNumberOfPlayResponse;
-import static com.killrvideo.service.statistic.grpc.StatisticsServiceGrpcValidator.validateGrpcRequest_GetNumberPlays;
-import static com.killrvideo.service.statistic.grpc.StatisticsServiceGrpcValidator.validateGrpcRequest_RecordPlayback;
-
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
@@ -48,13 +44,17 @@ public class StatisticsServiceGrpc extends StatisticsServiceImplBase {
     
     @Autowired
     private StatisticsRepository statisticsRepository;
+    @Autowired
+    private StatisticsServiceGrpcValidator validator;
+    @Autowired
+    private StatisticsServiceGrpcMapper mapper;
     
     /** {@inheritDoc} */
     @Override
     public void recordPlaybackStarted(RecordPlaybackStartedRequest grpcReq, StreamObserver<RecordPlaybackStartedResponse> grpcResObserver) {
         
         // Validate Parameters
-        validateGrpcRequest_RecordPlayback(LOGGER, grpcReq, grpcResObserver);
+        validator.validateGrpcRequest_RecordPlayback(grpcReq, grpcResObserver);
         
         // Stands as stopwatch for logging and messaging 
         final Instant starts = Instant.now();
@@ -82,7 +82,7 @@ public class StatisticsServiceGrpc extends StatisticsServiceImplBase {
     public void getNumberOfPlays(GetNumberOfPlaysRequest grpcReq, StreamObserver<GetNumberOfPlaysResponse> grpcResObserver) {
         
         // Validate Parameters
-        validateGrpcRequest_GetNumberPlays(LOGGER, grpcReq, grpcResObserver);
+        validator.validateGrpcRequest_GetNumberPlays(grpcReq, grpcResObserver);
         
         // Stands as stopwatch for logging and messaging 
         final Instant starts = Instant.now();
@@ -107,7 +107,7 @@ public class StatisticsServiceGrpc extends StatisticsServiceImplBase {
             } else {
                 
                 traceSuccess("getNumberOfPlays", starts);
-                grpcResObserver.onNext(buildGetNumberOfPlayResponse(grpcReq, videoList));
+                grpcResObserver.onNext(mapper.buildGetNumberOfPlayResponse(grpcReq, videoList));
                 grpcResObserver.onCompleted();
             }
         });

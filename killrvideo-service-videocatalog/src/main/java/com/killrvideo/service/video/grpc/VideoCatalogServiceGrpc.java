@@ -66,9 +66,9 @@ public class VideoCatalogServiceGrpc extends VideoCatalogServiceImplBase {
     @Autowired
     private VideoCatalogRepository videoCatalogDao;
     @Autowired
-    private VideoCatalogServiceGrpcMapper mapper;
-    @Autowired
     private VideoCatalogServiceGrpcValidator validator;
+    @Autowired
+    private VideoCatalogServiceGrpcMapper mapper;
 
     /** {@inheritDoc} */
     @Override
