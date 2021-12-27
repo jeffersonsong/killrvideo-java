@@ -4,7 +4,6 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 import com.killrvideo.service.statistic.repository.StatisticsRepository;
@@ -12,8 +11,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-
-import com.killrvideo.service.statistic.dto.VideoPlaybackStats;
 
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
@@ -53,7 +50,6 @@ public class StatisticsServiceGrpc extends StatisticsServiceImplBase {
     /** {@inheritDoc} */
     @Override
     public void recordPlaybackStarted(RecordPlaybackStartedRequest grpcReq, StreamObserver<RecordPlaybackStartedResponse> grpcResObserver) {
-        
         // Validate Parameters
         validator.validateGrpcRequest_RecordPlayback(grpcReq, grpcResObserver);
         
@@ -64,10 +60,8 @@ public class StatisticsServiceGrpc extends StatisticsServiceImplBase {
         final UUID videoId = UUID.fromString(grpcReq.getVideoId().getValue());
         
         // Invoke DAO Async
-        CompletableFuture<Void> futureDao = statisticsRepository.recordPlaybackStartedAsync(videoId);
-        
-        // Map Result back to GRPC
-        futureDao.whenComplete((result, error) -> {
+        statisticsRepository.recordPlaybackStartedAsync(videoId).whenComplete((result, error) -> {
+            // Map Result back to GRPC
             if (error != null ) {
                 traceError("recordPlaybackStarted", starts, error);
                 grpcResObserver.onError(Status.INTERNAL.withCause(error).asRuntimeException());
@@ -81,7 +75,6 @@ public class StatisticsServiceGrpc extends StatisticsServiceImplBase {
     /** {@inheritDoc} */
     @Override
     public void getNumberOfPlays(GetNumberOfPlaysRequest grpcReq, StreamObserver<GetNumberOfPlaysResponse> grpcResObserver) {
-        
         // Validate Parameters
         validator.validateGrpcRequest_GetNumberPlays(grpcReq, grpcResObserver);
         
@@ -89,20 +82,16 @@ public class StatisticsServiceGrpc extends StatisticsServiceImplBase {
         final Instant starts = Instant.now();
         
         // Mapping GRPC => Domain (Dao)
-        List <UUID> listOfVideoId = grpcReq.getVideoIdsList()
+        List<UUID> listOfVideoId = grpcReq.getVideoIdsList()
                                            .stream()
                                            .map(Uuid::getValue)
                                            .map(UUID::fromString)
                                            .collect(Collectors.toList());
         
         // Invoke DAO Async
-        CompletableFuture<List<VideoPlaybackStats>> futureDao = 
-                statisticsRepository.getNumberOfPlaysAsync(listOfVideoId);
-        
-        // Map Result back to GRPC
-        futureDao.whenComplete((videoList, error) -> {
+        statisticsRepository.getNumberOfPlaysAsync(listOfVideoId).whenComplete((videoList, error) -> {
+            // Map Result back to GRPC
             if (error != null ) {
-                 
                 traceError("getNumberOfPlays", starts, error);
                 grpcResObserver.onError(Status.INTERNAL.withCause(error).asRuntimeException());
             } else {
