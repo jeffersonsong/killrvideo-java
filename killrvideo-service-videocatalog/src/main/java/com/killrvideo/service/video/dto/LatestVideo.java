@@ -30,7 +30,6 @@ public class LatestVideo extends VideoPreview {
     
     @PartitionKey
     private String yyyymmdd;
-
     private UUID userid;
 
     public static LatestVideo from(Video v, Instant now) {

@@ -20,7 +20,7 @@ public class QueryCommentByVideo extends QueryDefinition {
     private static final long serialVersionUID = 7721676513515347779L;
 
     /**
-     * User uniaue identifier.
+     * Video unique identifier.
      */
     private UUID videoId = null;
 

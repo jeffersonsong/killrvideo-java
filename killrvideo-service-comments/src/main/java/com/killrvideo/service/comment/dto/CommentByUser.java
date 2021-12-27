@@ -21,22 +21,11 @@ public class CommentByUser extends Comment {
     public static CommentByUser from(Comment comment) {
         return new CommentByUser(comment);
     }
-    
-    /**
-     * Copy constructor.
-     *
-     * @param c comment.
-     */
-    public CommentByUser(Comment c) {
+
+    private CommentByUser(Comment c) {
         super(c);
     }
 
-    /**
-     * Getter for attribute 'userid'.
-     *
-     * @return
-     *       current value of 'userid'
-     */
     @PartitionKey
     public UUID getUserid() {
         return userid;

@@ -62,13 +62,6 @@ public class Video extends AbstractVideo {
     public Video(String title) {
         this.name = title;
     }
-    
-    /**
-     * Constructor wihout location nor preview.
-     */
-    public Video(UUID videoid, UUID userid, String name, String description, int locationType, Set<String> tags, Instant addedDate) {
-        this(videoid, userid, name, description, null, locationType, null, tags, addedDate);
-    }
 
     /**
      * All attributes constructor.

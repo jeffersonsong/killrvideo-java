@@ -18,7 +18,7 @@ public class QueryCommentByUser extends QueryDefinition {
     private static final long serialVersionUID = -1182083603451480239L;
 
     /**
-     * User uniaue identifier.
+     * User unique identifier.
      */
     private UUID userId = null;
 

@@ -22,8 +22,6 @@ public class VideoRating implements Serializable {
 
     @PartitionKey
     private UUID videoid;
-
     private Long ratingCounter;
-
     private Long ratingTotal;
 }

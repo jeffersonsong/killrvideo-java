@@ -22,16 +22,10 @@ public class CommentByVideo extends Comment {
         return new CommentByVideo(comment);
     }
     
-    public CommentByVideo(Comment c) {
+    private CommentByVideo(Comment c) {
         super(c);
     }
 
-    /**
-     * Getter for attribute 'videoid'.
-     *
-     * @return
-     *       current value of 'videoid'
-     */
     @PartitionKey
     public UUID getVideoid() {
         return videoid;

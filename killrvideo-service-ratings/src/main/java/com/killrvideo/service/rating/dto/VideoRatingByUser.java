@@ -25,9 +25,7 @@ public class VideoRatingByUser implements Serializable {
 
     @PartitionKey
     private UUID videoid;
-
     @ClusteringColumn
     private UUID userid;
-
     private int rating;
 }

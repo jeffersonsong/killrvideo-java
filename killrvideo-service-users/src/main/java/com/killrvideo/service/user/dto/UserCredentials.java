@@ -35,7 +35,9 @@ public class UserCredentials implements Serializable {
 
     public static UserCredentials from(User user, String hashedPassword) {
         return new UserCredentials(
-                user.getEmail(), hashedPassword, user.getUserid()
+                user.getEmail(),
+                hashedPassword,
+                user.getUserid()
         );
     }
 }
