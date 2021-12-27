@@ -14,7 +14,6 @@ import com.killrvideo.service.sugestedvideo.repository.SuggestedVideosRepository
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -28,6 +27,8 @@ import killrvideo.suggested_videos.SuggestedVideosService.GetRelatedVideosReques
 import killrvideo.suggested_videos.SuggestedVideosService.GetRelatedVideosResponse;
 import killrvideo.suggested_videos.SuggestedVideosService.GetSuggestedForUserRequest;
 import killrvideo.suggested_videos.SuggestedVideosService.GetSuggestedForUserResponse;
+
+import javax.inject.Inject;
 
 /**
  * Suggested video for a user.
@@ -43,11 +44,11 @@ public class SuggestedVideosServiceGrpc extends SuggestedVideoServiceImplBase {
     @Value("${killrvideo.discovery.services.suggestedVideo : SuggestedVideoService}")
     private String serviceKey;
     
-    @Autowired
+    @Inject
     private SuggestedVideosRepository suggestedVideosDseDao;
-    @Autowired
+    @Inject
     private SuggestedVideosServiceGrpcValidator validator;
-    @Autowired
+    @Inject
     private SuggestedVideosServiceGrpcMapper mapper;
     
     /** {@inheritDoc} */

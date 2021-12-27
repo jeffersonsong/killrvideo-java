@@ -7,13 +7,14 @@ import com.killrvideo.service.sugestedvideo.grpc.SuggestedVideosServiceGrpcMappe
 import com.killrvideo.service.sugestedvideo.repository.SuggestedVideosRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.killrvideo.utils.GrpcMappingUtils;
 
 import killrvideo.ratings.events.RatingsEvents.UserRatedVideo;
 import killrvideo.user_management.events.UserManagementEvents.UserCreated;
 import killrvideo.video_catalog.events.VideoCatalogEvents.YouTubeVideoAdded;
+
+import javax.inject.Inject;
 
 /**
  * Message processing for suggestion services.
@@ -25,9 +26,9 @@ public abstract class SuggestedVideosMessagingDaoSupport {
     /** Loger for that class. */
     private static Logger LOGGER = LoggerFactory.getLogger(SuggestedVideosMessagingDaoSupport.class);
     
-    @Autowired
+    @Inject
     protected SuggestedVideosRepository suggestedVideosRepository;
-    @Autowired
+    @Inject
     private SuggestedVideosServiceGrpcMapper mapper;
 
     /**

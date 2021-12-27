@@ -10,7 +10,6 @@ import java.util.UUID;
 import com.killrvideo.service.rating.repository.RatingRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -28,6 +27,8 @@ import killrvideo.ratings.RatingsServiceOuterClass.RateVideoRequest;
 import killrvideo.ratings.RatingsServiceOuterClass.RateVideoResponse;
 import killrvideo.ratings.events.RatingsEvents.UserRatedVideo;
 
+import javax.inject.Inject;
+
 /**
  * Operations on Ratings with GRPC.
  *
@@ -40,7 +41,7 @@ public class RatingsServiceGrpc extends RatingsServiceImplBase {
     private static Logger LOGGER = LoggerFactory.getLogger(RatingsServiceGrpc.class);
     
     /** Inter-service communications (messaging). */
-    @Autowired
+    @Inject
     private MessagingDao messagingDao;
     
     @Value("${killrvideo.discovery.services.rating : RatingsService}")
@@ -49,10 +50,10 @@ public class RatingsServiceGrpc extends RatingsServiceImplBase {
     @Value("${killrvideo.messaging.kafka.topics.videoRated : topic-kv-videoRating}")
     private String topicvideoRated;
     
-    @Autowired
+    @Inject
     private RatingRepository ratingRepository;
 
-    @Autowired
+    @Inject
     private RatingsServiceGrpcValidator validator;
     
     /** {@inheritDoc} */

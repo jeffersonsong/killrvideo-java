@@ -11,7 +11,6 @@ import com.killrvideo.service.search.repository.SearchRepository;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -24,6 +23,8 @@ import killrvideo.search.SearchServiceOuterClass.GetQuerySuggestionsRequest;
 import killrvideo.search.SearchServiceOuterClass.GetQuerySuggestionsResponse;
 import killrvideo.search.SearchServiceOuterClass.SearchVideosRequest;
 import killrvideo.search.SearchServiceOuterClass.SearchVideosResponse;
+
+import javax.inject.Inject;
 
 /**
  * Service SEARCG.
@@ -39,11 +40,11 @@ public class SearchServiceGrpc extends SearchServiceImplBase {
     @Value("${killrvideo.discovery.services.search : SearchService}")
     private String serviceKey;
    
-    @Autowired
+    @Inject
     private SearchRepository dseSearchDao;
-    @Autowired
+    @Inject
     private SearchServiceGrpcValidator validator;
-    @Autowired
+    @Inject
     private SearchServiceGrpcMapper mapper;
     
     /** {@inheritDoc} */

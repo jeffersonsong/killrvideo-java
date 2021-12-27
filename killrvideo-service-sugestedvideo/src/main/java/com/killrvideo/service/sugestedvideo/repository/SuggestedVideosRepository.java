@@ -18,11 +18,11 @@ import com.killrvideo.service.sugestedvideo.dao.VideoMapper;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.Assert;
 
+import javax.inject.Inject;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -53,7 +53,7 @@ public class SuggestedVideosRepository {
      */
     private PageableQuery<Video> findRelatedVideos;
 
-    @Autowired
+    @Inject
     private KillrVideoTraversalSource traversalSource;
 
     /**

@@ -2,10 +2,10 @@ package com.killrvideo;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
+import javax.inject.Inject;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -38,50 +38,50 @@ public class KillrvideoServicesGrpcServer {
     private int grpcPort;
     
     /** Connectivity to ETCD Service discovery. */
-    @Autowired
+    @Inject
     private KillrVideoConfiguration config;
     
     /** Connectivity to ETCD Service discovery. */
-    @Autowired
+    @Inject
     private ServiceDiscoveryDao serviceDiscoveryDao;
     
-    @Autowired
+    @Inject
     private CommentsServiceGrpc commentService;
     
     @Value("${killrvideo.services.comment: true}")
     private boolean commentServiceEnabled = true;
     
-    @Autowired
+    @Inject
     private RatingsServiceGrpc ratingService;
     
     @Value("${killrvideo.services.rating: true}")
     private boolean ratingServiceEnabled = true;
     
-    @Autowired
+    @Inject
     private SearchServiceGrpc searchService;
     
     @Value("${killrvideo.services.search: true}")
     private boolean searchServiceEnabled = true;
     
-    @Autowired
+    @Inject
     private StatisticsServiceGrpc statisticsService;
     
     @Value("${killrvideo.services.statistic: true}")
     private boolean statisticServiceEnabled = true;
     
-    @Autowired
+    @Inject
     private VideoCatalogServiceGrpc videoCatalogService;
  
     @Value("${killrvideo.services.videoCatalog: true}")
     private boolean videoCatalogServiceEnabled = true;
     
-    @Autowired
+    @Inject
     private UserManagementServiceGrpc userService;
     
     @Value("${killrvideo.services.user: true}")
     private boolean userServiceEnabled = true;
     
-    @Autowired
+    @Inject
     private SuggestedVideosServiceGrpc suggestedVideosService;
     
     @Value("${killrvideo.services.suggestedVideo: true}")

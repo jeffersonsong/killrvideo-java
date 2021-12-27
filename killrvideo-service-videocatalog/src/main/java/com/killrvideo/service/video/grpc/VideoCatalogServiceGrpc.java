@@ -16,7 +16,6 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -42,6 +41,8 @@ import killrvideo.video_catalog.VideoCatalogServiceOuterClass.SubmitYouTubeVideo
 import killrvideo.video_catalog.VideoCatalogServiceOuterClass.SubmitYouTubeVideoResponse;
 import killrvideo.video_catalog.events.VideoCatalogEvents.YouTubeVideoAdded;
 
+import javax.inject.Inject;
+
 /*
  * Exposition of comment services with GPRC Technology & Protobuf Interface
  * 
@@ -60,14 +61,14 @@ public class VideoCatalogServiceGrpc extends VideoCatalogServiceImplBase {
     @Value("${killrvideo.discovery.services.videoCatalog : VideoCatalogService}")
     private String serviceKey;
     
-    @Autowired
+    @Inject
     private MessagingDao messagingDao;
     
-    @Autowired
+    @Inject
     private VideoCatalogRepository videoCatalogDao;
-    @Autowired
+    @Inject
     private VideoCatalogServiceGrpcValidator validator;
-    @Autowired
+    @Inject
     private VideoCatalogServiceGrpcMapper mapper;
 
     /** {@inheritDoc} */

@@ -4,12 +4,13 @@ import java.util.concurrent.CompletableFuture;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
 import com.google.common.eventbus.EventBus;
 import com.killrvideo.conf.KillrVideoConfiguration;
+
+import javax.inject.Inject;
 
 /**
  * Wrapping any kind of messages.
@@ -23,7 +24,7 @@ public class MessagingDaoInMemory implements MessagingDao {
     /** Loger for that class. */
     private static Logger LOGGER = LoggerFactory.getLogger(MessagingDaoInMemory.class);
     
-    @Autowired
+    @Inject
     private EventBus eventBus;
     
     /** {@inheritDoc} */

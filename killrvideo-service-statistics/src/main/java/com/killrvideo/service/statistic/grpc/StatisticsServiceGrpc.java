@@ -10,7 +10,6 @@ import java.util.stream.Collectors;
 import com.killrvideo.service.statistic.repository.StatisticsRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -24,6 +23,8 @@ import killrvideo.statistics.StatisticsServiceOuterClass.GetNumberOfPlaysRequest
 import killrvideo.statistics.StatisticsServiceOuterClass.GetNumberOfPlaysResponse;
 import killrvideo.statistics.StatisticsServiceOuterClass.RecordPlaybackStartedRequest;
 import killrvideo.statistics.StatisticsServiceOuterClass.RecordPlaybackStartedResponse;
+
+import javax.inject.Inject;
 
 /**
  * Get statistics on a video.
@@ -42,11 +43,11 @@ public class StatisticsServiceGrpc extends StatisticsServiceImplBase {
     @Value("${killrvideo.discovery.services.statistic : StatisticsService}")
     private String serviceKey;
     
-    @Autowired
+    @Inject
     private StatisticsRepository statisticsRepository;
-    @Autowired
+    @Inject
     private StatisticsServiceGrpcValidator validator;
-    @Autowired
+    @Inject
     private StatisticsServiceGrpcMapper mapper;
     
     /** {@inheritDoc} */

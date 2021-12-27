@@ -5,12 +5,12 @@ import java.util.Collections;
 import java.util.stream.StreamSupport;
 
 import javax.annotation.PostConstruct;
+import javax.inject.Inject;
 
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
@@ -34,7 +34,7 @@ public class SuggestedVideosMessagingKafkaDao extends SuggestedVideosMessagingDa
     // -------------------------- User Creation ---------------------------------
     // --------------------------------------------------------------------------
     
-    @Autowired
+    @Inject
     @Qualifier("kafka.consumer.userCreating")
     private KafkaConsumer<String, byte[]> consumerUserCreatedProtobuf;
     
@@ -66,7 +66,7 @@ public class SuggestedVideosMessagingKafkaDao extends SuggestedVideosMessagingDa
     @Value("${killrvideo.messaging.destination.youTubeVideoAdded : topic-kv-videoCreation}")
     private String topicVideoCreated;
     
-    @Autowired
+    @Inject
     @Qualifier("kafka.consumer.videoCreating")
     private KafkaConsumer<String, byte[]> consumerVideoCreatedProtobuf;
     
@@ -96,7 +96,7 @@ public class SuggestedVideosMessagingKafkaDao extends SuggestedVideosMessagingDa
     @Value("${killrvideo.messaging.destination.videoRated : topic-kv-videoRating}")
     private String topicVideoRated;
     
-    @Autowired
+    @Inject
     @Qualifier("kafka.consumer.videoRating")
     private KafkaConsumer<String, byte[]> consumerVideoRatingProtobuf;
     

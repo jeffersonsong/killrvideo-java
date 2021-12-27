@@ -10,6 +10,7 @@ import java.util.concurrent.Executors;
 import java.util.stream.StreamSupport;
 
 import javax.annotation.PostConstruct;
+import javax.inject.Inject;
 
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
@@ -18,7 +19,6 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
@@ -47,15 +47,15 @@ public class MessagingDaoKafka implements MessagingDao {
     private static Logger LOGGER = LoggerFactory.getLogger(MessagingDaoKafka.class);
     
     /** Same producer can be used evrytime (as the topicName is stored in {@link ProducerRecord}.) */
-    @Autowired
+    @Inject
     protected KafkaProducer<String, byte[]> protobufProducer;
     
     /** Common error processing from topic topic-kv-errors. */
-    @Autowired
+    @Inject
     @Qualifier("kafka.consumer.error")
     private KafkaConsumer<String, byte[]> errorLogger;
     
-    @Autowired
+    @Inject
     private ErrorProcessor errorProcessor;
      
     /** Error Topic. */

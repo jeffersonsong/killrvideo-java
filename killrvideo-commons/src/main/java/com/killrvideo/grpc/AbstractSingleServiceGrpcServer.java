@@ -4,10 +4,10 @@ import java.util.Optional;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
+import javax.inject.Inject;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.killrvideo.conf.KillrVideoConfiguration;
 import com.killrvideo.discovery.ServiceDiscoveryDaoEtcd;
@@ -27,11 +27,11 @@ public abstract class AbstractSingleServiceGrpcServer {
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractSingleServiceGrpcServer.class);
    
     /** Global Configuration. s*/
-    @Autowired
+    @Inject
     protected KillrVideoConfiguration killrVideoConfig;
     
     /** Connectivity to ETCD Service discovery. */
-    @Autowired
+    @Inject
     protected ServiceDiscoveryDaoEtcd serviceDiscoveryDao;
     
     /** GRPC Server to start. */

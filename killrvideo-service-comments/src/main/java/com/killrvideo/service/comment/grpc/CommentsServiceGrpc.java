@@ -9,7 +9,6 @@ import java.util.concurrent.CompletableFuture;
 import com.killrvideo.service.comment.repository.CommentRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -30,6 +29,8 @@ import killrvideo.comments.CommentsServiceOuterClass.GetVideoCommentsRequest;
 import killrvideo.comments.CommentsServiceOuterClass.GetVideoCommentsResponse;
 import killrvideo.comments.events.CommentsEvents.UserCommentedOnVideo;
 
+import javax.inject.Inject;
+
 /**
  * Exposition of comment services with GPRC Technology & Protobuf Interface
  * 
@@ -42,10 +43,10 @@ public class CommentsServiceGrpc extends CommentsServiceImplBase {
     private static final Logger LOGGER = LoggerFactory.getLogger(CommentsServiceGrpc.class);
     
     /** Communications and queries to DSE (Comment). */
-    @Autowired
+    @Inject
     private CommentRepository dseCommentDao;
     
-    @Autowired
+    @Inject
     private MessagingDao messagingDao;
     
     @Value("${killrvideo.discovery.services.comment : CommentsService}")
@@ -54,9 +55,9 @@ public class CommentsServiceGrpc extends CommentsServiceImplBase {
     @Value("${killrvideo.messaging.destinations.commentCreated : topic-kv-commentCreation}")
     private String messageDestination;
 
-    @Autowired
+    @Inject
     private CommentsServiceGrpcValidator validator;
-    @Autowired
+    @Inject
     private CommentsServiceGrpcMapper mapper;
     
     /** {@inheritDoc} */
