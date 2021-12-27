@@ -1,13 +1,5 @@
 package com.killrvideo.service.video.grpc;
 
-import static com.killrvideo.service.video.grpc.VideoCatalogServiceGrpcMapper.mapFromVideotoVideoResponse;
-import static com.killrvideo.service.video.grpc.VideoCatalogServiceGrpcMapper.mapLatestVideoToGrpcResponse;
-import static com.killrvideo.service.video.grpc.VideoCatalogServiceGrpcMapper.mapSubmitYouTubeVideoRequestAsVideo;
-import static com.killrvideo.service.video.grpc.VideoCatalogServiceGrpcValidator.validateGrpcRequest_getLatestPreviews;
-import static com.killrvideo.service.video.grpc.VideoCatalogServiceGrpcValidator.validateGrpcRequest_getUserVideoPreviews;
-import static com.killrvideo.service.video.grpc.VideoCatalogServiceGrpcValidator.validateGrpcRequest_getVideo;
-import static com.killrvideo.service.video.grpc.VideoCatalogServiceGrpcValidator.validateGrpcRequest_getVideoPreviews;
-import static com.killrvideo.service.video.grpc.VideoCatalogServiceGrpcValidator.validateGrpcRequest_submitYoutubeVideo;
 import static java.util.stream.Collectors.toList;
 
 import java.time.Duration;
@@ -73,19 +65,23 @@ public class VideoCatalogServiceGrpc extends VideoCatalogServiceImplBase {
     
     @Autowired
     private VideoCatalogRepository videoCatalogDao;
+    @Autowired
+    private VideoCatalogServiceGrpcMapper mapper;
+    @Autowired
+    private VideoCatalogServiceGrpcValidator validator;
 
     /** {@inheritDoc} */
     @Override
     public void submitYouTubeVideo(SubmitYouTubeVideoRequest grpcReq, StreamObserver<SubmitYouTubeVideoResponse> grpcResObserver) {
         
         // GRPC Parameters Validation
-        validateGrpcRequest_submitYoutubeVideo(LOGGER, grpcReq, grpcResObserver);
+        validator.validateGrpcRequest_submitYoutubeVideo(grpcReq, grpcResObserver);
         
         // Stands as stopwatch for logging and messaging 
         final Instant starts = Instant.now();
         
         // Mapping GRPC => Domain (Dao)
-        Video video = mapSubmitYouTubeVideoRequestAsVideo(grpcReq);
+        Video video = mapper.mapSubmitYouTubeVideoRequestAsVideo(grpcReq);
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Insert youtube video {} for user {} : {}",  video.getVideoid(), video.getUserid(), video);
         }
@@ -150,7 +146,7 @@ public class VideoCatalogServiceGrpc extends VideoCatalogServiceImplBase {
     public void getLatestVideoPreviews(GetLatestVideoPreviewsRequest grpcReq, StreamObserver<GetLatestVideoPreviewsResponse> grpcResObserver) {
         
         // GRPC Parameters Validation
-        validateGrpcRequest_getLatestPreviews(LOGGER, grpcReq, grpcResObserver);
+        validator.validateGrpcRequest_getLatestPreviews(grpcReq, grpcResObserver);
         
         // Stands as stopwatch for logging and messaging 
         final Instant starts = Instant.now();
@@ -174,7 +170,7 @@ public class VideoCatalogServiceGrpc extends VideoCatalogServiceImplBase {
             LatestVideosPage returnedPage = 
                     videoCatalogDao.getLatestVideoPreviews(pageState, pageSize, startDate, startVideoId);
             traceSuccess("getLatestVideoPreviews", starts);
-            grpcResObserver.onNext(mapLatestVideoToGrpcResponse(returnedPage));
+            grpcResObserver.onNext(mapper.mapLatestVideoToGrpcResponse(returnedPage));
             grpcResObserver.onCompleted();
         } catch(Exception error) {
             traceError("getLatestVideoPreviews", starts, error);
@@ -188,7 +184,7 @@ public class VideoCatalogServiceGrpc extends VideoCatalogServiceImplBase {
     public void getVideo(GetVideoRequest grpcReq, StreamObserver<GetVideoResponse> grpcResObserver) {
         
         // GRPC Parameters Validation
-        validateGrpcRequest_getVideo(LOGGER, grpcReq, grpcResObserver);
+        validator.validateGrpcRequest_getVideo(grpcReq, grpcResObserver);
         
         // Stands as stopwatch for logging and messaging 
         final Instant starts = Instant.now();
@@ -211,7 +207,7 @@ public class VideoCatalogServiceGrpc extends VideoCatalogServiceImplBase {
                         video.setTags(Collections.emptySet());
                     }
                     traceSuccess("getVideo", starts);
-                    grpcResObserver.onNext(mapFromVideotoVideoResponse(video));
+                    grpcResObserver.onNext(mapper.mapFromVideotoVideoResponse(video));
                     grpcResObserver.onCompleted();
                 } else {
                     LOGGER.warn("Video with id " + videoId + " was not found");
@@ -227,7 +223,7 @@ public class VideoCatalogServiceGrpc extends VideoCatalogServiceImplBase {
     public void getVideoPreviews(GetVideoPreviewsRequest grpcReq, StreamObserver<GetVideoPreviewsResponse> grpcResObserver) {
         
         // GRPC Parameters Validation
-        validateGrpcRequest_getVideoPreviews(LOGGER, grpcReq, grpcResObserver);
+        validator.validateGrpcRequest_getVideoPreviews(grpcReq, grpcResObserver);
         
         // Stands as stopwatch for logging and messaging 
         final Instant starts = Instant.now();
@@ -254,7 +250,7 @@ public class VideoCatalogServiceGrpc extends VideoCatalogServiceImplBase {
                 } else {
                     traceSuccess("getVideoPreviews", starts);
                     videos.stream()
-                          .map(VideoCatalogServiceGrpcMapper::mapFromVideotoVideoPreview)
+                          .map(mapper::mapFromVideotoVideoPreview)
                           .forEach(builder::addVideoPreviews);
                     grpcResObserver.onNext(builder.build());
                     grpcResObserver.onCompleted();
@@ -268,7 +264,7 @@ public class VideoCatalogServiceGrpc extends VideoCatalogServiceImplBase {
     public void getUserVideoPreviews(GetUserVideoPreviewsRequest grpcReq, StreamObserver<GetUserVideoPreviewsResponse> grpcResObserver) {
         
         // GRPC Parameters Validation
-        validateGrpcRequest_getUserVideoPreviews(LOGGER, grpcReq, grpcResObserver);
+        validator.validateGrpcRequest_getUserVideoPreviews(grpcReq, grpcResObserver);
         
         // Stands as stopwatch for logging and messaging 
         final Instant starts = Instant.now();
@@ -304,7 +300,7 @@ public class VideoCatalogServiceGrpc extends VideoCatalogServiceImplBase {
                 Uuid userGrpcUUID = GrpcMappingUtils.uuidToUuid(userId);
                 final GetUserVideoPreviewsResponse.Builder builder = GetUserVideoPreviewsResponse.newBuilder().setUserId(userGrpcUUID);
                 resultPage.getResults().stream()
-                      .map(VideoCatalogServiceGrpcMapper::mapFromUserVideotoVideoPreview)
+                      .map(mapper::mapFromUserVideotoVideoPreview)
                       .forEach(builder::addVideoPreviews);
                 resultPage.getPagingState().ifPresent(builder::setPagingState);
                 grpcResObserver.onNext(builder.build());

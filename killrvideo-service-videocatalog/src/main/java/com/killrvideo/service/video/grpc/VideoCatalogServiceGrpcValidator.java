@@ -5,6 +5,8 @@ import static com.killrvideo.utils.ValidationUtils.validate;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
 import io.grpc.stub.StreamObserver;
@@ -20,17 +22,14 @@ import killrvideo.video_catalog.VideoCatalogServiceOuterClass.SubmitYouTubeVideo
  *
  * @author Cedrick LUNVEN (@clunven)
  */
+@Component
 public class VideoCatalogServiceGrpcValidator {
-    
-    /**
-     * Hide constructor for utility class.
-     */
-    private VideoCatalogServiceGrpcValidator() {}
-    
+    private static final Logger logger = LoggerFactory.getLogger(VideoCatalogServiceGrpcValidator.class);
+
     /**
      * Validate arguments for 'SubmitYouTubeVideo'
      */
-    public static void validateGrpcRequest_submitYoutubeVideo(Logger logger, SubmitYouTubeVideoRequest request, StreamObserver<?> streamObserver) {
+    public void validateGrpcRequest_submitYoutubeVideo(SubmitYouTubeVideoRequest request, StreamObserver<?> streamObserver) {
         final StringBuilder errorMessage = initErrorString(request);
         boolean isValid = true;
         if (request.getVideoId() == null || isBlank(request.getVideoId().getValue())) {
@@ -59,7 +58,7 @@ public class VideoCatalogServiceGrpcValidator {
     /**
      * Validate arguments for 'getLatestVideoPreview'
      */
-    public static void validateGrpcRequest_getLatestPreviews(Logger logger, GetLatestVideoPreviewsRequest request, StreamObserver<?> streamObserver) {
+    public void validateGrpcRequest_getLatestPreviews(GetLatestVideoPreviewsRequest request, StreamObserver<?> streamObserver) {
         final StringBuilder errorMessage = initErrorString(request);
         boolean isValid = true;
         if (request.getPageSize() <= 0) {
@@ -69,7 +68,7 @@ public class VideoCatalogServiceGrpcValidator {
         Assert.isTrue(validate(logger, streamObserver, errorMessage, isValid),  "Invalid parameter for 'getLatestVideoPreviews'");
     }
     
-    public static void validateGrpcRequest_getVideo(Logger logger,  GetVideoRequest request, StreamObserver<?> streamObserver) {
+    public void validateGrpcRequest_getVideo(GetVideoRequest request, StreamObserver<?> streamObserver) {
         final StringBuilder errorMessage = initErrorString(request);
         boolean isValid = true;
         if (request.getVideoId() == null || isBlank(request.getVideoId().getValue())) {
@@ -79,7 +78,7 @@ public class VideoCatalogServiceGrpcValidator {
         Assert.isTrue(validate(logger, streamObserver, errorMessage, isValid),  "Invalid parameter for 'getVideo'");
     }
     
-    public static void validateGrpcRequest_getVideoPreviews(Logger logger, GetVideoPreviewsRequest request, StreamObserver<?> streamObserver) {
+    public void validateGrpcRequest_getVideoPreviews(GetVideoPreviewsRequest request, StreamObserver<?> streamObserver) {
         final StringBuilder errorMessage = initErrorString(request);
         boolean isValid = true;
 
@@ -96,7 +95,7 @@ public class VideoCatalogServiceGrpcValidator {
         Assert.isTrue(validate(logger, streamObserver, errorMessage, isValid),  "Invalid parameter for 'getVideoPreview'");
     }
     
-    public static void validateGrpcRequest_getUserVideoPreviews(Logger logger, GetUserVideoPreviewsRequest request, StreamObserver<?> streamObserver) {
+    public void validateGrpcRequest_getUserVideoPreviews(GetUserVideoPreviewsRequest request, StreamObserver<?> streamObserver) {
         final StringBuilder errorMessage = initErrorString(request);
         boolean isValid = true;
 

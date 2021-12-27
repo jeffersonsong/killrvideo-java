@@ -15,6 +15,7 @@ import killrvideo.video_catalog.VideoCatalogServiceOuterClass.GetVideoResponse;
 import killrvideo.video_catalog.VideoCatalogServiceOuterClass.SubmitYouTubeVideoRequest;
 import killrvideo.video_catalog.VideoCatalogServiceOuterClass.VideoLocationType;
 import killrvideo.video_catalog.VideoCatalogServiceOuterClass.VideoPreview;
+import org.springframework.stereotype.Component;
 
 import static com.killrvideo.utils.GrpcMappingUtils.*;
 
@@ -23,13 +24,10 @@ import static com.killrvideo.utils.GrpcMappingUtils.*;
  *
  * @author Cedrick LUNVEN (@clunven)
  */
+@Component
 public class VideoCatalogServiceGrpcMapper {
-    
-    /** Hide constructor of utility class. */
-    private VideoCatalogServiceGrpcMapper() {
-    }
 
-    public static Video mapSubmitYouTubeVideoRequestAsVideo(SubmitYouTubeVideoRequest request) {
+    public Video mapSubmitYouTubeVideoRequestAsVideo(SubmitYouTubeVideoRequest request) {
         Video targetVideo = new Video();
         targetVideo.setVideoid(UUID.fromString(request.getVideoId().getValue()));
         targetVideo.setUserid(UUID.fromString(request.getUserId().getValue()));
@@ -45,7 +43,7 @@ public class VideoCatalogServiceGrpcMapper {
     /**
      * Mapping to GRPC generated classes.
      */
-    public static VideoPreview mapLatestVideotoVideoPreview(LatestVideo lv) {
+    public VideoPreview mapLatestVideotoVideoPreview(LatestVideo lv) {
         return VideoPreview.newBuilder()
                 .setAddedDate(instantToTimeStamp(lv.getAddedDate()))
                 .setName(lv.getName())
@@ -55,11 +53,11 @@ public class VideoCatalogServiceGrpcMapper {
                 .build();
     }
     
-    public static GetLatestVideoPreviewsResponse mapLatestVideoToGrpcResponse(LatestVideosPage returnedPage) {
+    public GetLatestVideoPreviewsResponse mapLatestVideoToGrpcResponse(LatestVideosPage returnedPage) {
         return GetLatestVideoPreviewsResponse.newBuilder()
                 .addAllVideoPreviews(
                         returnedPage.getListOfPreview().stream()
-                        .map(VideoCatalogServiceGrpcMapper::mapLatestVideotoVideoPreview)
+                        .map(this::mapLatestVideotoVideoPreview)
                         .collect(Collectors.toList()))
                 .setPagingState(returnedPage.getNextPageState())
                 .build();
@@ -68,7 +66,7 @@ public class VideoCatalogServiceGrpcMapper {
     /**
      * Mapping to generated GPRC beans.
      */
-    public static VideoPreview mapFromVideotoVideoPreview(Video v) {
+    public VideoPreview mapFromVideotoVideoPreview(Video v) {
         return VideoPreview.newBuilder()
                 .setAddedDate(instantToTimeStamp(v.getAddedDate()))
                 .setName(v.getName())
@@ -81,7 +79,7 @@ public class VideoCatalogServiceGrpcMapper {
     /**
      * Mapping to generated GPRC beans.
      */
-    public static VideoPreview mapFromUserVideotoVideoPreview(UserVideo v) {
+    public VideoPreview mapFromUserVideotoVideoPreview(UserVideo v) {
         return VideoPreview.newBuilder()
                 .setAddedDate(instantToTimeStamp(v.getAddedDate()))
                 .setName(v.getName())
@@ -94,7 +92,7 @@ public class VideoCatalogServiceGrpcMapper {
     /**
      * Mapping to generated GPRC beans (Full detailed)
      */
-    public static GetVideoResponse mapFromVideotoVideoResponse(Video v) {
+    public GetVideoResponse mapFromVideotoVideoResponse(Video v) {
         return GetVideoResponse.newBuilder()
                 .setAddedDate(instantToTimeStamp(v.getAddedDate()))
                 .setDescription(v.getDescription())
@@ -106,6 +104,4 @@ public class VideoCatalogServiceGrpcMapper {
                 .addAllTags(v.getTags())
                 .build();
     }
-
-   
 }
