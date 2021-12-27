@@ -34,23 +34,24 @@ public class RatingsServiceGrpc extends RatingsServiceImplBase {
     
     /** Loger for that class. */
     private static Logger LOGGER = LoggerFactory.getLogger(RatingsServiceGrpc.class);
-    
+
+    @Value("${killrvideo.discovery.services.rating : RatingsService}")
+    private String serviceKey;
+
+    @Value("${killrvideo.messaging.kafka.topics.videoRated : topic-kv-videoRating}")
+    private String topicvideoRated;
+
     /** Inter-service communications (messaging). */
     @Inject
     private MessagingDao messagingDao;
-    
-    @Value("${killrvideo.discovery.services.rating : RatingsService}")
-    private String serviceKey;
-    
-    @Value("${killrvideo.messaging.kafka.topics.videoRated : topic-kv-videoRating}")
-    private String topicvideoRated;
-    
+
     @Inject
     private RatingRepository ratingRepository;
 
     @Inject
     private RatingsServiceGrpcValidator validator;
-    @Inject RatingsServiceGrpcMapper mapper;
+    @Inject
+    private RatingsServiceGrpcMapper mapper;
     
     /** {@inheritDoc} */
     @Override
