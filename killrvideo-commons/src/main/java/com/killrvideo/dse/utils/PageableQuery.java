@@ -2,19 +2,20 @@ package com.killrvideo.dse.utils;
 
 import com.datastax.oss.driver.api.core.ConsistencyLevel;
 import com.datastax.oss.driver.api.core.CqlSession;
-import com.datastax.oss.driver.api.core.cql.BoundStatement;
-import com.datastax.oss.driver.api.core.cql.BoundStatementBuilder;
-import com.datastax.oss.driver.api.core.cql.PreparedStatement;
-import com.datastax.oss.driver.api.core.cql.Row;
+import com.datastax.oss.driver.api.core.cql.*;
 import com.datastax.oss.protocol.internal.util.Bytes;
 import com.killrvideo.dse.dto.ResultListPage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
+import static com.killrvideo.dse.utils.AsyncResultSetUtils.toResultListPage;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 public class PageableQuery<ENTITY> {
@@ -63,6 +64,6 @@ public class PageableQuery<ENTITY> {
 
     private CompletableFuture<ResultListPage<ENTITY>> executeAsync(BoundStatement statement) {
         return this.session.executeAsync(statement).toCompletableFuture()
-                .thenApply(rs -> ResultListPage.from(rs, rowMapper));
+                .thenApply(rs -> toResultListPage(rs, rowMapper));
     }
 }

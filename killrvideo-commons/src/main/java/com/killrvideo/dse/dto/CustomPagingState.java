@@ -2,12 +2,12 @@ package com.killrvideo.dse.dto;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.google.common.collect.Lists;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -49,7 +49,7 @@ public class CustomPagingState implements Serializable {
                 pagingState = new CustomPagingState()
                         .cassandraPagingState( matcher.group(3))
                         .currentBucket(Integer.parseInt(matcher.group(2)))
-                        .listOfBuckets(Lists.newArrayList(matcher.group(1).split("_")));
+                        .listOfBuckets(Arrays.asList(matcher.group(1).split("_")));
             }
         }
         return Optional.ofNullable(pagingState);
