@@ -45,7 +45,7 @@ public class SuggestedVideosServiceGrpc extends SuggestedVideoServiceImplBase {
     private String serviceKey;
     
     @Inject
-    private SuggestedVideosRepository suggestedVideosDseDao;
+    private SuggestedVideosRepository suggestedVideosRepository;
     @Inject
     private SuggestedVideosServiceGrpcValidator validator;
     @Inject
@@ -67,7 +67,7 @@ public class SuggestedVideosServiceGrpc extends SuggestedVideoServiceImplBase {
         
         // Invoke DAO Async
         CompletableFuture<ResultListPage<Video>> futureDao =
-                suggestedVideosDseDao.getRelatedVideos(videoId, videoPageSize, videoPagingState);
+                suggestedVideosRepository.getRelatedVideos(videoId, videoPageSize, videoPagingState);
         
         // Map Result back to GRPC
         futureDao.whenComplete((resultPage, error) -> {
@@ -106,7 +106,7 @@ public class SuggestedVideosServiceGrpc extends SuggestedVideoServiceImplBase {
         final UUID userid = UUID.fromString(grpcReq.getUserId().getValue());
         
         // Invoke DAO Async
-        CompletableFuture<List<Video>> futureDao = suggestedVideosDseDao.getSuggestedVideosForUser(userid);
+        CompletableFuture<List<Video>> futureDao = suggestedVideosRepository.getSuggestedVideosForUser(userid);
         
         // Map Result back to GRPC
         futureDao.whenComplete((videos, error) -> {

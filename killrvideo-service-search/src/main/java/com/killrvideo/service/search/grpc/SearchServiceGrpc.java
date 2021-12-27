@@ -40,7 +40,7 @@ public class SearchServiceGrpc extends SearchServiceImplBase {
     private String serviceKey;
    
     @Inject
-    private SearchRepository dseSearchDao;
+    private SearchRepository searchRepository;
     @Inject
     private SearchServiceGrpcValidator validator;
     @Inject
@@ -61,7 +61,7 @@ public class SearchServiceGrpc extends SearchServiceImplBase {
         Optional<String> searchPagingState = Optional.ofNullable(grpcReq.getPagingState()).filter(StringUtils::isNotBlank);
         
         // Map Result back to GRPC
-        dseSearchDao
+        searchRepository
             .searchVideosAsync(searchQuery, searchPageSize,searchPagingState)
             .whenComplete((resultPage, error) -> {
               if (error == null) {
@@ -101,7 +101,7 @@ public class SearchServiceGrpc extends SearchServiceImplBase {
         
         // Invoke Dao (Async)
         CompletableFuture<TreeSet<String>> futureDao = 
-                dseSearchDao.getQuerySuggestionsAsync(searchQuery, searchPageSize);
+                searchRepository.getQuerySuggestionsAsync(searchQuery, searchPageSize);
         
         // Mapping back to GRPC beans
         futureDao.whenComplete((suggestionSet, error) -> {
