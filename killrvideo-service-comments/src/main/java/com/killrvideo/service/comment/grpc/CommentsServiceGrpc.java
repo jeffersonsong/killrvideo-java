@@ -4,7 +4,6 @@ import static java.util.UUID.fromString;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.concurrent.CompletableFuture;
 
 import com.killrvideo.service.comment.repository.CommentRepository;
 import org.slf4j.Logger;
@@ -16,7 +15,6 @@ import com.killrvideo.messaging.dao.MessagingDao;
 import com.killrvideo.service.comment.dto.Comment;
 import com.killrvideo.service.comment.dto.QueryCommentByUser;
 import com.killrvideo.service.comment.dto.QueryCommentByVideo;
-import com.killrvideo.utils.GrpcMappingUtils;
 
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
@@ -27,7 +25,6 @@ import killrvideo.comments.CommentsServiceOuterClass.GetUserCommentsRequest;
 import killrvideo.comments.CommentsServiceOuterClass.GetUserCommentsResponse;
 import killrvideo.comments.CommentsServiceOuterClass.GetVideoCommentsRequest;
 import killrvideo.comments.CommentsServiceOuterClass.GetVideoCommentsResponse;
-import killrvideo.comments.events.CommentsEvents.UserCommentedOnVideo;
 
 import javax.inject.Inject;
 
@@ -41,6 +38,12 @@ public class CommentsServiceGrpc extends CommentsServiceImplBase {
      
     /** Loger for that class. */
     private static final Logger LOGGER = LoggerFactory.getLogger(CommentsServiceGrpc.class);
+
+    @Value("${killrvideo.discovery.services.comment : CommentsService}")
+    private String serviceKey;
+
+    @Value("${killrvideo.messaging.destinations.commentCreated : topic-kv-commentCreation}")
+    private String messageDestination;
     
     /** Communications and queries to DSE (Comment). */
     @Inject
@@ -48,12 +51,6 @@ public class CommentsServiceGrpc extends CommentsServiceImplBase {
     
     @Inject
     private MessagingDao messagingDao;
-    
-    @Value("${killrvideo.discovery.services.comment : CommentsService}")
-    private String serviceKey;
-  
-    @Value("${killrvideo.messaging.destinations.commentCreated : topic-kv-commentCreation}")
-    private String messageDestination;
 
     @Inject
     private CommentsServiceGrpcValidator validator;
@@ -63,7 +60,6 @@ public class CommentsServiceGrpc extends CommentsServiceImplBase {
     /** {@inheritDoc} */
     @Override
     public void commentOnVideo(final CommentOnVideoRequest grpcReq, StreamObserver<CommentOnVideoResponse> grpcResObserver) {
-        
         // Boilerplate Code for validation delegated to {@link CommentsServiceGrpcValidator}
         validator.validateGrpcRequestCommentOnVideo(grpcReq, grpcResObserver);
         
@@ -71,12 +67,12 @@ public class CommentsServiceGrpc extends CommentsServiceImplBase {
         final Instant starts = Instant.now();
         
         // Mapping GRPC => Domain (Dao)
-        Comment q = newComment(grpcReq);
+        Comment comment = newComment(grpcReq);
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Insert comment on video {} for user {} : {}",  q.getVideoid(), q.getUserid(), q);
+            LOGGER.debug("Insert comment on video {} for user {} : {}",  comment.getVideoid(), comment.getUserid(), comment);
         }
         
-        dseCommentDao.insertCommentAsync(q)
+        dseCommentDao.insertCommentAsync(comment)
         .thenCompose(rs ->
                 // If OK, then send Message to Kafka
                 messagingDao.sendEvent(messageDestination, mapper.createUserCommentedOnVideoEvent(rs))
