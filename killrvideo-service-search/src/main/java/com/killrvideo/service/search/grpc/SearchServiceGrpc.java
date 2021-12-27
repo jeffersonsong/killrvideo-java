@@ -1,8 +1,5 @@
 package com.killrvideo.service.search.grpc;
 
-import static com.killrvideo.service.search.grpc.SearchServiceGrpcValidator.validateGrpcRequest_GetQuerySuggestions;
-import static com.killrvideo.service.search.grpc.SearchServiceGrpcValidator.validateGrpcRequest_SearchVideos;
-
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Optional;
@@ -44,13 +41,16 @@ public class SearchServiceGrpc extends SearchServiceImplBase {
    
     @Autowired
     private SearchRepository dseSearchDao;
+    @Autowired
+    private SearchServiceGrpcValidator validator;
+    @Autowired
+    private SearchServiceGrpcMapper mapper;
     
     /** {@inheritDoc} */
     @Override
     public void searchVideos(SearchVideosRequest grpcReq, StreamObserver<SearchVideosResponse> grpcResObserver) {
-        
         // Validate Parameters
-        validateGrpcRequest_SearchVideos(LOGGER, grpcReq, grpcResObserver);
+        validator.validateGrpcRequest_SearchVideos(grpcReq, grpcResObserver);
         
         // Stands as stopwatch for logging and messaging 
         final Instant starts = Instant.now();
@@ -81,7 +81,7 @@ public class SearchServiceGrpc extends SearchServiceImplBase {
         builder.setQuery(initialRequest.getQuery());
         resultPage.getPagingState().ifPresent(builder::setPagingState);
         resultPage.getResults().stream()
-                  .map(SearchServiceGrpcMapper::maptoResultVideoPreview)
+                  .map(mapper::maptoResultVideoPreview)
                   .forEach(builder::addVideos);
         return builder.build();
     }
@@ -89,9 +89,8 @@ public class SearchServiceGrpc extends SearchServiceImplBase {
     /** {@inheritDoc} */
     @Override
     public void getQuerySuggestions(GetQuerySuggestionsRequest grpcReq, StreamObserver<GetQuerySuggestionsResponse> grpcResObserver) {
-        
         // Validate Parameters
-        validateGrpcRequest_GetQuerySuggestions(LOGGER, grpcReq, grpcResObserver);
+        validator.validateGrpcRequest_GetQuerySuggestions(grpcReq, grpcResObserver);
         
         // Stands as stopwatch for logging and messaging 
         final Instant starts = Instant.now();

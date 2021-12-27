@@ -5,6 +5,7 @@ import com.killrvideo.utils.GrpcMappingUtils;
 
 import killrvideo.search.SearchServiceOuterClass.SearchResultsVideoPreview;
 import killrvideo.search.SearchServiceOuterClass.SearchResultsVideoPreview.Builder;
+import org.springframework.stereotype.Component;
 
 
 /**
@@ -12,17 +13,12 @@ import killrvideo.search.SearchServiceOuterClass.SearchResultsVideoPreview.Build
  *
  * @author DataStax Developer Advocates Team
  */
+@Component
 public class SearchServiceGrpcMapper {
-    
-    /**
-     * Hide constructor.
-     */
-    private SearchServiceGrpcMapper() {}
-    
     /**
      * Mapping to generated GPRC beans (Search result special).
      */
-    public static SearchResultsVideoPreview maptoResultVideoPreview(Video v) {
+    public SearchResultsVideoPreview maptoResultVideoPreview(Video v) {
         Builder builder = SearchResultsVideoPreview.newBuilder();
         builder.setName(v.getName());
         builder.setVideoId(GrpcMappingUtils.uuidToUuid(v.getVideoid()));
