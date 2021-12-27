@@ -66,28 +66,16 @@ public class SuggestedVideosServiceGrpc extends SuggestedVideoServiceImplBase {
         Optional<String> videoPagingState = Optional.ofNullable(grpcReq.getPagingState()).filter(StringUtils::isNotBlank);
         
         // Invoke DAO Async
-        CompletableFuture<ResultListPage<Video>> futureDao =
-                suggestedVideosRepository.getRelatedVideos(videoId, videoPageSize, videoPagingState);
-        
-        // Map Result back to GRPC
-        futureDao.whenComplete((resultPage, error) -> {
-            
+        suggestedVideosRepository.getRelatedVideos(videoId, videoPageSize, videoPagingState)
+        .whenComplete((resultPage, error) -> {
+            // Map Result back to GRPC
             if (error != null ) {
                 traceError("getRelatedVideos", starts, error);
                 grpcResObserver.onError(Status.INTERNAL.withCause(error).asRuntimeException());
                 
             } else {
-                
                 traceSuccess( "getRelatedVideos", starts);
-                Uuid videoGrpcUUID = uuidToUuid(videoId);
-                final GetRelatedVideosResponse.Builder builder = 
-                        GetRelatedVideosResponse.newBuilder().setVideoId(videoGrpcUUID);
-                resultPage.getResults().stream()
-                      .map(mapper::mapVideotoSuggestedVideoPreview)
-                      .filter(preview -> !preview.getVideoId().equals(videoGrpcUUID))
-                      .forEach(builder::addVideos);
-                resultPage.getPagingState().ifPresent(builder::setPagingState);
-                grpcResObserver.onNext(builder.build());
+                grpcResObserver.onNext(mapper.mapToGetRelatedVideosResponse(resultPage, videoId));
                 grpcResObserver.onCompleted();
             }
         });
@@ -106,11 +94,9 @@ public class SuggestedVideosServiceGrpc extends SuggestedVideoServiceImplBase {
         final UUID userid = UUID.fromString(grpcReq.getUserId().getValue());
         
         // Invoke DAO Async
-        CompletableFuture<List<Video>> futureDao = suggestedVideosRepository.getSuggestedVideosForUser(userid);
-        
-        // Map Result back to GRPC
-        futureDao.whenComplete((videos, error) -> {
-            
+        suggestedVideosRepository.getSuggestedVideosForUser(userid)
+        .whenComplete((videos, error) -> {
+            // Map Result back to GRPC
             if (error != null ) {
                 traceError("getSuggestedForUser", starts, error);
                 grpcResObserver.onError(Status.INTERNAL.withCause(error).asRuntimeException());

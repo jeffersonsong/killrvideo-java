@@ -8,7 +8,9 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 import java.util.HashSet;
 import java.util.UUID;
 
+import com.killrvideo.dse.dto.ResultListPage;
 import com.killrvideo.dse.dto.Video;
+import killrvideo.common.CommonTypes;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
@@ -76,6 +78,16 @@ public class SuggestedVideosServiceGrpcMapper {
                 .setAddedDate(GrpcMappingUtils.instantToTimeStamp(v.getAddedDate()))
                 .build();
     }
-    
-    
+
+    public GetRelatedVideosResponse mapToGetRelatedVideosResponse(ResultListPage<Video> resultPage, UUID       videoId) {
+        CommonTypes.Uuid videoGrpcUUID = uuidToUuid(videoId);
+        final GetRelatedVideosResponse.Builder builder =
+                GetRelatedVideosResponse.newBuilder().setVideoId(videoGrpcUUID);
+        resultPage.getResults().stream()
+                .map(this::mapVideotoSuggestedVideoPreview)
+                .filter(preview -> !preview.getVideoId().equals(videoGrpcUUID))
+                .forEach(builder::addVideos);
+        resultPage.getPagingState().ifPresent(builder::setPagingState);
+        return builder.build();
+    }
 }
