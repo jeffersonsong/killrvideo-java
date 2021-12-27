@@ -1,12 +1,5 @@
 package com.killrvideo.service.comment.grpc;
 
-import static com.killrvideo.service.comment.grpc.CommentsServiceGrpcMapper.mapFromDseUserCommentToGrpcResponse;
-import static com.killrvideo.service.comment.grpc.CommentsServiceGrpcMapper.mapFromDseVideoCommentToGrpcResponse;
-import static com.killrvideo.service.comment.grpc.CommentsServiceGrpcMapper.mapFromGrpcUserCommentToDseQuery;
-import static com.killrvideo.service.comment.grpc.CommentsServiceGrpcMapper.mapFromGrpcVideoCommentToDseQuery;
-import static com.killrvideo.service.comment.grpc.CommentsServiceGrpcMapper.validateGrpcRequest_GetUserComments;
-import static com.killrvideo.service.comment.grpc.CommentsServiceGrpcValidator.validateGrpcRequestCommentOnVideo;
-import static com.killrvideo.service.comment.grpc.CommentsServiceGrpcValidator.validateGrpcRequestGetVideoComment;
 import static java.util.UUID.fromString;
 
 import java.time.Duration;
@@ -60,13 +53,18 @@ public class CommentsServiceGrpc extends CommentsServiceImplBase {
   
     @Value("${killrvideo.messaging.destinations.commentCreated : topic-kv-commentCreation}")
     private String messageDestination;
+
+    @Autowired
+    private CommentsServiceGrpcValidator validator;
+    @Autowired
+    private CommentsServiceGrpcMapper mapper;
     
     /** {@inheritDoc} */
     @Override
     public void commentOnVideo(final CommentOnVideoRequest grpcReq, StreamObserver<CommentOnVideoResponse> grpcResObserver) {
         
         // Boilerplate Code for validation delegated to {@link CommentsServiceGrpcValidator}
-        validateGrpcRequestCommentOnVideo(LOGGER, grpcReq, grpcResObserver);
+        validator.validateGrpcRequestCommentOnVideo(grpcReq, grpcResObserver);
         
         // Stands as stopwatch for logging and messaging 
         final Instant starts = Instant.now();
@@ -114,19 +112,19 @@ public class CommentsServiceGrpc extends CommentsServiceImplBase {
     public void getVideoComments(final GetVideoCommentsRequest grpcReq, StreamObserver<GetVideoCommentsResponse> responseObserver) {
         
         // Parameter validations
-        validateGrpcRequestGetVideoComment(LOGGER, grpcReq, responseObserver);
+        validator.validateGrpcRequestGetVideoComment(grpcReq, responseObserver);
         
         // Stands as stopwatch for logging and messaging 
         final Instant starts = Instant.now();
         
         // Mapping GRPC => Domain (Dao) : Dedicated bean creating for flexibility
-        QueryCommentByVideo query = mapFromGrpcVideoCommentToDseQuery(grpcReq);
+        QueryCommentByVideo query = mapper.mapFromGrpcVideoCommentToDseQuery(grpcReq);
              
         // ASYNCHRONOUS works with ComputableFuture
         dseCommentDao.findCommentsByVideosIdAsync(query).whenComplete((result, error) -> {
             if (result != null) {
                 traceSuccess( "getVideoComments", starts);
-                responseObserver.onNext(mapFromDseVideoCommentToGrpcResponse(result));
+                responseObserver.onNext(mapper.mapFromDseVideoCommentToGrpcResponse(result));
                 responseObserver.onCompleted();
             } else if (error != null){
                 traceError("getVideoComments", starts, error);
@@ -141,13 +139,13 @@ public class CommentsServiceGrpc extends CommentsServiceImplBase {
     public void getUserComments(final GetUserCommentsRequest grpcReq, StreamObserver<GetUserCommentsResponse> responseObserver) {
 
         // GRPC Parameters Validation
-        validateGrpcRequest_GetUserComments(LOGGER, grpcReq, responseObserver);
+        validator.validateGrpcRequest_GetUserComments(grpcReq, responseObserver);
         
         // Stands as stopwatch for logging and messaging 
         final Instant starts = Instant.now();
         
         // Mapping GRPC => Domain (Dao) : Dedicated bean creating for flexibility
-        QueryCommentByUser query = mapFromGrpcUserCommentToDseQuery(grpcReq);
+        QueryCommentByUser query = mapper.mapFromGrpcUserCommentToDseQuery(grpcReq);
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Listing comment for user {}",  query.getUserId());
         }
@@ -156,7 +154,7 @@ public class CommentsServiceGrpc extends CommentsServiceImplBase {
         dseCommentDao.findCommentsByUserIdAsync(query).whenComplete((result, error) -> {
             if (result != null) {
                 traceSuccess("getUserComments", starts);
-                responseObserver.onNext(mapFromDseUserCommentToGrpcResponse(result));
+                responseObserver.onNext(mapper.mapFromDseUserCommentToGrpcResponse(result));
                 responseObserver.onCompleted();
             } else if (error != null){
                 traceError("getUserComments", starts, error);
@@ -201,5 +199,4 @@ public class CommentsServiceGrpc extends CommentsServiceImplBase {
     public String getServiceKey() {
         return serviceKey;
     }
-
 }

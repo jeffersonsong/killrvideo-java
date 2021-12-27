@@ -11,6 +11,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.slf4j.Logger;
+import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
 import com.killrvideo.dse.dto.ResultListPage;
@@ -31,14 +32,8 @@ import killrvideo.comments.CommentsServiceOuterClass.GetVideoCommentsResponse;
  *
  * @author DataStax Developer Advocates team.
  */
+@Component
 public class CommentsServiceGrpcMapper {
-    
-    /**
-     * Hide constructor.
-     */
-    private CommentsServiceGrpcMapper() {
-    }
-    
     /**
      * Validate comment On video comment query.
      * 
@@ -47,7 +42,7 @@ public class CommentsServiceGrpcMapper {
      * @param streamObserver
      *      response async
      */
-    public static void validateGrpcRequestCommentOnVideo(Logger logger, CommentOnVideoRequest request, StreamObserver<?> streamObserver) {
+    public void validateGrpcRequestCommentOnVideo(Logger logger, CommentOnVideoRequest request, StreamObserver<?> streamObserver) {
         StringBuilder errorMessage = initErrorString(request);
         boolean isValid = 
                   notEmpty(!request.hasUserId()    || isBlank(request.getUserId().getValue()),  "userId",  "video request",errorMessage) &&
@@ -65,7 +60,7 @@ public class CommentsServiceGrpcMapper {
      * @param streamObserver
      *      response async
      */
-    public static void validateGrpcRequestGetVideoComment(Logger logger, GetVideoCommentsRequest request, StreamObserver<?> streamObserver) {
+    public void validateGrpcRequestGetVideoComment(Logger logger, GetVideoCommentsRequest request, StreamObserver<?> streamObserver) {
         final StringBuilder errorMessage = initErrorString(request);
         boolean isValid = true;
 
@@ -90,7 +85,7 @@ public class CommentsServiceGrpcMapper {
      * @param streamObserver
      *      response async
      */
-    public static void validateGrpcRequest_GetUserComments(Logger logger, GetUserCommentsRequest request, StreamObserver<?> streamObserver) {
+    public void validateGrpcRequest_GetUserComments(Logger logger, GetUserCommentsRequest request, StreamObserver<?> streamObserver) {
         final StringBuilder errorMessage = initErrorString(request);
         boolean isValid = 
                   notEmpty(!request.hasUserId() || isBlank(request.getUserId().getValue()),  "userId",  "comment request",errorMessage) &&
@@ -108,7 +103,7 @@ public class CommentsServiceGrpcMapper {
      * @return
      *      query bean for Dao
      */
-    public static QueryCommentByUser mapFromGrpcUserCommentToDseQuery(GetUserCommentsRequest grpcReq) {
+    public QueryCommentByUser mapFromGrpcUserCommentToDseQuery(GetUserCommentsRequest grpcReq) {
         QueryCommentByUser targetQuery = new QueryCommentByUser();
         if (grpcReq.hasStartingCommentId() && 
                 !isBlank(grpcReq.getStartingCommentId().getValue())) {
@@ -121,7 +116,7 @@ public class CommentsServiceGrpcMapper {
     }
     
     // Map from CommentDseDao response bean to expected GRPC object.
-    public static GetVideoCommentsResponse mapFromDseVideoCommentToGrpcResponse(ResultListPage<Comment> dseRes) {
+    public GetVideoCommentsResponse mapFromDseVideoCommentToGrpcResponse(ResultListPage<Comment> dseRes) {
         final GetVideoCommentsResponse.Builder builder = GetVideoCommentsResponse.newBuilder();
         for (Comment c : dseRes.getResults()) {
            builder.setVideoId(uuidToUuid(c.getVideoid()));
@@ -131,7 +126,7 @@ public class CommentsServiceGrpcMapper {
         return builder.build();
     }
 
-    private static CommentsServiceOuterClass.VideoComment newVideoCommentProto(Comment c) {
+    private CommentsServiceOuterClass.VideoComment newVideoCommentProto(Comment c) {
         return CommentsServiceOuterClass.VideoComment.newBuilder()
                 .setComment(c.getComment())
                 .setUserId(uuidToUuid(c.getUserid()))
@@ -141,7 +136,7 @@ public class CommentsServiceGrpcMapper {
     }
 
     // Map from CommentDseDao response bean to expected GRPC object.
-    public static GetUserCommentsResponse mapFromDseUserCommentToGrpcResponse(ResultListPage<Comment> dseRes) {
+    public GetUserCommentsResponse mapFromDseUserCommentToGrpcResponse(ResultListPage<Comment> dseRes) {
         final GetUserCommentsResponse.Builder builder = GetUserCommentsResponse.newBuilder();
         for (Comment c : dseRes.getResults()) {
            builder.setUserId(uuidToUuid(c.getUserid()));
@@ -151,7 +146,7 @@ public class CommentsServiceGrpcMapper {
         return builder.build();
     }
 
-    private static CommentsServiceOuterClass.UserComment newUserCommentProto(Comment c) {
+    private CommentsServiceOuterClass.UserComment newUserCommentProto(Comment c) {
         return CommentsServiceOuterClass.UserComment.newBuilder()
                 .setComment(c.getComment())
                 .setCommentId(uuidToTimeUuid(c.getCommentid()))
@@ -168,7 +163,7 @@ public class CommentsServiceGrpcMapper {
      * @return
      *      query bean for Dao
      */
-    public static QueryCommentByVideo mapFromGrpcVideoCommentToDseQuery(GetVideoCommentsRequest grpcReq) {
+    public QueryCommentByVideo mapFromGrpcVideoCommentToDseQuery(GetVideoCommentsRequest grpcReq) {
         QueryCommentByVideo targetQuery = new QueryCommentByVideo();
         if (grpcReq.hasStartingCommentId() && 
                 !isBlank(grpcReq.getStartingCommentId().getValue())) {
