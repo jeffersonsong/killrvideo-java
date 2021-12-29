@@ -33,6 +33,8 @@ import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 import java.util.stream.StreamSupport;
 
+import static com.killrvideo.dse.dto.CustomPagingState.createPagingState;
+
 /**
  * Implementations of operation for Videos.
  *
@@ -290,20 +292,6 @@ public class VideoCatalogRepository {
         });
         statementBuilder.setConsistencyLevel(ConsistencyLevel.ONE);
         return statementBuilder.build();
-    }
-
-    /**
-     * Create a paging state string from the passed in parameters
-     *
-     * @param buckets
-     * @param bucketIndex
-     * @param rowsPagingState
-     * @return String
-     */
-    private String createPagingState(List<String> buckets, int bucketIndex, String rowsPagingState) {
-        StringJoiner joiner = new StringJoiner("_");
-        buckets.forEach(joiner::add);
-        return joiner + "," + bucketIndex + "," + rowsPagingState;
     }
 
     /**

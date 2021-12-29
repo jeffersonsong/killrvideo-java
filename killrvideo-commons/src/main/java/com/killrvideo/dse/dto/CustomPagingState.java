@@ -5,10 +5,7 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -78,6 +75,20 @@ public class CustomPagingState implements Serializable {
             }
         }
         return Optional.ofNullable(pagingState);
+    }
+
+    /**
+     * Create a paging state string from the passed in parameters
+     *
+     * @param buckets
+     * @param bucketIndex
+     * @param rowsPagingState
+     * @return String
+     */
+    public static String createPagingState(List<String> buckets, int bucketIndex, String rowsPagingState) {
+        StringJoiner joiner = new StringJoiner("_");
+        buckets.forEach(joiner::add);
+        return joiner + "," + bucketIndex + "," + rowsPagingState;
     }
 
     /**
