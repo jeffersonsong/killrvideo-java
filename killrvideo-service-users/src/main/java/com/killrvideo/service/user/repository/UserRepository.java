@@ -42,18 +42,19 @@ public class UserRepository {
         UserCredentials userCredentials = UserCredentials.from(user, hashedPassword);
 
         return userCredentialsDao.insert(userCredentials)
-                .thenApply(rs -> validationInsertion(userCredentials, rs))
-                .thenCompose(rs -> userDao.insert(user));
+                .thenApply(success -> {
+                    duplicateCheck(userCredentials, !success);
+                    return success;
+                })
+                .thenCompose(success -> userDao.insert(user));
     }
 
-    private boolean validationInsertion(UserCredentials userCredentials, boolean insertionSuccess) {
-        if (!insertionSuccess) {
+    private void duplicateCheck(UserCredentials userCredentials, boolean duplicate) {
+        if (duplicate) {
             String errMsg = String.format("Exception creating user because it already exists with email %s",
                     userCredentials.getEmail());
             LOGGER.error(errMsg);
             throw new CompletionException(errMsg, new IllegalArgumentException(errMsg));
-        } else {
-            return true;
         }
     }
 
