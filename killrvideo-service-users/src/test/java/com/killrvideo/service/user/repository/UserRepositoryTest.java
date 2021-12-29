@@ -16,8 +16,7 @@ import java.util.concurrent.CompletableFuture;
 import static java.util.Collections.singletonList;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 class UserRepositoryTest {
     private UserRepository repository;
@@ -33,6 +32,20 @@ class UserRepositoryTest {
         when(mapper.getUserCredentialsDao()).thenReturn(userCredentialsDao);
 
         this.repository = new UserRepository(mapper);
+    }
+
+    @Test
+    public void testCreateUserAsyncWithUserAlreadyExists() {
+        User user = user(UUID.randomUUID(), "joe@gmail.com", "passwd");
+        when(userCredentialsDao.insert(any())).thenReturn(
+                CompletableFuture.completedFuture(false)
+        );
+
+        this.repository.createUserAsync(user, "passwd").whenComplete((result, error) -> {
+            assertNull(result);
+            assertNotNull(error);
+        });
+        verify(this.userDao, times(0)).insert(any());
     }
 
     @Test
