@@ -1,52 +1,36 @@
 package com.killrvideo.service.statistic.grpc;
 
-import static org.apache.commons.lang3.StringUtils.isBlank;
-
+import com.killrvideo.utils.FluentValidator;
+import io.grpc.stub.StreamObserver;
+import killrvideo.statistics.StatisticsServiceOuterClass.GetNumberOfPlaysRequest;
+import killrvideo.statistics.StatisticsServiceOuterClass.RecordPlaybackStartedRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-import org.springframework.util.Assert;
 
-import io.grpc.stub.StreamObserver;
-import killrvideo.common.CommonTypes;
-import killrvideo.statistics.StatisticsServiceOuterClass.GetNumberOfPlaysRequest;
-import killrvideo.statistics.StatisticsServiceOuterClass.RecordPlaybackStartedRequest;
-
-import static com.killrvideo.utils.ValidationUtils.initErrorString;
-import static com.killrvideo.utils.ValidationUtils.validate;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
 @Component
 public class StatisticsServiceGrpcValidator {
     private static final Logger LOGGER = LoggerFactory.getLogger(StatisticsServiceGrpcValidator.class);
     
     public void validateGrpcRequest_GetNumberPlays(GetNumberOfPlaysRequest request, StreamObserver<?> streamObserver) {
-        final StringBuilder errorMessage = initErrorString(request);
-        boolean isValid = true;
-        if (request.getVideoIdsCount() <= 0) {
-            errorMessage.append("\t\tvideo ids should be provided for get number of plays request\n");
-            isValid = false;
-        }
-        if (request.getVideoIdsCount() > 20) {
-            errorMessage.append("\t\tcannot do a get more than 20 videos at once for get number of plays request\n");
-            isValid = false;
-        }
-        for (CommonTypes.Uuid uuid : request.getVideoIdsList()) {
-            if (uuid == null || isBlank(uuid.getValue())) {
-                errorMessage.append("\t\tprovided UUID values cannot be null or blank for get number of plays request\n");
-                isValid = false;
-            }
-        }
-        Assert.isTrue(validate(LOGGER, streamObserver, errorMessage, isValid), "Invalid parameter for 'getNumberPlays'");
+        FluentValidator validator = FluentValidator.of("getNumberPlays", request, LOGGER, streamObserver)
+                .notEmpty("video ids", request.getVideoIdsCount() == 0)
+                .error("cannot do a get more than 20 videos at once for get number of plays request",
+                        request.getVideoIdsCount() > 20);
+
+        request.getVideoIdsList().forEach(uuid ->
+                validator.error("provided UUID values cannot be null or blank for get number of plays request",
+                        uuid == null || isBlank(uuid.getValue()))
+                );
+
+        validator.validate();
     }
     
     public void validateGrpcRequest_RecordPlayback(RecordPlaybackStartedRequest request, StreamObserver<?> streamObserver) {
-        final StringBuilder errorMessage = initErrorString(request);
-        boolean isValid = true;
-
-        if (isBlank(request.getVideoId().getValue())) {
-            errorMessage.append("\t\tvideo id should be provided for record playback started request\n");
-            isValid = false;
-        }
-        Assert.isTrue(validate(LOGGER, streamObserver, errorMessage, isValid), "Invalid parameter for 'recordPlaybackStarted'");
+        FluentValidator.of("recordPlaybackStarted", request, LOGGER, streamObserver)
+                .notEmpty("video id", isBlank(request.getVideoId().getValue()))
+                .validate();
     } 
 }

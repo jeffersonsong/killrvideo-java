@@ -21,7 +21,7 @@ import com.killrvideo.service.video.request.GetLatestVideoPreviewsRequestData;
 import com.killrvideo.service.video.request.GetUserVideoPreviewsRequestData;
 import com.killrvideo.utils.GrpcMappingUtils;
 import killrvideo.common.CommonTypes;
-import killrvideo.video_catalog.VideoCatalogServiceOuterClass;
+import killrvideo.video_catalog.VideoCatalogServiceOuterClass.*;
 import killrvideo.video_catalog.VideoCatalogServiceOuterClass.GetLatestVideoPreviewsResponse;
 import killrvideo.video_catalog.VideoCatalogServiceOuterClass.GetVideoResponse;
 import killrvideo.video_catalog.VideoCatalogServiceOuterClass.SubmitYouTubeVideoRequest;
@@ -50,16 +50,26 @@ public class VideoCatalogServiceGrpcMapper {
         targetVideo.setName(request.getName());
         targetVideo.setLocation(request.getYouTubeVideoId());
         targetVideo.setDescription(request.getDescription());
-        targetVideo.setPreviewImageLocation("//img.youtube.com/vi/"+ targetVideo.getLocation() + "/hqdefault.jpg");
+        targetVideo.setPreviewImageLocation("//img.youtube.com/vi/" + targetVideo.getLocation() + "/hqdefault.jpg");
         targetVideo.setTags(Sets.newHashSet(request.getTagsList().iterator()));
         targetVideo.setLocationType(VideoLocationType.YOUTUBE.ordinal());
         return targetVideo;
     }
-    
+
+    public GetLatestVideoPreviewsResponse mapLatestVideoToGrpcResponse(LatestVideosPage returnedPage) {
+        return GetLatestVideoPreviewsResponse.newBuilder()
+                .addAllVideoPreviews(
+                        returnedPage.getListOfPreview().stream()
+                                .map(this::mapLatestVideotoVideoPreview)
+                                .collect(Collectors.toList()))
+                .setPagingState(returnedPage.getNextPageState())
+                .build();
+    }
+
     /**
      * Mapping to GRPC generated classes.
      */
-    public VideoPreview mapLatestVideotoVideoPreview(LatestVideo lv) {
+    private VideoPreview mapLatestVideotoVideoPreview(LatestVideo lv) {
         return VideoPreview.newBuilder()
                 .setAddedDate(instantToTimeStamp(lv.getAddedDate()))
                 .setName(lv.getName())
@@ -68,21 +78,11 @@ public class VideoCatalogServiceGrpcMapper {
                 .setVideoId(uuidToUuid(lv.getVideoid()))
                 .build();
     }
-    
-    public GetLatestVideoPreviewsResponse mapLatestVideoToGrpcResponse(LatestVideosPage returnedPage) {
-        return GetLatestVideoPreviewsResponse.newBuilder()
-                .addAllVideoPreviews(
-                        returnedPage.getListOfPreview().stream()
-                        .map(this::mapLatestVideotoVideoPreview)
-                        .collect(Collectors.toList()))
-                .setPagingState(returnedPage.getNextPageState())
-                .build();
-    }
-    
+
     /**
      * Mapping to generated GPRC beans.
      */
-    public VideoPreview mapFromVideotoVideoPreview(Video v) {
+    private VideoPreview mapFromUserVideotoVideoPreview(UserVideo v) {
         return VideoPreview.newBuilder()
                 .setAddedDate(instantToTimeStamp(v.getAddedDate()))
                 .setName(v.getName())
@@ -91,20 +91,7 @@ public class VideoCatalogServiceGrpcMapper {
                 .setVideoId(uuidToUuid(v.getVideoid()))
                 .build();
     }
-    
-    /**
-     * Mapping to generated GPRC beans.
-     */
-    public VideoPreview mapFromUserVideotoVideoPreview(UserVideo v) {
-        return VideoPreview.newBuilder()
-                .setAddedDate(instantToTimeStamp(v.getAddedDate()))
-                .setName(v.getName())
-                .setPreviewImageLocation(Optional.ofNullable(v.getPreviewImageLocation()).orElse("N/A"))
-                .setUserId(uuidToUuid(v.getUserid()))
-                .setVideoId(uuidToUuid(v.getVideoid()))
-                .build();
-    }
-    
+
     /**
      * Mapping to generated GPRC beans (Full detailed)
      */
@@ -137,8 +124,9 @@ public class VideoCatalogServiceGrpcMapper {
                 .build();
     }
 
-    public GetLatestVideoPreviewsRequestData parseGetLatestVideoPreviewsRequest(VideoCatalogServiceOuterClass.GetLatestVideoPreviewsRequest grpcReq,
-                                                                                Supplier<CustomPagingState> firstCustomPagingStateFactory) {
+    public GetLatestVideoPreviewsRequestData parseGetLatestVideoPreviewsRequest(
+            GetLatestVideoPreviewsRequest grpcReq,
+            Supplier<CustomPagingState> firstCustomPagingStateFactory) {
         CustomPagingState pageState =
                 CustomPagingState.parse(Optional.of(grpcReq.getPagingState()))
                         .orElse(firstCustomPagingStateFactory.get());
@@ -153,15 +141,28 @@ public class VideoCatalogServiceGrpcMapper {
         return new GetLatestVideoPreviewsRequestData(pageState, pageSize, startDate, startVideoId);
     }
 
-    public VideoCatalogServiceOuterClass.GetVideoPreviewsResponse mapToGetVideoPreviewsResponse(List<Video> videos) {
-        final VideoCatalogServiceOuterClass.GetVideoPreviewsResponse.Builder builder = VideoCatalogServiceOuterClass.GetVideoPreviewsResponse.newBuilder();
+    public GetVideoPreviewsResponse mapToGetVideoPreviewsResponse(List<Video> videos) {
+        final GetVideoPreviewsResponse.Builder builder = GetVideoPreviewsResponse.newBuilder();
         videos.stream()
                 .map(this::mapFromVideotoVideoPreview)
                 .forEach(builder::addVideoPreviews);
         return builder.build();
     }
 
-    public GetUserVideoPreviewsRequestData parseGetUserVideoPreviewsRequest(VideoCatalogServiceOuterClass.GetUserVideoPreviewsRequest grpcReq) {
+    /**
+     * Mapping to generated GPRC beans.
+     */
+    private VideoPreview mapFromVideotoVideoPreview(Video v) {
+        return VideoPreview.newBuilder()
+                .setAddedDate(instantToTimeStamp(v.getAddedDate()))
+                .setName(v.getName())
+                .setPreviewImageLocation(Optional.ofNullable(v.getPreviewImageLocation()).orElse("N/A"))
+                .setUserId(uuidToUuid(v.getUserid()))
+                .setVideoId(uuidToUuid(v.getVideoid()))
+                .build();
+    }
+
+    public GetUserVideoPreviewsRequestData parseGetUserVideoPreviewsRequest(GetUserVideoPreviewsRequest grpcReq) {
         final UUID userId = fromUuid(grpcReq.getUserId());
         final Optional<UUID> startingVideoId = Optional
                 .of(grpcReq.getStartingVideoId())
@@ -169,20 +170,21 @@ public class VideoCatalogServiceGrpcMapper {
                 .map(GrpcMappingUtils::fromUuid);
         final Optional<Instant> startingAddedDate = Optional
                 .of(grpcReq.getStartingAddedDate())
-                .map(ts -> Instant.ofEpochSecond(ts.getSeconds(), ts.getNanos()));
+                .map(GrpcMappingUtils::timestampToInstant);
         final Optional<Integer> pagingSize =
                 Optional.of(grpcReq.getPageSize());
         final Optional<String> pagingState =
-                Optional.of(grpcReq.getPagingState()).filter(StringUtils::isNotBlank);
+                Optional.of(grpcReq.getPagingState())
+                        .filter(StringUtils::isNotBlank);
 
         return new GetUserVideoPreviewsRequestData(
                 userId, startingVideoId, startingAddedDate, pagingSize, pagingState
         );
     }
 
-    public VideoCatalogServiceOuterClass.GetUserVideoPreviewsResponse mapToGetUserVideoPreviewsResponse(ResultListPage<UserVideo> resultPage, UUID userId) {
+    public GetUserVideoPreviewsResponse mapToGetUserVideoPreviewsResponse(ResultListPage<UserVideo> resultPage, UUID userId) {
         CommonTypes.Uuid userGrpcUUID = GrpcMappingUtils.uuidToUuid(userId);
-        final VideoCatalogServiceOuterClass.GetUserVideoPreviewsResponse.Builder builder = VideoCatalogServiceOuterClass.GetUserVideoPreviewsResponse.newBuilder().setUserId(userGrpcUUID);
+        final GetUserVideoPreviewsResponse.Builder builder = GetUserVideoPreviewsResponse.newBuilder().setUserId(userGrpcUUID);
         resultPage.getResults().stream()
                 .map(this::mapFromUserVideotoVideoPreview)
                 .forEach(builder::addVideoPreviews);

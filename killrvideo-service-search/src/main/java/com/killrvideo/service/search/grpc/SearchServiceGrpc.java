@@ -69,7 +69,7 @@ public class SearchServiceGrpc extends SearchServiceImplBase {
 
                     } else {
                         traceSuccess("searchVideos", starts);
-                        returnSingleResult(mapper.buildSearchGrpcResponse(resultPage, grpcReq), grpcResObserver);
+                        returnSingleResult(mapper.buildSearchGrpcResponse(resultPage, grpcReq.getQuery()), grpcResObserver);
                     }
                 });
     }

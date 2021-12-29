@@ -34,15 +34,6 @@ public class UserManagementServiceGrpcMapper {
         return user;
     }
     
-    public UserProfile mapUserToGrpcUserProfile(User user) {
-       return UserProfile.newBuilder()
-                    .setEmail(user.getEmail())
-                    .setFirstName(user.getFirstname())
-                    .setLastName(user.getLastname())
-                    .setUserId(uuidToUuid(user.getUserid()))
-                    .build();
-    }
-    
     public VerifyCredentialsResponse mapResponseVerifyCredentials(UUID userid) {
         return VerifyCredentialsResponse.newBuilder().setUserId(uuidToUuid(userid)).build();
     }
@@ -72,5 +63,14 @@ public class UserManagementServiceGrpcMapper {
                 .map(this::mapUserToGrpcUserProfile)
                 .forEach(builder::addProfiles);
         return builder.build();
+    }
+
+    private UserProfile mapUserToGrpcUserProfile(User user) {
+        return UserProfile.newBuilder()
+                .setEmail(user.getEmail())
+                .setFirstName(user.getFirstname())
+                .setLastName(user.getLastname())
+                .setUserId(uuidToUuid(user.getUserid()))
+                .build();
     }
 }

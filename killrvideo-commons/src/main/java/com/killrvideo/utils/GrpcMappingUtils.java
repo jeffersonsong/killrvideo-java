@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.util.Date;
 import java.util.UUID;
 
+import com.datastax.oss.driver.api.core.uuid.Uuids;
 import com.google.protobuf.Timestamp;
 
 import killrvideo.common.CommonTypes.TimeUuid;
@@ -36,6 +37,14 @@ public class GrpcMappingUtils {
 
     public static UUID fromUuid(Uuid uuid) {
         return UUID.fromString(uuid.getValue());
+    }
+
+    public static Uuid randomUuid() {
+        return uuidToUuid(UUID.randomUUID());
+    }
+
+    public static TimeUuid randomTimeUuid() {
+        return uuidToTimeUuid(Uuids.timeBased());
     }
     
     public static Date timestampToDate(Timestamp protoTimestamp) {

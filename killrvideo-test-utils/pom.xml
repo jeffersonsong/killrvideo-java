@@ -29,5 +29,11 @@
             <groupId>com.datastax.oss</groupId>
             <artifactId>java-driver-core</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.datastax</groupId>
+            <artifactId>killrvideo-commons</artifactId>
+            <version>3.0.0</version>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
 </project>

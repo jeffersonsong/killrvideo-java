@@ -16,8 +16,7 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.UUID;
 
-import static com.killrvideo.utils.GrpcMappingUtils.fromUuid;
-import static com.killrvideo.utils.GrpcMappingUtils.uuidToUuid;
+import static com.killrvideo.utils.GrpcMappingUtils.*;
 
 /**
  * Helper and mappers for DAO <=> GRPC Communications
@@ -26,11 +25,12 @@ import static com.killrvideo.utils.GrpcMappingUtils.uuidToUuid;
  */
 @Component
 public class SuggestedVideosServiceGrpcMapper {
+
     public Video mapVideoAddedtoVideoDTO(YouTubeVideoAdded videoAdded) {
         // Convert Stub to Dto, dao must not be related to interface GRPC
         Video video = new Video();
         video.setVideoid(fromUuid(videoAdded.getVideoId()));
-        video.setAddedDate(GrpcMappingUtils.timestampToInstant(videoAdded.getAddedDate()));
+        video.setAddedDate(timestampToInstant(videoAdded.getAddedDate()));
         video.setUserid(fromUuid(videoAdded.getUserId()));
         video.setName(videoAdded.getName());
         video.setTags(new HashSet<>(videoAdded.getTagsList()));
@@ -54,14 +54,14 @@ public class SuggestedVideosServiceGrpcMapper {
 
     @SuppressWarnings("ConstantConditions")
     public GetRelatedVideosRequestData parseGetRelatedVideosRequestData(GetRelatedVideosRequest grpcReq) {
-        final UUID       videoId = fromUuid(grpcReq.getVideoId());
-        int              videoPageSize = grpcReq.getPageSize();
+        final UUID videoId = fromUuid(grpcReq.getVideoId());
+        int videoPageSize = grpcReq.getPageSize();
         Optional<String> videoPagingState = Optional.ofNullable(grpcReq.getPagingState()).filter(StringUtils::isNotBlank);
 
         return new GetRelatedVideosRequestData(videoId, videoPageSize, videoPagingState);
     }
 
-    public GetRelatedVideosResponse mapToGetRelatedVideosResponse(ResultListPage<Video> resultPage, UUID       videoId) {
+    public GetRelatedVideosResponse mapToGetRelatedVideosResponse(ResultListPage<Video> resultPage, UUID videoId) {
         CommonTypes.Uuid videoGrpcUUID = uuidToUuid(videoId);
         final GetRelatedVideosResponse.Builder builder =
                 GetRelatedVideosResponse.newBuilder().setVideoId(videoGrpcUUID);

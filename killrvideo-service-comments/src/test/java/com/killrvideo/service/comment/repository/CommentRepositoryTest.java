@@ -19,6 +19,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
+import static com.killrvideo.utils.test.CassandraTestUtils.mockPageableQueryFactory;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -34,11 +35,9 @@ class CommentRepositoryTest {
 
     @BeforeEach
     public void openMocks() {
-        PageableQueryFactory pageableQueryFactory = mock(PageableQueryFactory.class);
         findCommentsByUser = mock(PageableQuery.class);
         findCommentsByVideo = mock(PageableQuery.class);
-        when(pageableQueryFactory.newPageableQuery(any(), any(), (Function<Row, Comment>) any()))
-                .thenReturn(findCommentsByUser, findCommentsByVideo);
+        PageableQueryFactory pageableQueryFactory = mockPageableQueryFactory(findCommentsByUser, findCommentsByVideo);
 
         CommentMapper mapper = mock(CommentMapper.class);
         commentByUserDao = mock(CommentByUserDao.class);

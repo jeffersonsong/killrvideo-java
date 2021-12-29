@@ -34,7 +34,7 @@ services:
     command: [ -s -g ] # Run with Search and Graph capabilities enabled
     ports: # Exposes ports to be available.
       - "9042:9042" # Exposes DSE port
-      - "8983:8983" # Exposes DSE Search port
+      - "8983:8983" # Exposes DSE Search portpwd
       - "8182:8182" # Exposes DSE Graph port
     environment:
       DS_LICENSE: accept # Accept licence on start
@@ -44,12 +44,13 @@ services:
       memlock: -1
     volumes:
       - /home/jeffersons/Tutorial/github.com/KillrVideo/dse2/var/lib/cassandra:/var/lib/cassandra
+      #- /Users/jeffersons/Tutorials/github.com/KillrVideo/dse2/var/lib/cassandra:/var/lib/cassandra
 
   # One-Time Bootstrap Container, configures DSE to have required keyspaces etc.
-  #dse-config:
-  #  image: killrvideo/killrvideo-dse-config:3.0.0
-  #  depends_on:
-  #    - dse # Needs DSE to be running
+  dse-config:
+    image: killrvideo/killrvideo-dse-config:3.0.0
+    depends_on:
+      - dse # Needs DSE to be running
 
   # Sample Data Generator, imitates behaviour of users on the killrVideo website. 
   # Adds comments and rates videos, upload new videos and so on.

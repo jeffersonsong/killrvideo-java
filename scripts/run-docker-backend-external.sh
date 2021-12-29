@@ -2,7 +2,7 @@
 
 # setting environment variable to the IP address of the host
 #export KILLRVIDEO_BACKEND=`ipconfig getifaddr en0`
-#export KILLRVIDEO_BACKEND='172.17.0.1'
+#export KILLRVIDEO_DOCKER_IP=`ipconfig getifaddr en0`
 export KILLRVIDEO_BACKEND=$(ip addr show docker0 | grep -Po 'inet \K[\d.]+')
 export KILLRVIDEO_DOCKER_IP=$(ip addr show docker0 | grep -Po 'inet \K[\d.]+')
 

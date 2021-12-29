@@ -26,6 +26,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
 import static com.killrvideo.utils.test.CassandraTestUtils.mockMappedAsyncPagingIterable;
+import static com.killrvideo.utils.test.CassandraTestUtils.mockPageableQueryFactory;
 import static java.util.Collections.singletonList;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -41,14 +42,12 @@ class VideoCatalogRepositoryTest {
 
     @BeforeEach
     public void setUp() {
-        PageableQueryFactory pageableQueryFactory = mock(PageableQueryFactory.class);
         this.findUserVideoPreview_startingPoint = mock(PageableQuery.class);
         this.findUserVideoPreview_noStartingPoint = mock(PageableQuery.class);
-        when(pageableQueryFactory.newPageableQuery(any(), any(), (Function<Row, UserVideo>) any()))
-                .thenReturn(
-                        this.findUserVideoPreview_startingPoint,
-                        this.findUserVideoPreview_noStartingPoint
-                );
+        PageableQueryFactory pageableQueryFactory = mockPageableQueryFactory(
+                this.findUserVideoPreview_startingPoint,
+                this.findUserVideoPreview_noStartingPoint
+        );
 
         VideoCatalogMapper mapper = mock(VideoCatalogMapper.class);
         this.videoDao = mock(VideoDao.class);

@@ -21,10 +21,22 @@ import java.util.Optional;
  */
 @Component
 public class SearchServiceGrpcMapper {
+
+    public SearchVideosResponse buildSearchGrpcResponse(ResultListPage<Video> resultPage,
+                                                        String query) {
+        final SearchVideosResponse.Builder builder = SearchVideosResponse.newBuilder();
+        builder.setQuery(query);
+        resultPage.getPagingState().ifPresent(builder::setPagingState);
+        resultPage.getResults().stream()
+                .map(this::maptoResultVideoPreview)
+                .forEach(builder::addVideos);
+        return builder.build();
+    }
+
     /**
      * Mapping to generated GPRC beans (Search result special).
      */
-    public SearchResultsVideoPreview maptoResultVideoPreview(Video v) {
+    private SearchResultsVideoPreview maptoResultVideoPreview(Video v) {
         Builder builder = SearchResultsVideoPreview.newBuilder();
         builder.setName(v.getName());
         builder.setVideoId(GrpcMappingUtils.uuidToUuid(v.getVideoid()));
@@ -46,23 +58,12 @@ public class SearchServiceGrpcMapper {
         return new SearchVideosRequestData(searchQuery, searchPageSize, searchPagingState);
     }
 
-    public SearchVideosResponse buildSearchGrpcResponse(ResultListPage<Video> resultPage,
-                                                        SearchVideosRequest initialRequest) {
-        final SearchVideosResponse.Builder builder = SearchVideosResponse.newBuilder();
-        builder.setQuery(initialRequest.getQuery());
-        resultPage.getPagingState().ifPresent(builder::setPagingState);
-        resultPage.getResults().stream()
-                .map(this::maptoResultVideoPreview)
-                .forEach(builder::addVideos);
-        return builder.build();
-    }
-
     public GetQuerySuggestionsResponse buildQuerySuggestionsResponse(
-            Iterable<String> suggestionSet, String query
+            Iterable<String> suggestions, String query
     ) {
         return GetQuerySuggestionsResponse.newBuilder()
                 .setQuery(query)
-                .addAllSuggestions(suggestionSet)
+                .addAllSuggestions(suggestions)
                 .build();
     }
 

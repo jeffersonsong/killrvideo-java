@@ -13,6 +13,7 @@ import killrvideo.statistics.StatisticsServiceOuterClass.GetNumberOfPlaysRequest
 import killrvideo.statistics.StatisticsServiceOuterClass.GetNumberOfPlaysResponse;
 import killrvideo.statistics.StatisticsServiceOuterClass.PlayStats;
 
+import static com.killrvideo.utils.GrpcMappingUtils.uuidToUuid;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 /**
@@ -31,25 +32,26 @@ public class StatisticsServiceGrpcMapper {
 
         final GetNumberOfPlaysResponse.Builder builder = GetNumberOfPlaysResponse.newBuilder();
         for (Uuid requestedVideoId : grpcReq.getVideoIdsList()) {
-            if (result.containsKey(requestedVideoId)) {
-                builder.addStats(result.get(requestedVideoId));
-            } else {
-                builder.addStats(PlayStats
-                        .newBuilder()
-                        .setVideoId(requestedVideoId)
-                        .setViews(0L)
-                        .build());
-            }
+            PlayStats playStats = result.computeIfAbsent(requestedVideoId, this::defaultPlayStats);
+            builder.addStats(playStats);
         }
         return builder.build();
     }
-    
+
+    private PlayStats defaultPlayStats(Uuid requestedVideoId) {
+        return PlayStats
+                .newBuilder()
+                .setVideoId(requestedVideoId)
+                .setViews(0L)
+                .build();
+    }
+
     /**
      * Mapping to generated GPRC beans.
      */
     private PlayStats mapVideoPlayBacktoPlayStats(VideoPlaybackStats v) {
         return PlayStats.newBuilder()
-                .setVideoId(GrpcMappingUtils.uuidToUuid(v.getVideoid()))
+                .setVideoId(uuidToUuid(v.getVideoid()))
                 .setViews(Optional.ofNullable(v.getViews()).orElse(0L)).build();
     }
 

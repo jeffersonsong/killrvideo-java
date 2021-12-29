@@ -1,21 +1,13 @@
 package com.killrvideo.service.video.grpc;
 
-import static com.killrvideo.utils.ValidationUtils.initErrorString;
-import static com.killrvideo.utils.ValidationUtils.validate;
-import static org.apache.commons.lang3.StringUtils.isBlank;
-
+import com.killrvideo.utils.FluentValidator;
+import io.grpc.stub.StreamObserver;
+import killrvideo.video_catalog.VideoCatalogServiceOuterClass.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-import org.springframework.util.Assert;
 
-import io.grpc.stub.StreamObserver;
-import killrvideo.common.CommonTypes;
-import killrvideo.video_catalog.VideoCatalogServiceOuterClass.GetLatestVideoPreviewsRequest;
-import killrvideo.video_catalog.VideoCatalogServiceOuterClass.GetUserVideoPreviewsRequest;
-import killrvideo.video_catalog.VideoCatalogServiceOuterClass.GetVideoPreviewsRequest;
-import killrvideo.video_catalog.VideoCatalogServiceOuterClass.GetVideoRequest;
-import killrvideo.video_catalog.VideoCatalogServiceOuterClass.SubmitYouTubeVideoRequest;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
 /**
  * Validate arguments in GRPC services
@@ -30,85 +22,47 @@ public class VideoCatalogServiceGrpcValidator {
      * Validate arguments for 'SubmitYouTubeVideo'
      */
     public void validateGrpcRequest_submitYoutubeVideo(SubmitYouTubeVideoRequest request, StreamObserver<?> streamObserver) {
-        final StringBuilder errorMessage = initErrorString(request);
-        boolean isValid = true;
-        if (isBlank(request.getVideoId().getValue())) {
-            errorMessage.append("\t\tvideo id should be provided for submit youtube video request\n");
-            isValid = false;
-        }
-        if (isBlank(request.getUserId().getValue())) {
-            errorMessage.append("\t\tuser id should be provided for submit youtube video request\n");
-            isValid = false;
-        }
-        if (isBlank(request.getName())) {
-            errorMessage.append("\t\tvideo name should be provided for submit youtube video request\n");
-            isValid = false;
-        }
-        if (isBlank(request.getDescription())) {
-            errorMessage.append("\t\tvideo description should be provided for submit youtube video request\n");
-            isValid = false;
-        }
-        if (isBlank(request.getYouTubeVideoId())) {
-            errorMessage.append("\t\tvideo youtube id should be provided for submit youtube video request\n");
-            isValid = false;
-        }
-        Assert.isTrue(validate(LOGGER, streamObserver, errorMessage, isValid), "Invalid parameter for 'submitVideo'");
+        FluentValidator.of("submitVideo", request, LOGGER, streamObserver)
+                .notEmpty("video id", isBlank(request.getVideoId().getValue()))
+                .notEmpty("user id", isBlank(request.getUserId().getValue()))
+                .notEmpty("video name", isBlank(request.getName()))
+                .notEmpty("video description", isBlank(request.getDescription()))
+                .notEmpty("video youtube id", isBlank(request.getYouTubeVideoId()))
+                .validate();
     }
-    
+
     /**
      * Validate arguments for 'getLatestVideoPreview'
      */
     public void validateGrpcRequest_getLatestPreviews(GetLatestVideoPreviewsRequest request, StreamObserver<?> streamObserver) {
-        final StringBuilder errorMessage = initErrorString(request);
-        boolean isValid = true;
-        if (request.getPageSize() <= 0) {
-            errorMessage.append("\t\tpage size should be strictly positive for get latest preview video request\n");
-            isValid = false;
-        }
-        Assert.isTrue(validate(LOGGER, streamObserver, errorMessage, isValid),  "Invalid parameter for 'getLatestVideoPreviews'");
+        FluentValidator.of("getLatestVideoPreviews", request, LOGGER, streamObserver)
+                .positive("page size", request.getPageSize() == 0)
+                .validate();
     }
-    
+
     public void validateGrpcRequest_getVideo(GetVideoRequest request, StreamObserver<?> streamObserver) {
-        final StringBuilder errorMessage = initErrorString(request);
-        boolean isValid = true;
-        if (isBlank(request.getVideoId().getValue())) {
-            errorMessage.append("\t\tvideo id should be provided for submit youtube video request\n");
-            isValid = false;
-        }
-        Assert.isTrue(validate(LOGGER, streamObserver, errorMessage, isValid),  "Invalid parameter for 'getVideo'");
+        FluentValidator.of("getVideo", request, LOGGER, streamObserver)
+                .notEmpty("video id", isBlank(request.getVideoId().getValue()))
+                .validate();
     }
-    
+
     public void validateGrpcRequest_getVideoPreviews(GetVideoPreviewsRequest request, StreamObserver<?> streamObserver) {
-        final StringBuilder errorMessage = initErrorString(request);
-        boolean isValid = true;
+        FluentValidator validator = FluentValidator.of("getVideoPreview", request, LOGGER, streamObserver)
+                .error("cannot get more than 20 videos at once for get video previews request",
+                        request.getVideoIdsCount() >= 20);
 
-        if (request.getVideoIdsCount() >= 20) {
-            errorMessage.append("\t\tcannot get more than 20 videos at once for get video previews request\n");
-            isValid = false;
-        }
-        for (CommonTypes.Uuid uuid : request.getVideoIdsList()) {
-            if (uuid == null || isBlank(uuid.getValue())) {
-                errorMessage.append("\t\tprovided UUID values cannot be null or blank for get video previews request\n");
-                isValid = false;
-            }
-        }
-        Assert.isTrue(validate(LOGGER, streamObserver, errorMessage, isValid),  "Invalid parameter for 'getVideoPreview'");
+        request.getVideoIdsList().forEach(uuid ->
+                validator.error("provided UUID values cannot be null or blank for get video previews request",
+                        uuid == null || isBlank(uuid.getValue()))
+        );
+        validator.validate();
     }
-    
+
     public void validateGrpcRequest_getUserVideoPreviews(GetUserVideoPreviewsRequest request, StreamObserver<?> streamObserver) {
-        final StringBuilder errorMessage = initErrorString(request);
-        boolean isValid = true;
-
-        if (isBlank(request.getUserId().getValue())) {
-            errorMessage.append("\t\tuser id should be provided for get user video previews request\n");
-            isValid = false;
-        }
-
-        if (request.getPageSize() <= 0) {
-            errorMessage.append("\t\tpage size should be strictly positive for get user video previews request\n");
-            isValid = false;
-        }        
-        Assert.isTrue(validate(LOGGER, streamObserver, errorMessage, isValid),  "Invalid parameter for 'getUserVideoPreview'");
+        FluentValidator.of("getUserVideoPreview", request, LOGGER, streamObserver)
+                .notEmpty("user id", isBlank(request.getUserId().getValue()))
+                .positive("page size", request.getPageSize() == 0)
+                .validate();
     }
 
 }

@@ -104,7 +104,9 @@ public class CommentsServiceGrpcMapper {
         }
         targetQuery.setVideoId(fromUuid(grpcReq.getVideoId()));
         targetQuery.setPageSize(grpcReq.getPageSize());
-        targetQuery.setPageState(Optional.of(grpcReq.getPagingState()));
+        if (isNotBlank(grpcReq.getPagingState())) {
+            targetQuery.setPageState(Optional.of(grpcReq.getPagingState()));
+        }
         return targetQuery;
     }
 

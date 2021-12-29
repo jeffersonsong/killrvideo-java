@@ -4,8 +4,9 @@ import com.datastax.oss.driver.api.core.uuid.Uuids;
 import com.killrvideo.dse.dto.ResultListPage;
 import com.killrvideo.service.comment.dto.Comment;
 import com.killrvideo.service.comment.dto.QueryCommentByUser;
+import com.killrvideo.service.comment.dto.QueryCommentByVideo;
 import killrvideo.comments.CommentsServiceOuterClass.*;
-import killrvideo.common.CommonTypes.*;
+import killrvideo.comments.events.CommentsEvents;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
@@ -24,12 +25,7 @@ class CommentsServiceGrpcMapperTest {
     public void testMapFromGrpcUserCommentToDseQuery() {
         UUID userId = UUID.randomUUID();
         UUID startingCommentId = Uuids.timeBased();
-        GetUserCommentsRequest request = GetUserCommentsRequest.newBuilder()
-                .setStartingCommentId(uuidToTimeUuid(startingCommentId))
-                .setUserId(uuidToUuid(userId))
-                .setPageSize(5)
-                .setPagingState("paging state")
-                .build();
+        GetUserCommentsRequest request = getUserCommentsRequestWithStartingCommentIdAndState(userId, startingCommentId);
 
         QueryCommentByUser pojo = mapper.mapFromGrpcUserCommentToDseQuery(request);
         assertEquals(userId, pojo.getUserId());
@@ -42,10 +38,7 @@ class CommentsServiceGrpcMapperTest {
     @Test
     public void testMapFromGrpcUserCommentToDseQueryWithoutCommentId() {
         UUID userId = UUID.randomUUID();
-        GetUserCommentsRequest request = GetUserCommentsRequest.newBuilder()
-                .setUserId(uuidToUuid(userId))
-                .setPageSize(5)
-                .build();
+        GetUserCommentsRequest request = getUserCommentsRequestInitial(userId);
 
         QueryCommentByUser pojo = mapper.mapFromGrpcUserCommentToDseQuery(request);
         assertEquals(userId, pojo.getUserId());
@@ -56,33 +49,125 @@ class CommentsServiceGrpcMapperTest {
 
     @Test
     public void testMapFromDseVideoCommentToGrpcResponse() {
+        Comment comment = comment();
+        ResultListPage<Comment> comments = new ResultListPage<>(singletonList(comment), Optional.empty());
+        GetVideoCommentsResponse proto = mapper.mapFromDseVideoCommentToGrpcResponse(comments);
+        assertEquals(comment.getVideoid().toString(), proto.getVideoId().getValue());
+        assertEquals(1, proto.getCommentsCount());
+    }
+
+    @Test
+    public void testMapFromDseUserCommentToGrpcResponse() {
+        Comment comment = comment();
+        ResultListPage<Comment> comments = new ResultListPage<>(singletonList(comment), Optional.empty());
+        GetUserCommentsResponse proto = mapper.mapFromDseUserCommentToGrpcResponse(comments);
+        assertEquals(comment.getUserid().toString(), proto.getUserId().getValue());
+        assertEquals(1, proto.getCommentsCount());
+    }
+
+    @Test
+    public void testMapFromGrpcVideoCommentToDseQuery() {
+        UUID videoid = UUID.randomUUID();
+        UUID startingCommentId = Uuids.timeBased();
+        GetVideoCommentsRequest request = getVideoCommentsRequestWithStartingCommentIdAndState(videoid, startingCommentId);
+
+        QueryCommentByVideo pojo = mapper.mapFromGrpcVideoCommentToDseQuery(request);
+        assertEquals(videoid, pojo.getVideoId());
+        assertEquals(startingCommentId, pojo.getCommentId().get());
+        assertEquals(5, pojo.getPageSize());
+        assertTrue(pojo.getPageState().isPresent());
+        assertEquals("paging state", pojo.getPageState().get());
+    }
+
+    @Test
+    public void testMapFromGrpcVideoCommentToDseQueryWithoutCommentId() {
+        UUID videoid = UUID.randomUUID();
+        GetVideoCommentsRequest request = getVideoCommentsRequestInitial(videoid);
+
+        QueryCommentByVideo pojo = mapper.mapFromGrpcVideoCommentToDseQuery(request);
+        assertEquals(videoid, pojo.getVideoId());
+        assertEquals(5, pojo.getPageSize());
+        assertFalse(pojo.getPageState().isPresent());
+    }
+
+    @Test
+    public void testMapToComment() {
+        UUID vidoid = UUID.randomUUID();
+        UUID userid = UUID.randomUUID();
+        UUID commentid = Uuids.timeBased();
+        String commentText = "Test";
+        CommentOnVideoRequest request = commentOnVideoRequest(vidoid, userid, commentid, commentText);
+
+        Comment pojo = mapper.mapToComment(request);
+        assertEquals(vidoid, pojo.getVideoid());
+        assertEquals(userid, pojo.getUserid());
+        assertEquals(commentid, pojo.getCommentid());
+        assertEquals(commentText, pojo.getComment());
+    }
+
+    @Test
+    public void testCreateUserCommentedOnVideoEvent() {
+        Comment comment = comment();
+        CommentsEvents.UserCommentedOnVideo event = mapper.createUserCommentedOnVideoEvent(comment);
+        assertEquals(comment.getCommentid().toString(), event.getCommentId().getValue());
+        assertEquals(comment.getVideoid().toString(), event.getVideoId().getValue());
+        assertEquals(comment.getUserid().toString(), event.getUserId().getValue());
+        assertNotNull(event.getCommentTimestamp());
+    }
+
+    private GetUserCommentsRequest getUserCommentsRequestInitial(UUID userId) {
+        GetUserCommentsRequest request = GetUserCommentsRequest.newBuilder()
+                .setUserId(uuidToUuid(userId))
+                .setPageSize(5)
+                .build();
+        return request;
+    }
+
+    private GetUserCommentsRequest getUserCommentsRequestWithStartingCommentIdAndState(UUID userId, UUID startingCommentId) {
+        GetUserCommentsRequest request = GetUserCommentsRequest.newBuilder()
+                .setStartingCommentId(uuidToTimeUuid(startingCommentId))
+                .setUserId(uuidToUuid(userId))
+                .setPageSize(5)
+                .setPagingState("paging state")
+                .build();
+        return request;
+    }
+
+    private GetVideoCommentsRequest getVideoCommentsRequestWithStartingCommentIdAndState(UUID videoid, UUID startingCommentId) {
+        GetVideoCommentsRequest request = GetVideoCommentsRequest.newBuilder()
+                .setStartingCommentId(uuidToTimeUuid(startingCommentId))
+                .setVideoId(uuidToUuid(videoid))
+                .setPageSize(5)
+                .setPagingState("paging state")
+                .build();
+        return request;
+    }
+
+    private GetVideoCommentsRequest getVideoCommentsRequestInitial(UUID videoid) {
+        GetVideoCommentsRequest request = GetVideoCommentsRequest.newBuilder()
+                .setVideoId(uuidToUuid(videoid))
+                .setPageSize(5)
+                .build();
+        return request;
+    }
+
+    private CommentOnVideoRequest commentOnVideoRequest(UUID vidoid, UUID userid, UUID commentid, String commentText) {
+        CommentOnVideoRequest request = CommentOnVideoRequest.newBuilder()
+                .setVideoId(uuidToUuid(vidoid))
+                .setCommentId(uuidToTimeUuid(commentid))
+                .setUserId(uuidToUuid(userid))
+                .setComment(commentText)
+                .build();
+        return request;
+    }
+
+    private Comment comment() {
         Comment comment = new Comment();
         comment.setComment("test");
         comment.setCommentid(Uuids.timeBased());
         comment.setUserid(UUID.randomUUID());
         comment.setVideoid(UUID.randomUUID());
         comment.setDateOfComment(Instant.now());
-
-        ResultListPage<Comment> comments = new ResultListPage<>(singletonList(comment), Optional.empty());
-
-        GetVideoCommentsResponse proto = mapper.mapFromDseVideoCommentToGrpcResponse(comments);
-
-        assertEquals(comment.getVideoid().toString(), proto.getVideoId().getValue());
-    }
-
-    @Test
-    public void testMapFromDseUserCommentToGrpcResponse() {
-    }
-
-    @Test
-    public void testMapFromGrpcVideoCommentToDseQuery() {
-    }
-
-    @Test
-    public void testMapToComment() {
-    }
-
-    @Test
-    public void testCreateUserCommentedOnVideoEvent() {
+        return comment;
     }
 }

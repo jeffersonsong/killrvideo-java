@@ -36,7 +36,7 @@ public class ValidationUtils {
        if (assertion) {
            errorMessage.append("\t\t");
            errorMessage.append(fieldName);
-           errorMessage.append("should be provided for comment on ");
+           errorMessage.append("should be provided for ");
            errorMessage.append(request);
            errorMessage.append("\n");
        }

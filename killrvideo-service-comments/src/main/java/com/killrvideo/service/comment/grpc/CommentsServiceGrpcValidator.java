@@ -1,17 +1,15 @@
 package com.killrvideo.service.comment.grpc;
 
-import static org.apache.commons.lang3.StringUtils.isBlank;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
-import org.springframework.util.Assert;
-
-import io.grpc.Status;
+import com.killrvideo.utils.FluentValidator;
 import io.grpc.stub.StreamObserver;
 import killrvideo.comments.CommentsServiceOuterClass.CommentOnVideoRequest;
 import killrvideo.comments.CommentsServiceOuterClass.GetUserCommentsRequest;
 import killrvideo.comments.CommentsServiceOuterClass.GetVideoCommentsRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
+
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
 /**
  * GRPC Requests Validation Utility class : Implements controls before use request and throw
@@ -25,143 +23,43 @@ public class CommentsServiceGrpcValidator {
 
     /**
      * Validate comment On video comment query.
-     * 
-     * @param request
-     *      current GRPC Request
-     * @param streamObserver
-     *      response async
+     *
+     * @param request        current GRPC Request
+     * @param streamObserver response async
      */
     public void validateGrpcRequestCommentOnVideo(CommentOnVideoRequest request, StreamObserver<?> streamObserver) {
-        StringBuilder errorMessage = initErrorString(request);
-        boolean isValid = 
-                  notEmpty(!request.hasUserId()    || isBlank(request.getUserId().getValue()),  "userId",  "video request",errorMessage) &&
-                  notEmpty(!request.hasVideoId()   || isBlank(request.getVideoId().getValue()), "videoId", "video request",errorMessage) &&
-                  notEmpty(!request.hasCommentId() || isBlank(request.getCommentId().getValue()), "commentId", "video request",errorMessage) &&
-                  notEmpty(isBlank(request.getComment()), "comment", "video request",errorMessage);
-        Assert.isTrue(validate(LOGGER, streamObserver, errorMessage, isValid), "Invalid parameter for 'commentOnVideo'");
-    }
-    
-    /**
-     * Validate get video comment query.
-     * 
-     * @param request
-     *      current GRPC Request
-     * @param streamObserver
-     *      response async
-     */
-    public void validateGrpcRequestGetVideoComment(GetVideoCommentsRequest request, StreamObserver<?> streamObserver) {
-        final StringBuilder errorMessage = initErrorString(request);
-        boolean isValid = true;
-        if (!request.hasVideoId() || isBlank(request.getVideoId().getValue())) {
-            errorMessage.append("\t\tvideo id should be provided for get video comment request\n");
-            isValid = false;
-        }
-        if (request.getPageSize() <= 0) {
-            errorMessage.append("\t\tpage size should be strictly positive for get video comment request");
-            isValid = false;
-        }
-        Assert.isTrue(validate(LOGGER, streamObserver, errorMessage, isValid), "Invalid parameter for 'getVideoComments'");
-    }
-    
-    /**
-     * Validate get user comment query.
-     * 
-     * @param request
-     *      current GRPC Request
-     * @param streamObserver
-     *      response async
-     */
-    public void validateGrpcRequest_GetUserComments(GetUserCommentsRequest request, StreamObserver<?> streamObserver) {
-        final StringBuilder errorMessage = initErrorString(request);
-        boolean isValid = 
-                  notEmpty(!request.hasUserId() || isBlank(request.getUserId().getValue()),  "userId",  "comment request",errorMessage) &&
-                  positive(request.getPageSize() <= 0,  "page size",  "comment request",errorMessage);
-        Assert.isTrue(validate(LOGGER, streamObserver, errorMessage, isValid), "Invalid parameter for 'getUserComments'");
-    }
-    
-    /**
-     * Init error builder.
-     *  
-     * @param request
-     *      current request
-     * @return
-     *      current error message
-     */
-    protected static StringBuilder initErrorString(Object request) {
-        return new StringBuilder("Validation error for '" + request.toString() + "' : \n");
-    }
-    
-   /**
-    * Deduplicate condition evaluation.
-    *
-    * @param assertion
-    *      current condition
-    * @param fieldName
-    *      fieldName to evaluate
-    * @param request
-    *      GRPC reauest
-    * @param errorMessage
-    *      concatenation of error messages
-    * @return
-    */
-    protected static boolean notEmpty(boolean assertion, String fieldName, String request, StringBuilder errorMessage) {
-       if (assertion) {
-           errorMessage.append("\t\t");
-           errorMessage.append(fieldName);
-           errorMessage.append("should be provided for comment on ");
-           errorMessage.append(request);
-           errorMessage.append("\n");
-       }
-       return !assertion;
-   }
-   
-    /**
-     * Add error message if assertion is violated.
-     * 
-     * @param assertion
-     *      current assertion
-     * @param fieldName
-     *      current field name
-     * @param request
-     *      current request
-     * @param errorMessage
-     *      current error message
-     * @return
-     *      if the correction is OK.
-     */
-    protected static boolean positive(boolean assertion, String fieldName, String request, StringBuilder errorMessage) {
-        if (assertion) {
-            errorMessage.append("\t\t");
-            errorMessage.append(fieldName);
-            errorMessage.append("should be strictly positive for ");
-            errorMessage.append(request);
-            errorMessage.append("\n");
-        }
-        return !assertion;
+        FluentValidator.of("commentOnVideo", request, LOGGER, streamObserver)
+                .notEmpty("userId", !request.hasUserId() || isBlank(request.getUserId().getValue()))
+                .notEmpty("videoId", !request.hasVideoId() || isBlank(request.getVideoId().getValue()))
+                .notEmpty("commentId", !request.hasCommentId() || isBlank(request.getCommentId().getValue()))
+                .notEmpty( "comment", isBlank(request.getComment()))
+                .validate();
     }
 
     /**
-     * Utility to validate Grpc Input.
+     * Validate get video comment query.
      *
-     * @param streamObserver
-     *      grpc observer
-     * @param errorMessage
-     *      error mressage
-     * @param isValid
-     *      validation of that
-     * @return
-     *      ok
+     * @param request        current GRPC Request
+     * @param streamObserver response async
      */
-    protected static boolean validate(Logger logger, StreamObserver<?> streamObserver, StringBuilder errorMessage, boolean isValid) {
-        if (isValid) {
-            return true;
-        } else {
-            final String description = errorMessage.toString();
-            logger.error(description);
-            streamObserver.onError(Status.INVALID_ARGUMENT.withDescription(description).asRuntimeException());
-            streamObserver.onCompleted();
-            return false;
-        }
+    public void validateGrpcRequestGetVideoComment(GetVideoCommentsRequest request, StreamObserver<?> streamObserver) {
+        FluentValidator.of("getVideoComments", request,  LOGGER, streamObserver)
+                .notEmpty("video id",
+                        !request.hasVideoId() || isBlank(request.getVideoId().getValue()))
+                .positive("page size", request.getPageSize() <= 0)
+                .validate();
     }
-    
+
+    /**
+     * Validate get user comment query.
+     *
+     * @param request        current GRPC Request
+     * @param streamObserver response async
+     */
+    public void validateGrpcRequest_GetUserComments(GetUserCommentsRequest request, StreamObserver<?> streamObserver) {
+        FluentValidator.of("getUserComments", request, LOGGER, streamObserver)
+                .notEmpty("userId", !request.hasUserId() || isBlank(request.getUserId().getValue()))
+                .positive("page size", request.getPageSize() <= 0)
+                .validate();
+    }
 }
