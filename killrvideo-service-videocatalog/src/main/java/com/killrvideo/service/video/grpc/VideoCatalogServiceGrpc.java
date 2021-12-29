@@ -127,7 +127,7 @@ public class VideoCatalogServiceGrpc extends VideoCatalogServiceImplBase {
 
         // GRPC Parameters Mappings
         GetLatestVideoPreviewsRequestData requestData = mapper.parseGetLatestVideoPreviewsRequest(
-                grpcReq, videoCatalogRepository::buildFirstCustomPagingState
+                grpcReq, CustomPagingState::buildFirstCustomPagingState
         );
 
         videoCatalogRepository.getLatestVideoPreviewsAsync(requestData)

@@ -1,12 +1,18 @@
 package com.killrvideo.dse.dto;
 
 import java.io.Serializable;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.LongStream;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -23,7 +29,10 @@ public class CustomPagingState implements Serializable {
     
     /**  Constants. */
     private static final Pattern PARSE_LATEST_PAGING_STATE = Pattern.compile("((?:[0-9]{8}_){7}[0-9]{8}),([0-9]),(.*)");
-   
+
+    private static final DateTimeFormatter DATEFORMATTER =
+            DateTimeFormatter.ofPattern("yyyyMMdd").withZone(ZoneId.from(ZoneOffset.UTC));
+
     /** List of Buckets. */
     private List<String> listOfBuckets = new ArrayList<>();
     
@@ -32,6 +41,22 @@ public class CustomPagingState implements Serializable {
     
     /** Paging. */
     private String cassandraPagingState;
+
+    /**
+     * Build the first paging state if one does not already exist and return an object containing 3 elements
+     * representing the initial state (List<String>, Integer, String).
+     *
+     * @return CustomPagingState
+     */
+    public static CustomPagingState buildFirstCustomPagingState() {
+        return new CustomPagingState()
+                .currentBucket(0)
+                .cassandraPagingState(null)
+                .listOfBuckets(LongStream.rangeClosed(0L, 7L).boxed()
+                        .map(Instant.now().atZone(ZoneId.systemDefault())::minusDays)
+                        .map(x -> x.format(DATEFORMATTER))
+                        .collect(Collectors.toList()));
+    }
 
     /**
      * Map Paging State.

@@ -62,8 +62,6 @@ public class VideoCatalogRepository {
             "FROM killrvideo.user_videos " +
             "WHERE userid = :uid ";
 
-    private static final DateTimeFormatter DATEFORMATTER =
-            DateTimeFormatter.ofPattern("yyyyMMdd").withZone(ZoneId.from(ZoneOffset.UTC));
 
     private final CqlSession session;
     private final VideoDao videoDao;
@@ -172,22 +170,6 @@ public class VideoCatalogRepository {
                 request.getPagingState(),
                 request.getUserId()
         );
-    }
-
-    /**
-     * Build the first paging state if one does not already exist and return an object containing 3 elements
-     * representing the initial state (List<String>, Integer, String).
-     *
-     * @return CustomPagingState
-     */
-    public CustomPagingState buildFirstCustomPagingState() {
-        return new CustomPagingState()
-                .currentBucket(0)
-                .cassandraPagingState(null)
-                .listOfBuckets(LongStream.rangeClosed(0L, 7L).boxed()
-                        .map(Instant.now().atZone(ZoneId.systemDefault())::minusDays)
-                        .map(x -> x.format(DATEFORMATTER))
-                        .collect(Collectors.toList()));
     }
 
     public CompletableFuture<LatestVideosPage> getLatestVideoPreviewsAsync(
