@@ -7,6 +7,7 @@ import com.datastax.oss.driver.api.mapper.annotations.CqlName;
 import com.datastax.oss.driver.api.mapper.annotations.Entity;
 import com.datastax.oss.driver.api.mapper.annotations.PartitionKey;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
@@ -17,6 +18,7 @@ import lombok.Setter;
 @Entity
 @CqlName("video_ratings")
 @Getter @Setter
+@NoArgsConstructor
 public class VideoRating implements Serializable {
     private static final long serialVersionUID = -8874199914791405808L;
 
@@ -24,4 +26,10 @@ public class VideoRating implements Serializable {
     private UUID videoid;
     private Long ratingCounter;
     private Long ratingTotal;
+
+    public VideoRating(UUID videoid) {
+        this.videoid = videoid;
+        this.ratingCounter = 0L;
+        this.ratingTotal = 0L;
+    }
 }

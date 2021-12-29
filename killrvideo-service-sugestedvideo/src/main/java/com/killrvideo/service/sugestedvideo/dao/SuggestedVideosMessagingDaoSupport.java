@@ -14,7 +14,7 @@ import killrvideo.ratings.events.RatingsEvents.UserRatedVideo;
 import killrvideo.user_management.events.UserManagementEvents.UserCreated;
 import killrvideo.video_catalog.events.VideoCatalogEvents.YouTubeVideoAdded;
 
-import javax.inject.Inject;
+import static com.killrvideo.utils.GrpcMappingUtils.fromUuid;
 
 /**
  * Message processing for suggestion services.
@@ -22,14 +22,15 @@ import javax.inject.Inject;
  * @author Cedrick LUNVEN (@clunven)
  */
 public abstract class SuggestedVideosMessagingDaoSupport {
+    private static final Logger LOGGER = LoggerFactory.getLogger(SuggestedVideosMessagingDaoSupport.class);
     
-    /** Loger for that class. */
-    private static Logger LOGGER = LoggerFactory.getLogger(SuggestedVideosMessagingDaoSupport.class);
-    
-    @Inject
-    protected SuggestedVideosRepository suggestedVideosRepository;
-    @Inject
-    private SuggestedVideosServiceGrpcMapper mapper;
+    protected final SuggestedVideosRepository suggestedVideosRepository;
+    private final SuggestedVideosServiceGrpcMapper mapper;
+
+    public SuggestedVideosMessagingDaoSupport(SuggestedVideosRepository suggestedVideosRepository, SuggestedVideosServiceGrpcMapper mapper) {
+        this.suggestedVideosRepository = suggestedVideosRepository;
+        this.mapper = mapper;
+    }
 
     /**
      * Message is consumed from specialized class but treatment is the same, updating graph.
@@ -39,7 +40,7 @@ public abstract class SuggestedVideosMessagingDaoSupport {
      */
     protected void onVideoRatingMessage(UserRatedVideo userVideoRated) {
         String videoId = userVideoRated.getVideoId().getValue();
-        UUID   userId  = UUID.fromString(userVideoRated.getUserId().getValue());
+        UUID   userId  = fromUuid(userVideoRated.getUserId());
         int rating     = userVideoRated.getRating();
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("[NewUserEvent] Processing rating with user {} and video {}", userId, videoId);
@@ -54,7 +55,7 @@ public abstract class SuggestedVideosMessagingDaoSupport {
      *      a user has been created
      */
     protected void onUserCreatingMessage(UserCreated userCreationMessage) {
-        final UUID userId       = UUID.fromString(userCreationMessage.getUserId().getValue());
+        final UUID userId       = fromUuid(userCreationMessage.getUserId());
         final Date userCreation = GrpcMappingUtils.timestampToDate(userCreationMessage.getTimestamp());
         final String email      = userCreationMessage.getEmail();
         if (LOGGER.isDebugEnabled()) {
@@ -72,6 +73,4 @@ public abstract class SuggestedVideosMessagingDaoSupport {
     protected void onYoutubeVideoAddingMessage(YouTubeVideoAdded videoAdded) {
        suggestedVideosRepository.updateGraphNewVideo(mapper.mapVideoAddedtoVideoDTO(videoAdded));
     }
-    
-
 }

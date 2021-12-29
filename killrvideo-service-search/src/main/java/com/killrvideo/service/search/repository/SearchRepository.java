@@ -7,6 +7,9 @@ import com.killrvideo.dse.dao.VideoRowMapper;
 import com.killrvideo.dse.dto.ResultListPage;
 import com.killrvideo.dse.dto.Video;
 import com.killrvideo.dse.utils.PageableQuery;
+import com.killrvideo.dse.utils.PageableQueryFactory;
+import com.killrvideo.service.search.request.GetQuerySuggestionsRequestData;
+import com.killrvideo.service.search.request.SearchVideosRequestData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,7 +30,7 @@ import java.util.regex.Pattern;
  */
 @Repository
 public class SearchRepository {
-    private static Logger LOGGER = LoggerFactory.getLogger(SearchRepository.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SearchRepository.class);
     private static final String QUERY_SUGGESTED_TAGS =
             "SELECT name, tags, description " +
             "FROM killrvideo.videos " +
@@ -47,9 +50,9 @@ public class SearchRepository {
     /**
      * Precompile statements to speed up queries.
      */
-    private PreparedStatement findSuggestedTags;
+    private final PreparedStatement findSuggestedTags;
 
-    private PageableQuery<Video> findVideosByTags;
+    private final PageableQuery<Video> findVideosByTags;
 
     /**
      * Create a set of sentence conjunctions and other "undesirable"
@@ -60,18 +63,17 @@ public class SearchRepository {
     @Value("#{'${killrvideo.search.ignoredWords}'.split(',')}")
     private Set<String> ignoredWords = new HashSet<>();
 
-    private CqlSession session;
+    private final CqlSession session;
 
-    public SearchRepository(CqlSession session, VideoRowMapper videoRowMapper) {
+    public SearchRepository(CqlSession session, PageableQueryFactory pageableQueryFactory, VideoRowMapper videoRowMapper) {
         this.session = session;
 
         // Statement for tags
         this.findSuggestedTags = session.prepare(QUERY_SUGGESTED_TAGS);
 
         // Statement for videos
-        this.findVideosByTags = new PageableQuery<>(
+        this.findVideosByTags = pageableQueryFactory.newPageableQuery(
                 QUERY_VIDEO_BY_TAGS,
-                session,
                 ConsistencyLevel.LOCAL_ONE,
                 videoRowMapper::map
         );
@@ -87,11 +89,11 @@ public class SearchRepository {
      * enable pagination regardless of our nodes dse.yaml setting.
      * https://docs.datastax.com/en/dse/5.1/dse-dev/datastax_enterprise/search/cursorsDeepPaging.html#cursorsDeepPaging__srchCursorCQL
      */
-    public CompletableFuture<ResultListPage<Video>> searchVideosAsync(String query, int fetchSize, Optional<String> pagingState) {
+    public CompletableFuture<ResultListPage<Video>> searchVideosAsync(SearchVideosRequestData request) {
         return findVideosByTags.queryNext(
-                Optional.of(fetchSize),
-                pagingState,
-                buildSolrQueryToSearchVideos(query)
+                Optional.of(request.getPageSize()),
+                request.getPagingState(),
+                buildSolrQueryToSearchVideos(request.getQuery())
         );
     }
 
@@ -146,14 +148,13 @@ public class SearchRepository {
     /**
      * Search for tags starting with provided query string (ASYNC).
      *
-     * @param query     pattern
-     * @param fetchSize numbner of results to retrieve
-     * @return
+     * @param request     request.
+     * @return tags.
      */
-    public CompletableFuture<Set<String>> getQuerySuggestionsAsync(String query, int fetchSize) {
-        BoundStatement stmt = createStatementToQuerySuggestions(query, fetchSize);
+    public CompletableFuture<Set<String>> getQuerySuggestionsAsync(GetQuerySuggestionsRequestData request) {
+        BoundStatement stmt = createStatementToQuerySuggestions(request.getQuery(), request.getPageSize());
         return this.session.executeAsync(stmt).toCompletableFuture()
-                .thenApply(rs -> mapTagSet(rs, query));
+                .thenApply(rs -> mapTagSet(rs, request.getQuery()));
     }
 
     /**

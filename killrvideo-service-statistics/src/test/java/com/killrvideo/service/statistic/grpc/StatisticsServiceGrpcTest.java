@@ -24,9 +24,10 @@ import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 import static com.killrvideo.utils.GrpcMappingUtils.uuidToUuid;
-import static org.mockito.ArgumentMatchers.any;
+import static java.util.Collections.singletonList;
 import static org.mockito.Mockito.*;
 
+@SuppressWarnings("unchecked")
 class StatisticsServiceGrpcTest {
     @InjectMocks
     StatisticsServiceGrpc service;
@@ -112,10 +113,12 @@ class StatisticsServiceGrpcTest {
 
     @Test
     void testGetNumberOfPlaysWithQueryFailure() {
-        GetNumberOfPlaysRequest grpcReq = getNumberOfPlaysRequest(UUID.randomUUID());
+        UUID videoid = UUID.randomUUID();
+        GetNumberOfPlaysRequest grpcReq = getNumberOfPlaysRequest(videoid);
         StreamObserver<GetNumberOfPlaysResponse> grpcResObserver = mock(StreamObserver.class);
 
         doNothing().when(this.validator).validateGrpcRequest_GetNumberPlays(any(), any());
+        when(this.mapper.parseGetNumberOfPlaysRequest(any())).thenReturn(singletonList(videoid));
         when(this.statisticsRepository.getNumberOfPlaysAsync(any())).thenReturn(
                 CompletableFuture.failedFuture(new Exception())
         );
@@ -128,10 +131,12 @@ class StatisticsServiceGrpcTest {
 
     @Test
     void testGetNumberOfPlays() {
-        GetNumberOfPlaysRequest grpcReq = getNumberOfPlaysRequest(UUID.randomUUID());
+        UUID videoid = UUID.randomUUID();
+        GetNumberOfPlaysRequest grpcReq = getNumberOfPlaysRequest(videoid);
         StreamObserver<GetNumberOfPlaysResponse> grpcResObserver = mock(StreamObserver.class);
 
         doNothing().when(this.validator).validateGrpcRequest_GetNumberPlays(any(), any());
+        when(this.mapper.parseGetNumberOfPlaysRequest(any())).thenReturn(singletonList(videoid));
 
         List<VideoPlaybackStats> videoList = Collections.emptyList();
         GetNumberOfPlaysResponse response = GetNumberOfPlaysResponse.getDefaultInstance();

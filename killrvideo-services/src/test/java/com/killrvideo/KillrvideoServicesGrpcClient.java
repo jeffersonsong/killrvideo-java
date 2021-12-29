@@ -27,7 +27,7 @@ import killrvideo.video_catalog.VideoCatalogServiceGrpc.VideoCatalogServiceBlock
 public class KillrvideoServicesGrpcClient {
     
     /** Grpc Endpoint */
-    private ManagedChannel grpcEndPoint;
+    private final ManagedChannel grpcEndPoint;
    
     /** Clients for different services in GRPC. */
     public CommentsServiceBlockingStub         commentServiceGrpcClient;

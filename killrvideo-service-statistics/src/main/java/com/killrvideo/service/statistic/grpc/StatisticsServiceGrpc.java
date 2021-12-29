@@ -4,7 +4,6 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import com.killrvideo.service.statistic.repository.StatisticsRepository;
 import org.slf4j.Logger;
@@ -14,14 +13,14 @@ import org.springframework.stereotype.Service;
 
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
-import killrvideo.common.CommonTypes.Uuid;
 import killrvideo.statistics.StatisticsServiceGrpc.StatisticsServiceImplBase;
 import killrvideo.statistics.StatisticsServiceOuterClass.GetNumberOfPlaysRequest;
 import killrvideo.statistics.StatisticsServiceOuterClass.GetNumberOfPlaysResponse;
 import killrvideo.statistics.StatisticsServiceOuterClass.RecordPlaybackStartedRequest;
 import killrvideo.statistics.StatisticsServiceOuterClass.RecordPlaybackStartedResponse;
 
-import javax.inject.Inject;
+import static com.killrvideo.utils.GrpcMappingUtils.fromUuid;
+import static com.killrvideo.utils.GrpcUtils.returnSingleResult;
 
 /**
  * Get statistics on a video.
@@ -30,23 +29,21 @@ import javax.inject.Inject;
  */
 @Service
 public class StatisticsServiceGrpc extends StatisticsServiceImplBase {
+    private static final Logger LOGGER = LoggerFactory.getLogger(StatisticsServiceGrpc.class);
 
-    /** Loger for that class. */
-    private static Logger LOGGER = LoggerFactory.getLogger(StatisticsServiceGrpc.class);
-    
-    /** Stast services. */
-    public static final String STATISTICS_SERVICE_NAME = "StatisticsService";
-  
     @Value("${killrvideo.discovery.services.statistic : StatisticsService}")
     private String serviceKey;
     
-    @Inject
-    private StatisticsRepository statisticsRepository;
-    @Inject
-    private StatisticsServiceGrpcValidator validator;
-    @Inject
-    private StatisticsServiceGrpcMapper mapper;
-    
+    private final StatisticsRepository statisticsRepository;
+    private final StatisticsServiceGrpcValidator validator;
+    private final StatisticsServiceGrpcMapper mapper;
+
+    public StatisticsServiceGrpc(StatisticsRepository statisticsRepository, StatisticsServiceGrpcValidator validator, StatisticsServiceGrpcMapper mapper) {
+        this.statisticsRepository = statisticsRepository;
+        this.validator = validator;
+        this.mapper = mapper;
+    }
+
     /** {@inheritDoc} */
     @Override
     public void recordPlaybackStarted(RecordPlaybackStartedRequest grpcReq, StreamObserver<RecordPlaybackStartedResponse> grpcResObserver) {
@@ -57,17 +54,17 @@ public class StatisticsServiceGrpc extends StatisticsServiceImplBase {
         final Instant starts = Instant.now();
         
         // Mapping GRPC => Domain (Dao)
-        final UUID videoId = UUID.fromString(grpcReq.getVideoId().getValue());
+        final UUID videoId = fromUuid(grpcReq.getVideoId());
         
         // Invoke DAO Async
-        statisticsRepository.recordPlaybackStartedAsync(videoId).whenComplete((result, error) -> {
+        statisticsRepository.recordPlaybackStartedAsync(videoId)
+                .whenComplete((result, error) -> {
             // Map Result back to GRPC
             if (error != null ) {
                 traceError("recordPlaybackStarted", starts, error);
                 grpcResObserver.onError(Status.INTERNAL.withCause(error).asRuntimeException());
             } else {
-                grpcResObserver.onNext(RecordPlaybackStartedResponse.newBuilder().build());
-                grpcResObserver.onCompleted();
+                returnSingleResult(RecordPlaybackStartedResponse.newBuilder().build(), grpcResObserver);
             }
         });
     }
@@ -82,11 +79,7 @@ public class StatisticsServiceGrpc extends StatisticsServiceImplBase {
         final Instant starts = Instant.now();
         
         // Mapping GRPC => Domain (Dao)
-        List<UUID> listOfVideoId = grpcReq.getVideoIdsList()
-                                           .stream()
-                                           .map(Uuid::getValue)
-                                           .map(UUID::fromString)
-                                           .collect(Collectors.toList());
+        List<UUID> listOfVideoId = mapper.parseGetNumberOfPlaysRequest(grpcReq);
         
         // Invoke DAO Async
         statisticsRepository.getNumberOfPlaysAsync(listOfVideoId).whenComplete((videoList, error) -> {
@@ -95,14 +88,12 @@ public class StatisticsServiceGrpc extends StatisticsServiceImplBase {
                 traceError("getNumberOfPlays", starts, error);
                 grpcResObserver.onError(Status.INTERNAL.withCause(error).asRuntimeException());
             } else {
-                
                 traceSuccess("getNumberOfPlays", starts);
-                grpcResObserver.onNext(mapper.buildGetNumberOfPlayResponse(grpcReq, videoList));
-                grpcResObserver.onCompleted();
+                returnSingleResult(mapper.buildGetNumberOfPlayResponse(grpcReq, videoList), grpcResObserver);
             }
         });
     }
-    
+
     /**
      * Utility to TRACE.
      *
@@ -138,6 +129,4 @@ public class StatisticsServiceGrpc extends StatisticsServiceImplBase {
     public String getServiceKey() {
         return serviceKey;
     }
-
-    
 }

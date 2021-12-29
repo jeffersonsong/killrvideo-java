@@ -3,11 +3,11 @@ package com.killrvideo.messaging.dao;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 
-import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -22,18 +22,18 @@ import killrvideo.common.CommonEvents.ErrorEvent;
  */
 @Component
 public class ErrorProcessor {
-
-    /** LOGGER for the class. */
     private static final Logger LOGGER = LoggerFactory.getLogger(ErrorProcessor.class);
-    
-    @Value("${killrvideo.cassandra.mutation-error-log: /tmp/killrvideo-mutation-errors.log}")
-    private String mutationErrorLog;
-    
+
     private PrintWriter errorLogFile;
 
-    @PostConstruct
-    public void openErrorLogFile() throws FileNotFoundException {
-        this.errorLogFile = new PrintWriter(getMutationErrorLog());
+    @Autowired
+    public ErrorProcessor(@Value("${killrvideo.cassandra.mutation-error-log: /tmp/killrvideo-mutation-errors.log}")
+                                  String mutationErrorLog) throws FileNotFoundException {
+        this(new PrintWriter(mutationErrorLog));
+    }
+
+    public ErrorProcessor(PrintWriter errorLogFile) {
+        this.errorLogFile = errorLogFile;
     }
 
     /**
@@ -59,15 +59,4 @@ public class ErrorProcessor {
     public void closeErrorLogFile() {
         this.errorLogFile.close();
     }
-    
-    /**
-     * Getter for attribute 'mutationErrorLog'.
-     *
-     * @return
-     *       current value of 'mutationErrorLog'
-     */
-    public String getMutationErrorLog() {
-        return mutationErrorLog;
-    }
-
 }

@@ -16,7 +16,7 @@ import killrvideo.ratings.RatingsServiceOuterClass.RateVideoRequest;
 
 @Component
 public class RatingsServiceGrpcValidator  {
-    private static Logger LOGGER = LoggerFactory.getLogger(RatingsServiceGrpcValidator.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(RatingsServiceGrpcValidator.class);
 
     public void validateGrpcRequest_RateVideo(RateVideoRequest request, StreamObserver<?> streamObserver) {
         final StringBuilder errorMessage = initErrorString(request);

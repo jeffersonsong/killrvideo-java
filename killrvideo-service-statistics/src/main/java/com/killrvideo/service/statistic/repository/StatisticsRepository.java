@@ -1,6 +1,5 @@
 package com.killrvideo.service.statistic.repository;
 
-import com.datastax.oss.driver.api.core.CqlSession;
 import com.killrvideo.service.statistic.dao.VideoPlaybackStatsDao;
 import com.killrvideo.service.statistic.dao.VideoPlaybackStatsMapper;
 import com.killrvideo.service.statistic.dto.VideoPlaybackStats;
@@ -19,10 +18,9 @@ import java.util.concurrent.CompletableFuture;
  */
 @Repository
 public class StatisticsRepository {
-    private VideoPlaybackStatsDao videoPlaybackStatsDao;
+    private final VideoPlaybackStatsDao videoPlaybackStatsDao;
 
-    public StatisticsRepository(CqlSession session) {
-        VideoPlaybackStatsMapper mapper = VideoPlaybackStatsMapper.build(session).build();
+    public StatisticsRepository(VideoPlaybackStatsMapper mapper) {
         this.videoPlaybackStatsDao = mapper.getVideoPlaybackStatsDao();
     }
 

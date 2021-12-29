@@ -25,5 +25,12 @@ public class QueryCommentByUser extends QueryDefinition {
     /**
      * Comment offset if specified (Optional)
      */
+    @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
     private Optional<UUID> commentId = Optional.empty();
+
+    public QueryCommentByUser(UUID userId, Optional<UUID> commentId, int pageSize, Optional<String> pageState) {
+        super(pageSize, pageState);
+        this.userId = userId;
+        this.commentId = commentId;
+    }
 }

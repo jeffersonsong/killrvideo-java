@@ -32,11 +32,11 @@ public class VideoCatalogServiceGrpcValidator {
     public void validateGrpcRequest_submitYoutubeVideo(SubmitYouTubeVideoRequest request, StreamObserver<?> streamObserver) {
         final StringBuilder errorMessage = initErrorString(request);
         boolean isValid = true;
-        if (request.getVideoId() == null || isBlank(request.getVideoId().getValue())) {
+        if (isBlank(request.getVideoId().getValue())) {
             errorMessage.append("\t\tvideo id should be provided for submit youtube video request\n");
             isValid = false;
         }
-        if (request.getUserId() == null || isBlank(request.getUserId().getValue())) {
+        if (isBlank(request.getUserId().getValue())) {
             errorMessage.append("\t\tuser id should be provided for submit youtube video request\n");
             isValid = false;
         }
@@ -71,7 +71,7 @@ public class VideoCatalogServiceGrpcValidator {
     public void validateGrpcRequest_getVideo(GetVideoRequest request, StreamObserver<?> streamObserver) {
         final StringBuilder errorMessage = initErrorString(request);
         boolean isValid = true;
-        if (request.getVideoId() == null || isBlank(request.getVideoId().getValue())) {
+        if (isBlank(request.getVideoId().getValue())) {
             errorMessage.append("\t\tvideo id should be provided for submit youtube video request\n");
             isValid = false;
         }
@@ -99,7 +99,7 @@ public class VideoCatalogServiceGrpcValidator {
         final StringBuilder errorMessage = initErrorString(request);
         boolean isValid = true;
 
-        if (request.getUserId() == null || isBlank(request.getUserId().getValue())) {
+        if (isBlank(request.getUserId().getValue())) {
             errorMessage.append("\t\tuser id should be provided for get user video previews request\n");
             isValid = false;
         }

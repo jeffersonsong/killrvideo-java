@@ -15,7 +15,7 @@ import killrvideo.search.SearchServiceOuterClass.SearchVideosRequest;
 
 @Component
 public class SearchServiceGrpcValidator  {
-    private static Logger LOGGER = LoggerFactory.getLogger(SearchServiceGrpcValidator.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SearchServiceGrpcValidator.class);
 
     public void validateGrpcRequest_GetQuerySuggestions(GetQuerySuggestionsRequest request, StreamObserver<?> streamObserver) {
         final StringBuilder errorMessage = initErrorString(request);

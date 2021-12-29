@@ -4,6 +4,7 @@ import com.killrvideo.messaging.dao.MessagingDao;
 import com.killrvideo.service.rating.dto.VideoRating;
 import com.killrvideo.service.rating.dto.VideoRatingByUser;
 import com.killrvideo.service.rating.repository.RatingRepository;
+import com.killrvideo.service.rating.request.GetUserRatingRequestData;
 import io.grpc.stub.StreamObserver;
 import killrvideo.ratings.RatingsServiceOuterClass.*;
 import killrvideo.ratings.events.RatingsEvents;
@@ -20,9 +21,9 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 import static com.killrvideo.utils.GrpcMappingUtils.uuidToUuid;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+@SuppressWarnings("unchecked")
 class RatingsServiceGrpcTest {
     @InjectMocks private RatingsServiceGrpc service;
     @Mock
@@ -67,7 +68,10 @@ class RatingsServiceGrpcTest {
 
         doNothing().when(this.validator).validateGrpcRequest_RateVideo(any(), any());
 
-        when(ratingRepository.rateVideo(any(), any(), any())).thenReturn(CompletableFuture.failedFuture(new Exception()));
+        VideoRatingByUser videoRatingByUser = mock(VideoRatingByUser.class);
+        when(this.mapper.parseRateVideoRequest(any())).thenReturn(videoRatingByUser);
+
+        when(ratingRepository.rateVideo(any())).thenReturn(CompletableFuture.failedFuture(new Exception()));
 
         this.service.rateVideo(grpcReq, grpcResObserver);
         verify(grpcResObserver, times(1)).onError(any());
@@ -86,7 +90,13 @@ class RatingsServiceGrpcTest {
         RatingsEvents.UserRatedVideo event = RatingsEvents.UserRatedVideo.getDefaultInstance();
         when(mapper.createUserRatedVideoEvent(any())).thenReturn(event);
 
-        when(ratingRepository.rateVideo(any(), any(), any())).thenReturn(CompletableFuture.completedFuture(rating));
+        VideoRatingByUser videoRatingByUser = mock(VideoRatingByUser.class);
+        when(this.mapper.parseRateVideoRequest(any())).thenReturn(videoRatingByUser);
+
+        when(ratingRepository.rateVideo(any())).thenReturn(CompletableFuture.completedFuture(rating));
+        when(this.messagingDao.sendEvent(any(), any())).thenReturn(
+                CompletableFuture.completedFuture(null)
+        );
 
         this.service.rateVideo(grpcReq, grpcResObserver);
         verify(grpcResObserver, times(0)).onError(any());
@@ -128,7 +138,7 @@ class RatingsServiceGrpcTest {
         doNothing().when(this.validator).validateGrpcRequest_GetRating(any(), any());
         VideoRating rating = mock(VideoRating.class);
         GetRatingResponse response = GetRatingResponse.getDefaultInstance();
-        when(mapper.maptoRatingResponse(any())).thenReturn(response);
+        when(mapper.mapToRatingResponse(any())).thenReturn(response);
         when(this.ratingRepository.findRating(any())).thenReturn(CompletableFuture.completedFuture(
                 Optional.of(rating)
         ));
@@ -173,7 +183,11 @@ class RatingsServiceGrpcTest {
         StreamObserver<GetUserRatingResponse> grpcResObserver = mock(StreamObserver.class);
 
         doNothing().when(this.validator).validateGrpcRequest_GetUserRating(any(), any());
-        when(ratingRepository.findUserRating(any(), any()))
+
+        GetUserRatingRequestData requestData = mock(GetUserRatingRequestData.class);
+        when(this.mapper.parseGetUserRatingRequest(any())).thenReturn(requestData);
+
+        when(ratingRepository.findUserRating(any()))
                 .thenReturn(CompletableFuture.failedFuture(new Exception()));
 
         this.service.getUserRating(grpcReq, grpcResObserver);
@@ -185,14 +199,20 @@ class RatingsServiceGrpcTest {
 
     @Test
     void testGetUserRatingWithUserRatingPresent() {
-        GetUserRatingRequest grpcReq = getUserRatingRequest(UUID.randomUUID(), UUID.randomUUID());
+        UUID videoid = UUID.randomUUID();
+        UUID userid = UUID.randomUUID();
+        GetUserRatingRequest grpcReq = getUserRatingRequest(videoid, userid);
         StreamObserver<GetUserRatingResponse> grpcResObserver = mock(StreamObserver.class);
 
         doNothing().when(this.validator).validateGrpcRequest_GetUserRating(any(), any());
         VideoRatingByUser rating = mock(VideoRatingByUser.class);
         GetUserRatingResponse response = GetUserRatingResponse.getDefaultInstance();
-        when(mapper.maptoUserRatingResponse(any())).thenReturn(response);
-        when(ratingRepository.findUserRating(any(), any()))
+        when(mapper.mapToUserRatingResponse(any())).thenReturn(response);
+
+        GetUserRatingRequestData requestData = getUserRatingRequestData(videoid, userid);
+        when(this.mapper.parseGetUserRatingRequest(any())).thenReturn(requestData);
+
+        when(ratingRepository.findUserRating(any()))
                 .thenReturn(CompletableFuture.completedFuture(Optional.of(rating)));
 
         this.service.getUserRating(grpcReq, grpcResObserver);
@@ -204,11 +224,17 @@ class RatingsServiceGrpcTest {
 
     @Test
     void testGetUserRatingWithUserRatingAbsent() {
-        GetUserRatingRequest grpcReq = getUserRatingRequest(UUID.randomUUID(), UUID.randomUUID());
+        UUID videoid = UUID.randomUUID();
+        UUID userid = UUID.randomUUID();
+        GetUserRatingRequest grpcReq = getUserRatingRequest(videoid, userid);
         StreamObserver<GetUserRatingResponse> grpcResObserver = mock(StreamObserver.class);
 
         doNothing().when(this.validator).validateGrpcRequest_GetUserRating(any(), any());
-        when(ratingRepository.findUserRating(any(), any()))
+
+        GetUserRatingRequestData requestData = getUserRatingRequestData(videoid, userid);
+        when(this.mapper.parseGetUserRatingRequest(any())).thenReturn(requestData);
+
+        when(ratingRepository.findUserRating(any()))
                 .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
 
         this.service.getUserRating(grpcReq, grpcResObserver);
@@ -230,6 +256,10 @@ class RatingsServiceGrpcTest {
         return GetRatingRequest.newBuilder()
                 .setVideoId(uuidToUuid(videoid))
                 .build();
+    }
+
+    private GetUserRatingRequestData getUserRatingRequestData(UUID videoid, UUID userid) {
+        return new GetUserRatingRequestData(videoid, userid);
     }
 
     private GetUserRatingRequest getUserRatingRequest(UUID videoid, UUID userid) {

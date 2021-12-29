@@ -27,5 +27,12 @@ public class QueryCommentByVideo extends QueryDefinition {
     /**
      * Comment offset if specified (Optional)
      */
+    @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
     private Optional<UUID> commentId = Optional.empty();
+
+    public QueryCommentByVideo(UUID videoId, Optional<UUID> commentId, int pageSize, Optional<String> pageState) {
+        super(pageSize, pageState);
+        this.videoId = videoId;
+        this.commentId = commentId;
+    }
 }

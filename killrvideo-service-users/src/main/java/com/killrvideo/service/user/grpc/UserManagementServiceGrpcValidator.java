@@ -23,18 +23,18 @@ import static com.killrvideo.utils.ValidationUtils.validate;
  */
 @Component
 public class UserManagementServiceGrpcValidator {
-    private static Logger LOGGER = LoggerFactory.getLogger(UserManagementServiceGrpcValidator.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(UserManagementServiceGrpcValidator.class);
 
     /**
      * Validate create user.
      *
-     * @param request
-     * @param streamObserver
+     * @param request request.
+     * @param streamObserver response.
      */
     public void validateGrpcRequest_createUser(CreateUserRequest request, StreamObserver<?> streamObserver) {
         final StringBuilder errorMessage = initErrorString(request);
         boolean isValid = true;
-        if (request.getUserId() == null || isBlank(request.getUserId().getValue())) {
+        if (isBlank(request.getUserId().getValue())) {
             errorMessage.append("\t\tuser id should be provided for create user request\n");
             isValid = false;
         }

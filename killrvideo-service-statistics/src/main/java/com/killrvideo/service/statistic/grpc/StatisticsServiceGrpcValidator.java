@@ -17,7 +17,7 @@ import static com.killrvideo.utils.ValidationUtils.validate;
 
 @Component
 public class StatisticsServiceGrpcValidator {
-    private static Logger LOGGER = LoggerFactory.getLogger(StatisticsServiceGrpcValidator.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(StatisticsServiceGrpcValidator.class);
     
     public void validateGrpcRequest_GetNumberPlays(GetNumberOfPlaysRequest request, StreamObserver<?> streamObserver) {
         final StringBuilder errorMessage = initErrorString(request);
@@ -43,7 +43,7 @@ public class StatisticsServiceGrpcValidator {
         final StringBuilder errorMessage = initErrorString(request);
         boolean isValid = true;
 
-        if (request.getVideoId() == null || isBlank(request.getVideoId().getValue())) {
+        if (isBlank(request.getVideoId().getValue())) {
             errorMessage.append("\t\tvideo id should be provided for record playback started request\n");
             isValid = false;
         }

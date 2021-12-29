@@ -1,17 +1,19 @@
 package com.killrvideo.service.user.repository;
 
-import com.datastax.oss.driver.api.core.CqlSession;
+import com.killrvideo.dse.utils.MappedAsyncPagingIterableUtils;
 import com.killrvideo.service.user.dao.UserCredentialsDao;
 import com.killrvideo.service.user.dao.UserDao;
 import com.killrvideo.service.user.dao.UserMapper;
 import com.killrvideo.service.user.dto.User;
 import com.killrvideo.service.user.dto.UserCredentials;
-import com.killrvideo.dse.utils.MappedAsyncPagingIterableUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 
 /**
  * Handling user.
@@ -20,11 +22,11 @@ import java.util.concurrent.CompletableFuture;
  */
 @Repository
 public class UserRepository {
-    private UserDao userDao;
-    private UserCredentialsDao userCredentialsDao;
+    private static final Logger LOGGER = LoggerFactory.getLogger(UserRepository.class);
+    private final UserDao userDao;
+    private final UserCredentialsDao userCredentialsDao;
 
-    public UserRepository(CqlSession session) {
-        UserMapper mapper = UserMapper.builder(session).build();
+    public UserRepository(UserMapper mapper) {
         this.userDao = mapper.getUserDao();
         this.userCredentialsDao = mapper.getUserCredentialsDao();
     }
@@ -36,9 +38,24 @@ public class UserRepository {
      * @param hashedPassword hashed Password
      * @return
      */
-    public CompletableFuture<User> createUserAsync(User user, String hashedPassword) {
-        return userCredentialsDao.insert(UserCredentials.from(user, hashedPassword))
-                .thenCompose(rs -> userDao.insert(user));
+    public CompletableFuture<Boolean> createUserAsync(User user, String hashedPassword) {
+        UserCredentials userCredentials = UserCredentials.from(user, hashedPassword);
+
+        return userCredentialsDao.insert(userCredentials)
+                .thenApply(success -> {
+                    duplicateCheck(userCredentials, !success);
+                    return success;
+                })
+                .thenCompose(success -> userDao.insert(user));
+    }
+
+    private void duplicateCheck(UserCredentials userCredentials, boolean duplicate) {
+        if (duplicate) {
+            String errMsg = String.format("Exception creating user because it already exists with email %s",
+                    userCredentials.getEmail());
+            LOGGER.error(errMsg);
+            throw new CompletionException(errMsg, new IllegalArgumentException(errMsg));
+        }
     }
 
     /**

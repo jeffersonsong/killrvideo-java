@@ -1,29 +1,23 @@
 package com.killrvideo.service.sugestedvideo.grpc;
 
-import static com.killrvideo.utils.GrpcMappingUtils.uuidToUuid;
-import static com.killrvideo.utils.ValidationUtils.initErrorString;
-import static com.killrvideo.utils.ValidationUtils.validate;
-import static org.apache.commons.lang3.StringUtils.isBlank;
-
-import java.util.HashSet;
-import java.util.UUID;
-
 import com.killrvideo.dse.dto.ResultListPage;
 import com.killrvideo.dse.dto.Video;
-import killrvideo.common.CommonTypes;
-import org.slf4j.Logger;
-import org.springframework.stereotype.Component;
-import org.springframework.util.Assert;
-
+import com.killrvideo.service.sugestedvideo.request.GetRelatedVideosRequestData;
 import com.killrvideo.utils.GrpcMappingUtils;
-
-import io.grpc.stub.StreamObserver;
+import killrvideo.common.CommonTypes;
 import killrvideo.suggested_videos.SuggestedVideosService.GetRelatedVideosRequest;
 import killrvideo.suggested_videos.SuggestedVideosService.GetRelatedVideosResponse;
-import killrvideo.suggested_videos.SuggestedVideosService.GetSuggestedForUserRequest;
-import killrvideo.suggested_videos.SuggestedVideosService.GetSuggestedForUserResponse;
 import killrvideo.suggested_videos.SuggestedVideosService.SuggestedVideoPreview;
 import killrvideo.video_catalog.events.VideoCatalogEvents.YouTubeVideoAdded;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.stereotype.Component;
+
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.UUID;
+
+import static com.killrvideo.utils.GrpcMappingUtils.fromUuid;
+import static com.killrvideo.utils.GrpcMappingUtils.uuidToUuid;
 
 /**
  * Helper and mappers for DAO <=> GRPC Communications
@@ -35,35 +29,14 @@ public class SuggestedVideosServiceGrpcMapper {
     public Video mapVideoAddedtoVideoDTO(YouTubeVideoAdded videoAdded) {
         // Convert Stub to Dto, dao must not be related to interface GRPC
         Video video = new Video();
-        video.setVideoid(UUID.fromString(videoAdded.getVideoId().toString()));
+        video.setVideoid(fromUuid(videoAdded.getVideoId()));
         video.setAddedDate(GrpcMappingUtils.timestampToInstant(videoAdded.getAddedDate()));
-        video.setUserid(UUID.fromString(videoAdded.getUserId().toString()));
+        video.setUserid(fromUuid(videoAdded.getUserId()));
         video.setName(videoAdded.getName());
         video.setTags(new HashSet<>(videoAdded.getTagsList()));
         video.setPreviewImageLocation(videoAdded.getPreviewImageLocation());
         video.setLocation(videoAdded.getLocation());
         return video;
-    }
-    
-    public void validateGrpcRequest_getRelatedVideo(Logger logger, GetRelatedVideosRequest request, StreamObserver<GetRelatedVideosResponse> streamObserver) {
-        final StringBuilder errorMessage = initErrorString(request);
-        boolean isValid = true;
-
-        if (request.getVideoId() == null || isBlank(request.getVideoId().getValue())) {
-            errorMessage.append("\t\tvideo id should be provided for get related videos request\n");
-            isValid = false;
-        }
-        Assert.isTrue(validate(logger, streamObserver, errorMessage, isValid), "Invalid parameter for 'getRelatedVideo'");
-    }
-    
-    public void validateGrpcRequest_getUserSuggestedVideo(Logger logger, GetSuggestedForUserRequest request, StreamObserver<GetSuggestedForUserResponse> streamObserver) {
-        final StringBuilder errorMessage = initErrorString(request);
-        boolean isValid = true;
-        if (request.getUserId() == null || isBlank(request.getUserId().getValue())) {
-            errorMessage.append("\t\tuser id should be provided for get suggested for user request\n");
-            isValid = false;
-        }
-        Assert.isTrue(validate(logger, streamObserver, errorMessage, isValid), "Invalid parameter for 'getSuggestedForUser'");
     }
 
     /**
@@ -77,6 +50,15 @@ public class SuggestedVideosServiceGrpcMapper {
                 .setPreviewImageLocation(v.getPreviewImageLocation())
                 .setAddedDate(GrpcMappingUtils.instantToTimeStamp(v.getAddedDate()))
                 .build();
+    }
+
+    @SuppressWarnings("ConstantConditions")
+    public GetRelatedVideosRequestData parseGetRelatedVideosRequestData(GetRelatedVideosRequest grpcReq) {
+        final UUID       videoId = fromUuid(grpcReq.getVideoId());
+        int              videoPageSize = grpcReq.getPageSize();
+        Optional<String> videoPagingState = Optional.ofNullable(grpcReq.getPagingState()).filter(StringUtils::isNotBlank);
+
+        return new GetRelatedVideosRequestData(videoId, videoPageSize, videoPagingState);
     }
 
     public GetRelatedVideosResponse mapToGetRelatedVideosResponse(ResultListPage<Video> resultPage, UUID       videoId) {

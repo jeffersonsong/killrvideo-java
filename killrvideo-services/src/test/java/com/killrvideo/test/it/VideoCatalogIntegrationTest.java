@@ -10,19 +10,7 @@ public class VideoCatalogIntegrationTest {
     public static void main(String[] args) {
         KillrvideoServicesGrpcClient client = 
                 new KillrvideoServicesGrpcClient("localhost", 8899);
-        
-        /*
-        SubmitYouTubeVideoRequest myNewVideoYoutube = SubmitYouTubeVideoRequest.newBuilder()
-                .addTags("Cassandra")
-                .setDescription("MyVideo")
-                .setName(" My Sample Video")
-                .setUserId(GrpcMappingUtils.uuidToUuid(UUID.randomUUID()))
-                .setVideoId(GrpcMappingUtils.uuidToUuid(UUID.randomUUID()))
-                .setYouTubeVideoId("EBMriswzd94")
-                .build();
-        client.videoCatalogServiceGrpcClient.submitYouTubeVideo(myNewVideoYoutube);
-        */
-        
+
         VerifyCredentialsRequest creRequest = VerifyCredentialsRequest.newBuilder()
                 .setEmail("a.a@a.com")
                 .setPassword("aaa")

@@ -1,9 +1,6 @@
 package com.killrvideo.service.statistic.grpc;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
@@ -15,6 +12,8 @@ import killrvideo.common.CommonTypes.Uuid;
 import killrvideo.statistics.StatisticsServiceOuterClass.GetNumberOfPlaysRequest;
 import killrvideo.statistics.StatisticsServiceOuterClass.GetNumberOfPlaysResponse;
 import killrvideo.statistics.StatisticsServiceOuterClass.PlayStats;
+
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 /**
  * Helper and mappers for DAO <=> GRPC Communications
@@ -53,6 +52,12 @@ public class StatisticsServiceGrpcMapper {
                 .setVideoId(GrpcMappingUtils.uuidToUuid(v.getVideoid()))
                 .setViews(Optional.ofNullable(v.getViews()).orElse(0L)).build();
     }
-    
 
+    public List<UUID> parseGetNumberOfPlaysRequest(GetNumberOfPlaysRequest grpcReq) {
+        return grpcReq.getVideoIdsList()
+                .stream()
+                .filter(uuid -> isNotBlank(uuid.getValue()))
+                .map(GrpcMappingUtils::fromUuid)
+                .collect(Collectors.toList());
+    }
 }

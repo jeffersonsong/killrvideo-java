@@ -16,9 +16,9 @@ import org.mockito.MockitoAnnotations;
 
 import java.util.concurrent.CompletableFuture;
 
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+@SuppressWarnings("unchecked")
 public class CommentsServiceGrpcTest {
     @InjectMocks
     private CommentsServiceGrpc service;
@@ -155,8 +155,10 @@ public class CommentsServiceGrpcTest {
         QueryCommentByUser query = mock(QueryCommentByUser.class);
         when(mapper.mapFromGrpcUserCommentToDseQuery(any())).thenReturn(query);
 
-        ResultListPage resultListPage = mock(ResultListPage.class);
-        when(commentRepository.findCommentsByUserIdAsync(any())).thenReturn(CompletableFuture.completedFuture(resultListPage));
+        ResultListPage<Comment> resultListPage = mock(ResultListPage.class);
+        when(commentRepository.findCommentsByUserIdAsync(any())).thenReturn(
+                CompletableFuture.completedFuture(resultListPage)
+        );
 
         this.service.getUserComments(grpcReq, responseObserver);
         verify(responseObserver, times(0)).onError(any());
@@ -200,7 +202,7 @@ public class CommentsServiceGrpcTest {
         QueryCommentByVideo query = mock(QueryCommentByVideo.class);
         when(mapper.mapFromGrpcVideoCommentToDseQuery(any())).thenReturn(query);
 
-        ResultListPage resultListPage = mock(ResultListPage.class);
+        ResultListPage<Comment> resultListPage = mock(ResultListPage.class);
         when(commentRepository.findCommentsByVideosIdAsync(any())).thenReturn(CompletableFuture.completedFuture(resultListPage));
 
         this.service.getVideoComments(grpcReq, responseObserver);

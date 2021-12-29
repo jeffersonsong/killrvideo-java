@@ -22,6 +22,7 @@ public class ResultListPage<ENTITY> {
     /**
      * Custom management of paging state.
      */
+    @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
     private final Optional<String> nextPage;
 
     public static <T> ResultListPage<T> empty() {

@@ -1,11 +1,11 @@
 package com.killrvideo.service.rating.repository;
 
-import com.datastax.oss.driver.api.core.CqlSession;
 import com.killrvideo.service.rating.dao.VideoRatingByUserDao;
 import com.killrvideo.service.rating.dao.VideoRatingDao;
 import com.killrvideo.service.rating.dao.VideoRatingMapper;
 import com.killrvideo.service.rating.dto.VideoRating;
 import com.killrvideo.service.rating.dto.VideoRatingByUser;
+import com.killrvideo.service.rating.request.GetUserRatingRequestData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
@@ -21,13 +21,12 @@ import java.util.concurrent.CompletableFuture;
  */
 @Repository
 public class RatingRepository {
-    private static Logger LOGGER = LoggerFactory.getLogger(RatingRepository.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(RatingRepository.class);
 
-    private VideoRatingDao videoRatingDao;
-    private VideoRatingByUserDao videoRatingByUserDao;
+    private final VideoRatingDao videoRatingDao;
+    private final VideoRatingByUserDao videoRatingByUserDao;
 
-    public RatingRepository(CqlSession session) {
-        VideoRatingMapper mapper = VideoRatingMapper.build(session).build();
+    public RatingRepository(VideoRatingMapper mapper) {
         this.videoRatingDao = mapper.getVideoRatingDao();
         this.videoRatingByUserDao = mapper.getVideoRatingByUserDao();
     }
@@ -35,24 +34,18 @@ public class RatingRepository {
     /**
      * Create a rating.
      *
-     * @param videoId current videoId
-     * @param userId  current userid
-     * @param rating  current rating
+     * @param videoRatingByUser video rating by user.
      */
-    public CompletableFuture<VideoRatingByUser> rateVideo(UUID videoId, UUID userId, Integer rating) {
-        // Param validations
-        assertNotNull("rateVideo", "videoId", videoId);
-        assertNotNull("rateVideo", "userId", userId);
-        assertNotNull("rateVideo", "rating", rating);
-
-        VideoRatingByUser entity = new VideoRatingByUser(videoId, userId, rating);
+    public CompletableFuture<VideoRatingByUser> rateVideo(VideoRatingByUser videoRatingByUser) {
         // Logging at DEBUG
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Rating {} on video {} for user {}", rating, videoId, userId);
+            LOGGER.debug("Rating {} on video {} for user {}", videoRatingByUser.getRating(),
+                    videoRatingByUser.getVideoid(), videoRatingByUser.getUserid());
         }
 
-        return videoRatingDao.increment(videoId, 1L, rating)
-                .thenCompose(rs -> videoRatingByUserDao.insert(entity));
+        return videoRatingDao.increment(videoRatingByUser.getVideoid(), 1L,
+                        videoRatingByUser.getRating())
+                .thenCompose(rs -> videoRatingByUserDao.insert(videoRatingByUser));
     }
 
     /**
@@ -70,18 +63,17 @@ public class RatingRepository {
     /**
      * Find rating from videoid and userid.
      *
-     * @param videoId current videoId
-     * @param userid  current user unique identifier.
-     * @return video rating is exist.
+     * @param request request.
+     * @return video rating exists.
      */
-    public CompletableFuture<Optional<VideoRatingByUser>> findUserRating(UUID videoId, UUID userid) {
-        assertNotNull("findUserRating", "videoId", videoId);
-        assertNotNull("findUserRating", "userid", userid);
+    public CompletableFuture<Optional<VideoRatingByUser>> findUserRating(GetUserRatingRequestData request) {
+        assertNotNull("findUserRating", "videoId", request.getVideoid());
+        assertNotNull("findUserRating", "userid", request.getUserid());
 
-        return videoRatingByUserDao.findUserRating(videoId, userid);
+        return videoRatingByUserDao.findUserRating(request.getVideoid(), request.getUserid());
     }
 
-    protected void assertNotNull(String mName, String pName, Object obj) {
+    private void assertNotNull(String mName, String pName, Object obj) {
         if (obj == null) {
             throw new IllegalArgumentException("Assertion failed: param " + pName + " is required for method " + mName);
         }

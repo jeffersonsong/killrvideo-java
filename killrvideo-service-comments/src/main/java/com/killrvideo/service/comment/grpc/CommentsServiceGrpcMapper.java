@@ -1,35 +1,21 @@
 package com.killrvideo.service.comment.grpc;
 
-import static com.killrvideo.service.comment.grpc.CommentsServiceGrpcValidator.initErrorString;
-import static com.killrvideo.service.comment.grpc.CommentsServiceGrpcValidator.notEmpty;
-import static com.killrvideo.service.comment.grpc.CommentsServiceGrpcValidator.positive;
-import static com.killrvideo.service.comment.grpc.CommentsServiceGrpcValidator.validate;
-import static com.killrvideo.utils.GrpcMappingUtils.*;
-import static java.util.UUID.fromString;
-import static org.apache.commons.lang3.StringUtils.isBlank;
-
-import java.time.Instant;
-import java.util.Optional;
-import java.util.UUID;
-
-import com.killrvideo.utils.GrpcMappingUtils;
-import killrvideo.comments.events.CommentsEvents;
-import org.slf4j.Logger;
-import org.springframework.stereotype.Component;
-import org.springframework.util.Assert;
-
 import com.killrvideo.dse.dto.ResultListPage;
 import com.killrvideo.service.comment.dto.Comment;
 import com.killrvideo.service.comment.dto.QueryCommentByUser;
 import com.killrvideo.service.comment.dto.QueryCommentByVideo;
-
-import io.grpc.stub.StreamObserver;
+import com.killrvideo.utils.GrpcMappingUtils;
 import killrvideo.comments.CommentsServiceOuterClass;
-import killrvideo.comments.CommentsServiceOuterClass.CommentOnVideoRequest;
-import killrvideo.comments.CommentsServiceOuterClass.GetUserCommentsRequest;
-import killrvideo.comments.CommentsServiceOuterClass.GetUserCommentsResponse;
-import killrvideo.comments.CommentsServiceOuterClass.GetVideoCommentsRequest;
-import killrvideo.comments.CommentsServiceOuterClass.GetVideoCommentsResponse;
+import killrvideo.comments.CommentsServiceOuterClass.*;
+import killrvideo.comments.events.CommentsEvents;
+import org.springframework.stereotype.Component;
+
+import java.time.Instant;
+import java.util.Optional;
+
+import static com.killrvideo.utils.GrpcMappingUtils.*;
+import static org.apache.commons.lang3.StringUtils.isBlank;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 /**
  * Validation of inputs and mapping
@@ -38,65 +24,6 @@ import killrvideo.comments.CommentsServiceOuterClass.GetVideoCommentsResponse;
  */
 @Component
 public class CommentsServiceGrpcMapper {
-    /**
-     * Validate comment On video comment query.
-     * 
-     * @param request
-     *      current GRPC Request
-     * @param streamObserver
-     *      response async
-     */
-    public void validateGrpcRequestCommentOnVideo(Logger logger, CommentOnVideoRequest request, StreamObserver<?> streamObserver) {
-        StringBuilder errorMessage = initErrorString(request);
-        boolean isValid = 
-                  notEmpty(!request.hasUserId()    || isBlank(request.getUserId().getValue()),  "userId",  "video request",errorMessage) &&
-                  notEmpty(!request.hasVideoId()   || isBlank(request.getVideoId().getValue()), "videoId", "video request",errorMessage) &&
-                  notEmpty(!request.hasCommentId() || isBlank(request.getCommentId().getValue()), "commentId", "video request",errorMessage) &&
-                  notEmpty(isBlank(request.getComment()), "comment", "video request",errorMessage);
-        Assert.isTrue(validate(logger, streamObserver, errorMessage, isValid), "Invalid parameter for 'commentOnVideo'");
-    }
-    
-    /**
-     * Validate get video comment query.
-     * 
-     * @param request
-     *      current GRPC Request
-     * @param streamObserver
-     *      response async
-     */
-    public void validateGrpcRequestGetVideoComment(Logger logger, GetVideoCommentsRequest request, StreamObserver<?> streamObserver) {
-        final StringBuilder errorMessage = initErrorString(request);
-        boolean isValid = true;
-
-        if (!request.hasVideoId() || isBlank(request.getVideoId().getValue())) {
-            errorMessage.append("\t\tvideo id should be provided for get video comment request\n");
-            isValid = false;
-        }
-
-        if (request.getPageSize() <= 0) {
-            errorMessage.append("\t\tpage size should be strictly positive for get video comment request");
-            isValid = false;
-        }
-
-        Assert.isTrue(validate(logger, streamObserver, errorMessage, isValid), "Invalid parameter for 'getVideoComments'");
-    }
-    
-    /**
-     * Validate get user comment query.
-     * 
-     * @param request
-     *      current GRPC Request
-     * @param streamObserver
-     *      response async
-     */
-    public void validateGrpcRequest_GetUserComments(Logger logger, GetUserCommentsRequest request, StreamObserver<?> streamObserver) {
-        final StringBuilder errorMessage = initErrorString(request);
-        boolean isValid = 
-                  notEmpty(!request.hasUserId() || isBlank(request.getUserId().getValue()),  "userId",  "comment request",errorMessage) &&
-                  positive(request.getPageSize() <= 0,  "page size",  "comment request",errorMessage);
-        Assert.isTrue(validate(logger, streamObserver, errorMessage, isValid), "Invalid parameter for 'getUserComments'");
-    }
-    
     // --- Mappings ---
     
     /**
@@ -111,22 +38,24 @@ public class CommentsServiceGrpcMapper {
         QueryCommentByUser targetQuery = new QueryCommentByUser();
         if (grpcReq.hasStartingCommentId() && 
                 !isBlank(grpcReq.getStartingCommentId().getValue())) {
-            targetQuery.setCommentId(Optional.of(UUID.fromString(grpcReq.getStartingCommentId().getValue())));
+            targetQuery.setCommentId(Optional.of(fromTimeUuid(grpcReq.getStartingCommentId())));
         }
-        targetQuery.setUserId(UUID.fromString(grpcReq.getUserId().getValue()));
+        targetQuery.setUserId(fromUuid(grpcReq.getUserId()));
         targetQuery.setPageSize(grpcReq.getPageSize());
-        targetQuery.setPageState(Optional.ofNullable(grpcReq.getPagingState()));
+        if (isNotBlank(grpcReq.getPagingState())) {
+            targetQuery.setPageState(Optional.of(grpcReq.getPagingState()));
+        }
         return targetQuery;
     }
     
     // Map from CommentDseDao response bean to expected GRPC object.
-    public GetVideoCommentsResponse mapFromDseVideoCommentToGrpcResponse(ResultListPage<Comment> dseRes) {
+    public GetVideoCommentsResponse mapFromDseVideoCommentToGrpcResponse(ResultListPage<Comment> comments) {
         final GetVideoCommentsResponse.Builder builder = GetVideoCommentsResponse.newBuilder();
-        for (Comment c : dseRes.getResults()) {
+        for (Comment c : comments.getResults()) {
            builder.setVideoId(uuidToUuid(c.getVideoid()));
            builder.addComments(newVideoCommentProto(c));
         }
-        dseRes.getPagingState().ifPresent(builder::setPagingState);
+        comments.getPagingState().ifPresent(builder::setPagingState);
         return builder.build();
     }
 
@@ -171,19 +100,19 @@ public class CommentsServiceGrpcMapper {
         QueryCommentByVideo targetQuery = new QueryCommentByVideo();
         if (grpcReq.hasStartingCommentId() && 
                 !isBlank(grpcReq.getStartingCommentId().getValue())) {
-            targetQuery.setCommentId(Optional.of(UUID.fromString(grpcReq.getStartingCommentId().getValue())));
+            targetQuery.setCommentId(Optional.of(fromTimeUuid(grpcReq.getStartingCommentId())));
         }
-        targetQuery.setVideoId(UUID.fromString(grpcReq.getVideoId().getValue()));
+        targetQuery.setVideoId(fromUuid(grpcReq.getVideoId()));
         targetQuery.setPageSize(grpcReq.getPageSize());
-        targetQuery.setPageState(Optional.ofNullable(grpcReq.getPagingState()));
+        targetQuery.setPageState(Optional.of(grpcReq.getPagingState()));
         return targetQuery;
     }
 
     public Comment mapToComment(CommentOnVideoRequest grpcReq) {
         Comment comment = new Comment();
-        comment.setVideoid(fromString(grpcReq.getVideoId().getValue()));
-        comment.setCommentid(fromString(grpcReq.getCommentId().getValue()));
-        comment.setUserid(fromString(grpcReq.getUserId().getValue()));
+        comment.setVideoid(fromUuid(grpcReq.getVideoId()));
+        comment.setCommentid(fromTimeUuid(grpcReq.getCommentId()));
+        comment.setUserid(fromUuid(grpcReq.getUserId()));
         comment.setComment(grpcReq.getComment());
         return comment;
     }

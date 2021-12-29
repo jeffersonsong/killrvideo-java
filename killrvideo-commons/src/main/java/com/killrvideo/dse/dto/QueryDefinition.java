@@ -1,5 +1,6 @@
 package com.killrvideo.dse.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -16,6 +17,7 @@ import java.util.Optional;
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
 public abstract class QueryDefinition implements Serializable {
     private static final long serialVersionUID = 5286278417340641649L;
 
@@ -32,5 +34,6 @@ public abstract class QueryDefinition implements Serializable {
     /**
      * Optional pageState.
      */
+    @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
     private Optional<String> pageState = Optional.empty();
 }

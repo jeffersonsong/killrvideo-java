@@ -39,7 +39,7 @@ public class ServiceDiscoveryDaoEtcd implements ServiceDiscoveryDao {
     private static final Logger LOGGER = LoggerFactory.getLogger(ServiceDiscoveryDaoEtcd.class);
     
     /** Namespace. */
-    public static String KILLRVIDEO_SERVICE_NAMESPACE = "/killrvideo/services/";
+    public static final String KILLRVIDEO_SERVICE_NAMESPACE = "/killrvideo/services/";
    
     @Value("${killrvideo.discovery.etcd.host: 10.0.75.1}")
     private String etcdServerHost;
@@ -91,9 +91,8 @@ public class ServiceDiscoveryDaoEtcd implements ServiceDiscoveryDao {
                 .withFixedBackoff()
                 .build();
         new CallExecutor<List <EtcdNode>>(etcdRetryConfig)
-                .afterFailedTry(s -> { 
-                    LOGGER.info("Attempt #{}/{} : ETCD is not ready (retry in {}s)", 
-                             atomicCount.getAndIncrement(), maxNumberOfTriesEtcd, delayBetweenTriesEtcd); })
+                .afterFailedTry(s -> LOGGER.info("Attempt #{}/{} : ETCD is not ready (retry in {}s)",
+                         atomicCount.getAndIncrement(), maxNumberOfTriesEtcd, delayBetweenTriesEtcd))
                 .onFailure(s -> {
                     LOGGER.error("ETCD is not ready after {} attempts, exiting", maxNumberOfTriesEtcd);
                     System.err.println("ETCD is not ready after " + maxNumberOfTriesEtcd + " attempts, exiting now.");

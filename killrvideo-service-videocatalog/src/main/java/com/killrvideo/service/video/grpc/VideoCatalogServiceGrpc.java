@@ -3,30 +3,27 @@ package com.killrvideo.service.video.grpc;
 import com.killrvideo.dse.dto.CustomPagingState;
 import com.killrvideo.dse.dto.Video;
 import com.killrvideo.messaging.dao.MessagingDao;
-import com.killrvideo.service.video.dto.LatestVideosPage;
 import com.killrvideo.service.video.repository.VideoCatalogRepository;
+import com.killrvideo.service.video.request.GetLatestVideoPreviewsRequestData;
+import com.killrvideo.service.video.request.GetUserVideoPreviewsRequestData;
 import com.killrvideo.utils.GrpcMappingUtils;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 import killrvideo.common.CommonTypes.Uuid;
 import killrvideo.video_catalog.VideoCatalogServiceGrpc.VideoCatalogServiceImplBase;
 import killrvideo.video_catalog.VideoCatalogServiceOuterClass.*;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import javax.inject.Inject;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 
+import static com.killrvideo.utils.GrpcMappingUtils.fromUuid;
+import static com.killrvideo.utils.GrpcUtils.returnSingleResult;
 import static java.util.stream.Collectors.toList;
 
 /**
@@ -36,11 +33,7 @@ import static java.util.stream.Collectors.toList;
  */
 @Service
 public class VideoCatalogServiceGrpc extends VideoCatalogServiceImplBase {
-
-    /**
-     * Logger for this class.
-     */
-    private static Logger LOGGER = LoggerFactory.getLogger(VideoCatalogServiceGrpc.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(VideoCatalogServiceGrpc.class);
 
     /**
      * Send new videos.
@@ -51,15 +44,17 @@ public class VideoCatalogServiceGrpc extends VideoCatalogServiceImplBase {
     @Value("${killrvideo.discovery.services.videoCatalog : VideoCatalogService}")
     private String serviceKey;
 
-    @Inject
-    private MessagingDao messagingDao;
+    private final VideoCatalogRepository videoCatalogRepository;
+    private final MessagingDao messagingDao;
+    private final VideoCatalogServiceGrpcValidator validator;
+    private final VideoCatalogServiceGrpcMapper mapper;
 
-    @Inject
-    private VideoCatalogRepository videoCatalogRepository;
-    @Inject
-    private VideoCatalogServiceGrpcValidator validator;
-    @Inject
-    private VideoCatalogServiceGrpcMapper mapper;
+    public VideoCatalogServiceGrpc(VideoCatalogRepository videoCatalogRepository, MessagingDao messagingDao, VideoCatalogServiceGrpcValidator validator, VideoCatalogServiceGrpcMapper mapper) {
+        this.videoCatalogRepository = videoCatalogRepository;
+        this.messagingDao = messagingDao;
+        this.validator = validator;
+        this.mapper = mapper;
+    }
 
     /**
      * {@inheritDoc}
@@ -82,7 +77,7 @@ public class VideoCatalogServiceGrpc extends VideoCatalogServiceImplBase {
         videoCatalogRepository.insertVideoAsync(video)
                 .thenCompose(rs ->
                         // If OK, then send Message to Kafka
-                        messagingDao.sendEvent(topicVideoCreated, mapper.createYouTubeVideoAddedEvent(rs))
+                        messagingDao.sendEvent(topicVideoCreated, mapper.createYouTubeVideoAddedEvent(video))
                 )
                 .whenComplete((result, error) -> {
                     // Building Response
@@ -91,14 +86,13 @@ public class VideoCatalogServiceGrpc extends VideoCatalogServiceImplBase {
                         grpcResObserver.onError(Status.INTERNAL.withCause(error).asRuntimeException());
                     } else {
                         traceSuccess("submitYouTubeVideo", starts);
-                        grpcResObserver.onNext(SubmitYouTubeVideoResponse.newBuilder().build());
-                        grpcResObserver.onCompleted();
+                        returnSingleResult(SubmitYouTubeVideoResponse.newBuilder().build(), grpcResObserver);
                     }
                 });
     }
 
     /**
-     * Get latest video (Home Page)
+     * Get the latest video (Home Page)
      * <p>
      * In this method, we craft our own paging state. The custom paging state format is:
      * <br/>
@@ -119,7 +113,7 @@ public class VideoCatalogServiceGrpc extends VideoCatalogServiceImplBase {
      * <p>
      * <br/>
      * On subsequent request, we decode the custom paging state coming from the web app and resume querying from
-     * the appropriate date and we inject also the native Cassandra paging state.
+     * the appropriate date, and we inject also the native Cassandra paging state.
      * <br/>
      * <strong>However, we can only use the native Cassandra paging state for the 1st query in the for loop. Indeed
      * Cassandra paging state is a hash of query string and bound values. We may switch partition to move one day
@@ -134,31 +128,20 @@ public class VideoCatalogServiceGrpc extends VideoCatalogServiceImplBase {
         final Instant starts = Instant.now();
 
         // GRPC Parameters Mappings
-        CustomPagingState pageState =
-                CustomPagingState.parse(Optional.ofNullable(grpcReq.getPagingState()))
-                        .orElse(videoCatalogRepository.buildFirstCustomPagingState());
-        final Optional<Instant> startDate = Optional.ofNullable(grpcReq.getStartingAddedDate())
-                .filter(x -> StringUtils.isNotBlank(x.toString()))
-                .map(GrpcMappingUtils::timestampToInstant);
-        final Optional<UUID> startVideoId = Optional.ofNullable(grpcReq.getStartingVideoId())
-                .filter(x -> StringUtils.isNotBlank(x.toString()))
-                .map(Uuid::getValue)
-                .filter(StringUtils::isNotBlank)
-                .map(UUID::fromString);
-        int pageSize = grpcReq.getPageSize();
+        GetLatestVideoPreviewsRequestData requestData = mapper.parseGetLatestVideoPreviewsRequest(
+                grpcReq, CustomPagingState::buildFirstCustomPagingState
+        );
 
-        try {
-            // Queries against DSE day per day aysnchronously
-            LatestVideosPage returnedPage =
-                    videoCatalogRepository.getLatestVideoPreviews(pageState, pageSize, startDate, startVideoId);
-            traceSuccess("getLatestVideoPreviews", starts);
-            grpcResObserver.onNext(mapper.mapLatestVideoToGrpcResponse(returnedPage));
-            grpcResObserver.onCompleted();
-        } catch (Exception error) {
-            traceError("getLatestVideoPreviews", starts, error);
-            grpcResObserver.onError(Status.INTERNAL.withCause(error).asRuntimeException());
-        }
-        LOGGER.debug("End getting latest video preview");
+        videoCatalogRepository.getLatestVideoPreviewsAsync(requestData)
+                .whenComplete((returnedPage, error) -> {
+                    if (error != null) {
+                        traceError("getLatestVideoPreviews", starts, error);
+                        grpcResObserver.onError(Status.INTERNAL.withCause(error).asRuntimeException());
+                    } else {
+                        traceSuccess("getLatestVideoPreviews", starts);
+                        returnSingleResult(mapper.mapLatestVideoToGrpcResponse(returnedPage), grpcResObserver);
+                    }
+                });
     }
 
     /**
@@ -173,32 +156,25 @@ public class VideoCatalogServiceGrpc extends VideoCatalogServiceImplBase {
         final Instant starts = Instant.now();
 
         // GRPC Parameters Mappings
-        final UUID videoId = UUID.fromString(grpcReq.getVideoId().getValue());
+        final UUID videoId = fromUuid(grpcReq.getVideoId());
 
         // Invoke Async
-        CompletableFuture<Video> futureVideo = videoCatalogRepository.getVideoById(videoId);
-
-        // Map back as GRPC (if correct invalid credential otherwize)
-        futureVideo.whenComplete((video, error) -> {
-            if (error != null) {
-                traceError("getVideo", starts, error);
-                grpcResObserver.onError(Status.INTERNAL.withCause(error).asRuntimeException());
-            } else {
-                if (video != null) {
-                    // Check to see if any tags exist, if not, ensure to send an empty set instead of null
-                    if (CollectionUtils.isEmpty(video.getTags())) {
-                        video.setTags(Collections.emptySet());
+        videoCatalogRepository.getVideoById(videoId)
+                .whenComplete((video, error) -> {
+                    // Map back as GRPC (if correct invalid credential otherwize)
+                    if (error != null) {
+                        traceError("getVideo", starts, error);
+                        grpcResObserver.onError(Status.INTERNAL.withCause(error).asRuntimeException());
+                    } else if (video == null) {
+                        LOGGER.warn("Video with id " + videoId + " was not found");
+                        traceError("getVideo", starts, error);
+                        grpcResObserver.onError(Status.NOT_FOUND.withDescription("Video with id " + videoId + " was not found").asRuntimeException());
+                    } else {
+                        traceSuccess("getVideo", starts);
+                        GetVideoResponse response = mapper.mapFromVideotoVideoResponse(video);
+                        returnSingleResult(response, grpcResObserver);
                     }
-                    traceSuccess("getVideo", starts);
-                    grpcResObserver.onNext(mapper.mapFromVideotoVideoResponse(video));
-                    grpcResObserver.onCompleted();
-                } else {
-                    LOGGER.warn("Video with id " + videoId + " was not found");
-                    traceError("getVideo", starts, error);
-                    grpcResObserver.onError(Status.NOT_FOUND.withDescription("Video with id " + videoId + " was not found").asRuntimeException());
-                }
-            }
-        });
+                });
     }
 
     /**
@@ -206,41 +182,33 @@ public class VideoCatalogServiceGrpc extends VideoCatalogServiceImplBase {
      */
     @Override
     public void getVideoPreviews(GetVideoPreviewsRequest grpcReq, StreamObserver<GetVideoPreviewsResponse> grpcResObserver) {
-
         // GRPC Parameters Validation
         validator.validateGrpcRequest_getVideoPreviews(grpcReq, grpcResObserver);
 
         // Stands as stopwatch for logging and messaging 
         final Instant starts = Instant.now();
 
-        final GetVideoPreviewsResponse.Builder builder = GetVideoPreviewsResponse.newBuilder();
-        if (grpcReq.getVideoIdsCount() == 0 || CollectionUtils.isEmpty(grpcReq.getVideoIdsList())) {
+        if (grpcReq.getVideoIdsCount() == 0) {
             traceSuccess("getVideoPreviews", starts);
-            grpcResObserver.onNext(builder.build());
-            grpcResObserver.onCompleted();
+            returnSingleResult(GetVideoPreviewsResponse.getDefaultInstance(), grpcResObserver);
             LOGGER.warn("No video id provided for video preview");
         } else {
-
             // GRPC Parameters Mappings
-            List<UUID> listOfVideoIds = grpcReq.getVideoIdsList().stream().map(Uuid::getValue).map(UUID::fromString).collect(toList());
+            List<UUID> listOfVideoIds = grpcReq.getVideoIdsList().stream().map(GrpcMappingUtils::fromUuid).collect(toList());
 
             // Execute Async
-            CompletableFuture<List<Video>> futureVideoList = videoCatalogRepository.getVideoPreview(listOfVideoIds);
-
-            // Mapping back as GRPC
-            futureVideoList.whenComplete((videos, error) -> {
-                if (error != null) {
-                    traceError("getVideoPreviews", starts, error);
-                    grpcResObserver.onError(Status.INTERNAL.withCause(error).asRuntimeException());
-                } else {
-                    traceSuccess("getVideoPreviews", starts);
-                    videos.stream()
-                            .map(mapper::mapFromVideotoVideoPreview)
-                            .forEach(builder::addVideoPreviews);
-                    grpcResObserver.onNext(builder.build());
-                    grpcResObserver.onCompleted();
-                }
-            });
+            videoCatalogRepository.getVideoPreview(listOfVideoIds)
+                    .whenComplete((videos, error) -> {
+                        // Mapping back as GRPC
+                        if (error != null) {
+                            traceError("getVideoPreviews", starts, error);
+                            grpcResObserver.onError(Status.INTERNAL.withCause(error).asRuntimeException());
+                        } else {
+                            traceSuccess("getVideoPreviews", starts);
+                            GetVideoPreviewsResponse response = mapper.mapToGetVideoPreviewsResponse(videos);
+                            returnSingleResult(response, grpcResObserver);
+                        }
+                    });
         }
     }
 
@@ -249,7 +217,6 @@ public class VideoCatalogServiceGrpc extends VideoCatalogServiceImplBase {
      */
     @Override
     public void getUserVideoPreviews(GetUserVideoPreviewsRequest grpcReq, StreamObserver<GetUserVideoPreviewsResponse> grpcResObserver) {
-
         // GRPC Parameters Validation
         validator.validateGrpcRequest_getUserVideoPreviews(grpcReq, grpcResObserver);
 
@@ -257,41 +224,19 @@ public class VideoCatalogServiceGrpc extends VideoCatalogServiceImplBase {
         final Instant starts = Instant.now();
 
         // GRPC Parameters Mappings
-        final UUID userId = UUID.fromString(grpcReq.getUserId().getValue());
-        final Optional<UUID> startingVideoId = Optional
-                .ofNullable(grpcReq.getStartingVideoId())
-                .map(Uuid::getValue)
-                .filter(StringUtils::isNotBlank)
-                .map(UUID::fromString);
-        final Optional<Instant> startingAddedDate = Optional
-                .ofNullable(grpcReq.getStartingAddedDate())
-                .map(ts -> Instant.ofEpochSecond(ts.getSeconds(), ts.getNanos()));
-        final Optional<String> pagingState =
-                Optional.ofNullable(grpcReq.getPagingState()).filter(StringUtils::isNotBlank);
-        final Optional<Integer> pagingSize =
-                Optional.ofNullable(grpcReq.getPageSize());
-
-
+        GetUserVideoPreviewsRequestData requestData = mapper.parseGetUserVideoPreviewsRequest(grpcReq);
         // Map Result back to GRPC
-        videoCatalogRepository
-                .getUserVideosPreview(userId, startingVideoId, startingAddedDate, pagingSize, pagingState)
+        videoCatalogRepository.getUserVideosPreview(requestData)
                 .whenComplete((resultPage, error) -> {
-
                     if (error != null) {
                         traceError("getUserVideoPreviews", starts, error);
                         grpcResObserver.onError(Status.INTERNAL.withCause(error).asRuntimeException());
 
                     } else {
-
                         traceSuccess("getUserVideoPreviews", starts);
-                        Uuid userGrpcUUID = GrpcMappingUtils.uuidToUuid(userId);
-                        final GetUserVideoPreviewsResponse.Builder builder = GetUserVideoPreviewsResponse.newBuilder().setUserId(userGrpcUUID);
-                        resultPage.getResults().stream()
-                                .map(mapper::mapFromUserVideotoVideoPreview)
-                                .forEach(builder::addVideoPreviews);
-                        resultPage.getPagingState().ifPresent(builder::setPagingState);
-                        grpcResObserver.onNext(builder.build());
-                        grpcResObserver.onCompleted();
+                        GetUserVideoPreviewsResponse response =
+                                mapper.mapToGetUserVideoPreviewsResponse(resultPage, requestData.getUserId());
+                        returnSingleResult(response, grpcResObserver);
                     }
                 });
     }

@@ -2,16 +2,19 @@ package com.killrvideo.service.user.grpc;
 
 import com.google.protobuf.Timestamp;
 import com.killrvideo.service.user.dto.User;
-import killrvideo.user_management.UserManagementServiceOuterClass.CreateUserRequest;
-import killrvideo.user_management.UserManagementServiceOuterClass.UserProfile;
-import killrvideo.user_management.UserManagementServiceOuterClass.VerifyCredentialsResponse;
+import com.killrvideo.utils.GrpcMappingUtils;
+import killrvideo.user_management.UserManagementServiceOuterClass.*;
 import killrvideo.user_management.events.UserManagementEvents;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
+import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 
+import static com.killrvideo.utils.GrpcMappingUtils.fromUuid;
 import static com.killrvideo.utils.GrpcMappingUtils.uuidToUuid;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 /**
  * Mapping from interfaces GRPC to DTO
@@ -27,7 +30,7 @@ public class UserManagementServiceGrpcMapper {
         user.setCreatedDate(Instant.now());
         user.setFirstname(grpcReq.getFirstName());
         user.setLastname(grpcReq.getLastName());
-        user.setUserid(UUID.fromString(grpcReq.getUserId().getValue()));
+        user.setUserid(fromUuid(grpcReq.getUserId()));
         return user;
     }
     
@@ -52,5 +55,22 @@ public class UserManagementServiceGrpcMapper {
                 .setUserId(uuidToUuid(user.getUserid()))
                 .setTimestamp(Timestamp.newBuilder().build())
                 .build();
+    }
+
+    public List<UUID> mapToListOfUserid(GetUserProfileRequest grpcReq) {
+        return Arrays.asList(grpcReq
+                .getUserIdsList()
+                .stream()
+                .filter(uuid -> isNotBlank(uuid.getValue()))
+                .map(GrpcMappingUtils::fromUuid)
+                .toArray(UUID[]::new));
+    }
+
+    public GetUserProfileResponse buildGetUserProfileResponse(List<User> users) {
+        final GetUserProfileResponse.Builder builder = GetUserProfileResponse.newBuilder();
+        users.stream()
+                .map(this::mapUserToGrpcUserProfile)
+                .forEach(builder::addProfiles);
+        return builder.build();
     }
 }

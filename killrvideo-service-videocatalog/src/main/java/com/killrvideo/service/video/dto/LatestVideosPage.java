@@ -22,16 +22,6 @@ public class LatestVideosPage {
     /** Use to return for query. */
     private String nextPageState = "";
 
-    /**
-     * Access latest videos.
-     *
-     * @param video
-     *      adding a video
-     */
-    public void addLatestVideos(LatestVideo video) {
-        listOfPreview.add(video);
-    }
-
     public int getResultSize() {
         return getListOfPreview().size();
     }

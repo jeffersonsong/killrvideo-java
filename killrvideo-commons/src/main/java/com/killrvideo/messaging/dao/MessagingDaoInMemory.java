@@ -22,7 +22,7 @@ import javax.inject.Inject;
 public class MessagingDaoInMemory implements MessagingDao {
     
     /** Loger for that class. */
-    private static Logger LOGGER = LoggerFactory.getLogger(MessagingDaoInMemory.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(MessagingDaoInMemory.class);
     
     @Inject
     private EventBus eventBus;

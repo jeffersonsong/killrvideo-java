@@ -3,6 +3,9 @@ package com.killrvideo.service.video.dto;
 import java.sql.Date;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 
 import com.datastax.oss.driver.api.mapper.annotations.CqlName;
@@ -23,7 +26,8 @@ import lombok.Setter;
 @Getter @Setter @NoArgsConstructor
 public class LatestVideo extends VideoPreview {
     private static final long serialVersionUID = -8527565276521920973L;
-    private static final SimpleDateFormat SDF = new SimpleDateFormat("yyyyMMdd");
+    private static final DateTimeFormatter DATEFORMATTER =
+            DateTimeFormatter.ofPattern("yyyyMMdd").withZone(ZoneId.from(ZoneOffset.UTC));
 
     /** Column names in the DB. */
     public static final String COLUMN_YYYYMMDD = "yyyymmdd";
@@ -33,7 +37,7 @@ public class LatestVideo extends VideoPreview {
     private UUID userid;
 
     public static LatestVideo from(Video v, Instant now) {
-        String yyyyMMdd = SDF.format(Date.from(now));
+        String yyyyMMdd = DATEFORMATTER.format(now);
         return new LatestVideo(
                 yyyyMMdd,
                 v.getUserid(),

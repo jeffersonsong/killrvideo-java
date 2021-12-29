@@ -15,13 +15,13 @@ import killrvideo.suggested_videos.SuggestedVideosService.GetSuggestedForUserReq
 
 @Component
 public class SuggestedVideosServiceGrpcValidator {
-    private static Logger LOGGER = LoggerFactory.getLogger(SuggestedVideosServiceGrpcValidator.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SuggestedVideosServiceGrpcValidator.class);
 
     public void validateGrpcRequest_getRelatedVideo(GetRelatedVideosRequest request, StreamObserver<?> streamObserver) {
         final StringBuilder errorMessage = initErrorString(request);
         boolean isValid = true;
 
-        if (request.getVideoId() == null || isBlank(request.getVideoId().getValue())) {
+        if (isBlank(request.getVideoId().getValue())) {
              errorMessage.append("\t\tvideo id should be provided for get related videos request\n");
             isValid = false;
         }
@@ -32,7 +32,7 @@ public class SuggestedVideosServiceGrpcValidator {
     public void validateGrpcRequest_getUserSuggestedVideo(GetSuggestedForUserRequest request, StreamObserver<?> streamObserver) {
         final StringBuilder errorMessage = initErrorString(request);
         boolean isValid = true;
-        if (request.getUserId() == null || isBlank(request.getUserId().getValue())) {
+        if (isBlank(request.getUserId().getValue())) {
             errorMessage.append("\t\tuser id should be provided for get suggested for user request\n");
             isValid = false;
         }

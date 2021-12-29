@@ -31,10 +31,8 @@ public class IOUtils {
      *      target port
      * @return
      *      if something is listening on target URL
-     * @throws Exception
-     *      exception occured during connection to remote host.
      */
-    public static boolean isServiceReachableAndListening(String service, String address, int port) throws Exception {
+    public static boolean isServiceReachableAndListening(String service, String address, int port) {
         try (Socket s = new Socket(address, port)) {
             s.setReuseAddress(true);
             LOGGER.info("Connection to {}:{} is working for service {}", address, port, service);

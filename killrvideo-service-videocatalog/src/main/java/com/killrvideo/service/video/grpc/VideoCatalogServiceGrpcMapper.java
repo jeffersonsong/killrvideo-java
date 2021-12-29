@@ -1,26 +1,39 @@
 package com.killrvideo.service.video.grpc;
 
+import java.time.Instant;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import com.google.common.collect.Sets;
 import com.google.protobuf.Timestamp;
+import com.killrvideo.dse.dto.CustomPagingState;
+import com.killrvideo.dse.dto.ResultListPage;
 import com.killrvideo.service.video.dto.LatestVideo;
 import com.killrvideo.service.video.dto.LatestVideosPage;
 import com.killrvideo.service.video.dto.UserVideo;
 
 import com.killrvideo.dse.dto.Video;
+import com.killrvideo.service.video.request.GetLatestVideoPreviewsRequestData;
+import com.killrvideo.service.video.request.GetUserVideoPreviewsRequestData;
 import com.killrvideo.utils.GrpcMappingUtils;
+import killrvideo.common.CommonTypes;
+import killrvideo.video_catalog.VideoCatalogServiceOuterClass;
 import killrvideo.video_catalog.VideoCatalogServiceOuterClass.GetLatestVideoPreviewsResponse;
 import killrvideo.video_catalog.VideoCatalogServiceOuterClass.GetVideoResponse;
 import killrvideo.video_catalog.VideoCatalogServiceOuterClass.SubmitYouTubeVideoRequest;
 import killrvideo.video_catalog.VideoCatalogServiceOuterClass.VideoLocationType;
 import killrvideo.video_catalog.VideoCatalogServiceOuterClass.VideoPreview;
 import killrvideo.video_catalog.events.VideoCatalogEvents;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
 import static com.killrvideo.utils.GrpcMappingUtils.*;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 /**
  * Utility mapping GRPC.
@@ -32,8 +45,8 @@ public class VideoCatalogServiceGrpcMapper {
 
     public Video mapSubmitYouTubeVideoRequestAsVideo(SubmitYouTubeVideoRequest request) {
         Video targetVideo = new Video();
-        targetVideo.setVideoid(UUID.fromString(request.getVideoId().getValue()));
-        targetVideo.setUserid(UUID.fromString(request.getUserId().getValue()));
+        targetVideo.setVideoid(fromUuid(request.getVideoId()));
+        targetVideo.setUserid(fromUuid(request.getUserId()));
         targetVideo.setName(request.getName());
         targetVideo.setLocation(request.getYouTubeVideoId());
         targetVideo.setDescription(request.getDescription());
@@ -96,6 +109,10 @@ public class VideoCatalogServiceGrpcMapper {
      * Mapping to generated GPRC beans (Full detailed)
      */
     public GetVideoResponse mapFromVideotoVideoResponse(Video v) {
+        // Check to see if any tags exist, if not, ensure to send an empty set instead of null
+        if (CollectionUtils.isEmpty(v.getTags())) {
+            v.setTags(Collections.emptySet());
+        }
         return GetVideoResponse.newBuilder()
                 .setAddedDate(instantToTimeStamp(v.getAddedDate()))
                 .setDescription(v.getDescription())
@@ -119,4 +136,58 @@ public class VideoCatalogServiceGrpcMapper {
                 .setVideoId(uuidToUuid(video.getVideoid()))
                 .build();
     }
+
+    public GetLatestVideoPreviewsRequestData parseGetLatestVideoPreviewsRequest(VideoCatalogServiceOuterClass.GetLatestVideoPreviewsRequest grpcReq,
+                                                                                Supplier<CustomPagingState> firstCustomPagingStateFactory) {
+        CustomPagingState pageState =
+                CustomPagingState.parse(Optional.of(grpcReq.getPagingState()))
+                        .orElse(firstCustomPagingStateFactory.get());
+        int pageSize = grpcReq.getPageSize();
+        final Optional<Instant> startDate = Optional.of(grpcReq.getStartingAddedDate())
+                .filter(x -> isNotBlank(x.toString()))
+                .map(GrpcMappingUtils::timestampToInstant);
+        final Optional<UUID> startVideoId = Optional.of(grpcReq.getStartingVideoId())
+                .filter(x -> isNotBlank(x.toString()))
+                .map(GrpcMappingUtils::fromUuid);
+
+        return new GetLatestVideoPreviewsRequestData(pageState, pageSize, startDate, startVideoId);
+    }
+
+    public VideoCatalogServiceOuterClass.GetVideoPreviewsResponse mapToGetVideoPreviewsResponse(List<Video> videos) {
+        final VideoCatalogServiceOuterClass.GetVideoPreviewsResponse.Builder builder = VideoCatalogServiceOuterClass.GetVideoPreviewsResponse.newBuilder();
+        videos.stream()
+                .map(this::mapFromVideotoVideoPreview)
+                .forEach(builder::addVideoPreviews);
+        return builder.build();
+    }
+
+    public GetUserVideoPreviewsRequestData parseGetUserVideoPreviewsRequest(VideoCatalogServiceOuterClass.GetUserVideoPreviewsRequest grpcReq) {
+        final UUID userId = fromUuid(grpcReq.getUserId());
+        final Optional<UUID> startingVideoId = Optional
+                .of(grpcReq.getStartingVideoId())
+                .filter(uuid -> isNotBlank(uuid.getValue()))
+                .map(GrpcMappingUtils::fromUuid);
+        final Optional<Instant> startingAddedDate = Optional
+                .of(grpcReq.getStartingAddedDate())
+                .map(ts -> Instant.ofEpochSecond(ts.getSeconds(), ts.getNanos()));
+        final Optional<Integer> pagingSize =
+                Optional.of(grpcReq.getPageSize());
+        final Optional<String> pagingState =
+                Optional.of(grpcReq.getPagingState()).filter(StringUtils::isNotBlank);
+
+        return new GetUserVideoPreviewsRequestData(
+                userId, startingVideoId, startingAddedDate, pagingSize, pagingState
+        );
+    }
+
+    public VideoCatalogServiceOuterClass.GetUserVideoPreviewsResponse mapToGetUserVideoPreviewsResponse(ResultListPage<UserVideo> resultPage, UUID userId) {
+        CommonTypes.Uuid userGrpcUUID = GrpcMappingUtils.uuidToUuid(userId);
+        final VideoCatalogServiceOuterClass.GetUserVideoPreviewsResponse.Builder builder = VideoCatalogServiceOuterClass.GetUserVideoPreviewsResponse.newBuilder().setUserId(userGrpcUUID);
+        resultPage.getResults().stream()
+                .map(this::mapFromUserVideotoVideoPreview)
+                .forEach(builder::addVideoPreviews);
+        resultPage.getPagingState().ifPresent(builder::setPagingState);
+        return builder.build();
+    }
+
 }

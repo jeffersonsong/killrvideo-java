@@ -16,13 +16,17 @@ public class AsyncResultSetUtils {
     }
 
     public static <T> ResultListPage<T> toResultListPage(AsyncResultSet rs, Function<Row, T> mapper) {
-        List<T> list = StreamSupport.stream(rs.currentPage().spliterator(), false)
-                .map(mapper).collect(Collectors.toList());
-        Optional<String> nextPage = getNextPage(rs);
+        List<T> list = getResultsOnCurrentPage(rs, mapper);
+        Optional<String> nextPage = getPagingState(rs);
         return new ResultListPage<>(list, nextPage);
     }
 
-    private static Optional<String> getNextPage(AsyncResultSet rs) {
+    public static <T> List<T> getResultsOnCurrentPage(AsyncResultSet rs, Function<Row, T> mapper) {
+        return StreamSupport.stream(rs.currentPage().spliterator(), false)
+            .map(mapper).collect(Collectors.toList());
+    }
+
+    public static Optional<String> getPagingState(AsyncResultSet rs) {
         if (rs.hasMorePages() && rs.getExecutionInfo().getPagingState() != null) {
             return Optional.ofNullable(Bytes.toHexString(rs.getExecutionInfo().getPagingState()));
         } else {

@@ -2,6 +2,7 @@ package com.killrvideo.service.sugestedvideo.grpc;
 
 import com.killrvideo.dse.dto.ResultListPage;
 import com.killrvideo.dse.dto.Video;
+import com.killrvideo.service.sugestedvideo.request.GetRelatedVideosRequestData;
 import com.killrvideo.service.sugestedvideo.repository.SuggestedVideosRepository;
 import io.grpc.stub.StreamObserver;
 import killrvideo.suggested_videos.SuggestedVideosService.*;
@@ -13,16 +14,14 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import javax.inject.Inject;
 
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 import static com.killrvideo.utils.GrpcMappingUtils.uuidToUuid;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+@SuppressWarnings("unchecked")
 class SuggestedVideosServiceGrpcTest {
     @InjectMocks private SuggestedVideosServiceGrpc service;
     @Mock
@@ -63,8 +62,10 @@ class SuggestedVideosServiceGrpcTest {
         StreamObserver<GetRelatedVideosResponse> grpcResObserver = mock(StreamObserver.class);
 
         doNothing().when(validator).validateGrpcRequest_getRelatedVideo(any(), any());
+        GetRelatedVideosRequestData requestData = mock(GetRelatedVideosRequestData.class);
+        when(this.mapper.parseGetRelatedVideosRequestData(any())).thenReturn(requestData);
 
-        when(this.suggestedVideosRepository.getRelatedVideos(any(), anyInt(), any()))
+        when(this.suggestedVideosRepository.getRelatedVideos(any()))
                 .thenReturn(CompletableFuture.failedFuture(new Exception()));
 
         this.service.getRelatedVideos(grpcReq, grpcResObserver);
@@ -80,12 +81,14 @@ class SuggestedVideosServiceGrpcTest {
         StreamObserver<GetRelatedVideosResponse> grpcResObserver = mock(StreamObserver.class);
 
         doNothing().when(validator).validateGrpcRequest_getRelatedVideo(any(), any());
+        GetRelatedVideosRequestData requestData = mock(GetRelatedVideosRequestData.class);
+        when(this.mapper.parseGetRelatedVideosRequestData(any())).thenReturn(requestData);
 
         ResultListPage<Video> resultListPage = mock(ResultListPage.class);
         GetRelatedVideosResponse response = GetRelatedVideosResponse.getDefaultInstance();
         when(mapper.mapToGetRelatedVideosResponse(any(), any())).thenReturn(response);
 
-        when(this.suggestedVideosRepository.getRelatedVideos(any(), anyInt(), any()))
+        when(this.suggestedVideosRepository.getRelatedVideos(any()))
                 .thenReturn(CompletableFuture.completedFuture(resultListPage));
 
         this.service.getRelatedVideos(grpcReq, grpcResObserver);
@@ -113,12 +116,6 @@ class SuggestedVideosServiceGrpcTest {
                 .setVideoId(uuidToUuid(videoid))
                 .setPageSize(pageSize)
                 .setPagingState(pagingState)
-                .build();
-    }
-
-    private GetSuggestedForUserRequest getSuggestedForUserRequest(UUID userid) {
-        return GetSuggestedForUserRequest.newBuilder()
-                .setUserId(uuidToUuid(userid))
                 .build();
     }
 }

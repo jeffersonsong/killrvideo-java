@@ -43,7 +43,7 @@ public class MessagingDaoKafka implements MessagingDao {
     /**
      * Loger for that class.
      */
-    private static Logger LOGGER = LoggerFactory.getLogger(MessagingDaoKafka.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(MessagingDaoKafka.class);
 
     /**
      * Same producer can be used evrytime (as the topicName is stored in {@link ProducerRecord}.)

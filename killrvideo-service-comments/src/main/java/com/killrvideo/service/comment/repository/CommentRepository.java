@@ -1,9 +1,9 @@
 package com.killrvideo.service.comment.repository;
 
 import com.datastax.oss.driver.api.core.ConsistencyLevel;
-import com.datastax.oss.driver.api.core.CqlSession;
 import com.killrvideo.dse.dto.ResultListPage;
 import com.killrvideo.dse.utils.PageableQuery;
+import com.killrvideo.dse.utils.PageableQueryFactory;
 import com.killrvideo.service.comment.dao.CommentByUserDao;
 import com.killrvideo.service.comment.dao.CommentByVideoDao;
 import com.killrvideo.service.comment.dao.CommentMapper;
@@ -36,20 +36,17 @@ public class CommentRepository {
     private final PageableQuery<Comment> findCommentsByUser;
     private final PageableQuery<Comment> findCommentsByVideo;
 
-    public CommentRepository(CqlSession session, CommentRowMapper commentRowMapper) {
-        CommentMapper mapper = CommentMapper.build(session).build();
+    public CommentRepository(PageableQueryFactory pageableQueryFactory, CommentMapper mapper, CommentRowMapper commentRowMapper) {
         this.commentByUserDao = mapper.getCommentByUserDao();
         this.commentByVideoDao = mapper.getCommentByVideoDao();
 
-        findCommentsByUser = new PageableQuery<>(
+        this.findCommentsByUser = pageableQueryFactory.newPageableQuery(
                 QUERY_COMMENTS_BY_USERID,
-                session,
                 ConsistencyLevel.LOCAL_ONE,
                 commentRowMapper::map
         );
-        findCommentsByVideo = new PageableQuery<>(
+        this.findCommentsByVideo = pageableQueryFactory.newPageableQuery(
                 QUERY_COMMENTS_BY_VIDEOID,
-                session,
                 ConsistencyLevel.LOCAL_ONE,
                 commentRowMapper::map
         );
@@ -57,7 +54,7 @@ public class CommentRepository {
 
     /**
      * Insert a comment for a video. (in multiple table at once). When executing query async result will be a completable future.
-     * Note the 'executeAsync'> No result are expected from insertion and we return CompletableFuture<VOID>.
+     * Note the 'executeAsync'> No result are expected from insertion, and we return CompletableFuture<VOID>.
      *
      * @param comment comment to be inserted by signup user.
      */
@@ -72,33 +69,32 @@ public class CommentRepository {
      * Search comment_by_video Asynchronously with Pagination.
      */
     public CompletableFuture<ResultListPage<Comment>> findCommentsByVideosIdAsync(final QueryCommentByVideo query) {
-        if (query.getCommentId().isPresent()) {
-            return commentByVideoDao.find(query.getVideoId(), query.getCommentId().get())
-                    .thenApply(CommentByVideo::toComment)
-                    .thenApply(ResultListPage::from);
-        } else {
-            return findCommentsByVideo.queryNext(
-                    Optional.of(query.getPageSize()),
-                    query.getPageState(),
-                    query.getVideoId()
-            );
-        }
+        return query.getCommentId().map(commentid ->
+                        commentByVideoDao.find(query.getVideoId(), commentid)
+                                .thenApply(CommentByVideo::toComment)
+                                .thenApply(ResultListPage::from))
+                .orElse(
+                        findCommentsByVideo.queryNext(
+                                Optional.of(query.getPageSize()),
+                                query.getPageState(),
+                                query.getVideoId())
+                );
     }
 
     /**
      * Execute a query against the 'comment_by_user' table (ASYNC).
      */
     public CompletableFuture<ResultListPage<Comment>> findCommentsByUserIdAsync(final QueryCommentByUser query) {
-        if (query.getCommentId().isPresent()) {
-            return commentByUserDao.find(query.getUserId(), query.getCommentId().get())
-                    .thenApply(CommentByUser::toComment)
-                    .thenApply(ResultListPage::from);
-        } else {
-            return findCommentsByUser.queryNext(
-                    Optional.of(query.getPageSize()),
-                    query.getPageState(),
-                    query.getUserId()
-            );
-        }
+        return query.getCommentId().map(commentid ->
+                commentByUserDao.find(query.getUserId(), commentid)
+                        .thenApply(CommentByUser::toComment)
+                        .thenApply(ResultListPage::from)
+        ).orElse(
+                findCommentsByUser.queryNext(
+                        Optional.of(query.getPageSize()),
+                        query.getPageState(),
+                        query.getUserId()
+                )
+        );
     }
 }

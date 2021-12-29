@@ -8,6 +8,7 @@ import com.evanlennick.retry4j.config.RetryConfig;
 import com.evanlennick.retry4j.config.RetryConfigBuilder;
 import com.killrvideo.discovery.ServiceDiscoveryDao;
 import com.killrvideo.dse.graph.KillrVideoTraversalSource;
+import com.killrvideo.dse.utils.PageableQueryFactory;
 import com.killrvideo.model.CommonConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -90,7 +91,7 @@ public class DseConfiguration {
     private ServiceDiscoveryDao discoveryDao;
 
     @Bean
-    public CqlSession initializeCassandra() throws Exception {
+    public CqlSession initializeCassandra() {
         long top = System.currentTimeMillis();
         LOGGER.info("Initializing connection to Cassandra...");
 
@@ -100,15 +101,11 @@ public class DseConfiguration {
         populateSSL(clusterConfig);
 
         final AtomicInteger atomicCount = new AtomicInteger(1);
-        Callable<CqlSession> connectionToCassandra = () -> {
-            return clusterConfig.withKeyspace(CommonConstants.KILLRVIDEO_KEYSPACE).build();
-        };
+        Callable<CqlSession> connectionToCassandra = () -> clusterConfig.withKeyspace(CommonConstants.KILLRVIDEO_KEYSPACE).build();
 
-        if (maxNumberOfTriesFromEnvVar.isPresent()) {
-            maxNumberOfTries = maxNumberOfTriesFromEnvVar.get();
-        }
+        maxNumberOfTriesFromEnvVar.ifPresent(integer -> maxNumberOfTries = integer);
 
-        if (!delayBetweenTriesFromEnvVar.isEmpty()) {
+        if (delayBetweenTriesFromEnvVar.isPresent()) {
             delayBetweenTries = delayBetweenTriesFromEnvVar.get();
         }
 
@@ -122,10 +119,8 @@ public class DseConfiguration {
                 .build();
 
         return new CallExecutor<CqlSession>(config)
-                .afterFailedTry(s -> {
-                    LOGGER.info("Attempt #{}/{} failed.. trying in {} seconds, waiting for Cassandra to start...", atomicCount.getAndIncrement(),
-                            maxNumberOfTries, delayBetweenTries);
-                })
+                .afterFailedTry(s -> LOGGER.info("Attempt #{}/{} failed.. trying in {} seconds, waiting for Cassandra to start...", atomicCount.getAndIncrement(),
+                        maxNumberOfTries, delayBetweenTries))
                 .onFailure(s -> {
                     LOGGER.error("Cannot connection to Cassandra after {} attempts, exiting", maxNumberOfTries);
                     System.err.println("Can not connect to Cassandra after " + maxNumberOfTries + " attempts, exiting");
@@ -246,9 +241,9 @@ public class DseConfiguration {
     private void populateSSL(CqlSessionBuilder clusterConfig) {
 
         // Reading Environment Variables to eventually override default config
-        if (!dseEnableSSLEnvVar.isEmpty()) {
+        if (dseEnableSSLEnvVar.isPresent()) {
             dseEnableSSL = dseEnableSSLEnvVar.get();
-            if (!sslCACertFileLocationEnvVar.isEmpty()) {
+            if (sslCACertFileLocationEnvVar.isPresent()) {
                 sslCACertFileLocation = sslCACertFileLocationEnvVar.get();
             }
         }

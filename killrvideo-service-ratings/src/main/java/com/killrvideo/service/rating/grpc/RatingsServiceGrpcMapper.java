@@ -1,14 +1,18 @@
 package com.killrvideo.service.rating.grpc;
 
+import static com.killrvideo.utils.GrpcMappingUtils.fromUuid;
 import static com.killrvideo.utils.GrpcMappingUtils.uuidToUuid;
 
 import java.time.Instant;
 import java.util.Optional;
+import java.util.UUID;
 
 import com.killrvideo.service.rating.dto.VideoRating;
 import com.killrvideo.service.rating.dto.VideoRatingByUser;
 
+import com.killrvideo.service.rating.request.GetUserRatingRequestData;
 import com.killrvideo.utils.GrpcMappingUtils;
+import killrvideo.ratings.RatingsServiceOuterClass;
 import killrvideo.ratings.RatingsServiceOuterClass.GetRatingResponse;
 import killrvideo.ratings.RatingsServiceOuterClass.GetUserRatingResponse;
 import killrvideo.ratings.events.RatingsEvents;
@@ -25,7 +29,7 @@ public class RatingsServiceGrpcMapper {
    /**
      * Mapping to generated GPRC beans.
      */
-    public GetRatingResponse maptoRatingResponse(VideoRating vr) {
+    public GetRatingResponse mapToRatingResponse(VideoRating vr) {
         return GetRatingResponse.newBuilder()
                 .setVideoId(uuidToUuid(vr.getVideoid()))
                 .setRatingsCount(Optional.ofNullable(vr.getRatingCounter()).orElse(0L))
@@ -36,12 +40,19 @@ public class RatingsServiceGrpcMapper {
     /**
      * Mapping to generated GPRC beans.
      */
-    public GetUserRatingResponse maptoUserRatingResponse(VideoRatingByUser vr) {
+    public GetUserRatingResponse mapToUserRatingResponse(VideoRatingByUser vr) {
         return GetUserRatingResponse.newBuilder()
                 .setVideoId(uuidToUuid(vr.getVideoid()))
                 .setUserId(uuidToUuid(vr.getUserid()))
                 .setRating(vr.getRating())
                 .build();
+    }
+
+    public GetUserRatingRequestData parseGetUserRatingRequest(RatingsServiceOuterClass.GetUserRatingRequest grpcReq) {
+        UUID videoid = fromUuid(grpcReq.getVideoId());
+        UUID userid = fromUuid(grpcReq.getUserId());
+
+        return new GetUserRatingRequestData(videoid, userid);
     }
 
     public RatingsEvents.UserRatedVideo createUserRatedVideoEvent(VideoRatingByUser rating) {
@@ -52,5 +63,12 @@ public class RatingsServiceGrpcMapper {
                 .setVideoId(uuidToUuid(rating.getVideoid()))
                 .build();
     }
-    
+
+    public VideoRatingByUser parseRateVideoRequest(RatingsServiceOuterClass.RateVideoRequest grpcReq) {
+        UUID videoid = fromUuid(grpcReq.getVideoId());
+        UUID userid  = fromUuid(grpcReq.getUserId());
+        int rate = grpcReq.getRating();
+
+        return new VideoRatingByUser(videoid, userid, rate);
+    }
 }

@@ -27,7 +27,7 @@ public class MessagingUtils {
      * @return
      */
     public static ErrorEvent mapError(Throwable t) {
-        return killrvideo.common.CommonEvents.ErrorEvent.newBuilder()
+        return ErrorEvent.newBuilder()
                 .setErrorMessage(t.getMessage())
                 .setErrorClassname(t.getClass().getName())
                 .setErrorStack(mergeStackTrace(t))
@@ -36,7 +36,7 @@ public class MessagingUtils {
     }
     
     public static ErrorEvent mapCustomError(String customError) {
-        return killrvideo.common.CommonEvents.ErrorEvent.newBuilder()
+        return ErrorEvent.newBuilder()
                 .setErrorMessage(customError)
                 .setErrorClassname(Exception.class.getName())
                 .setErrorTimestamp(Timestamp.newBuilder())

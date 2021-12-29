@@ -13,8 +13,10 @@ import com.killrvideo.dse.graph.KillrVideoTraversal;
 import com.killrvideo.dse.graph.KillrVideoTraversalSource;
 import com.killrvideo.dse.graph.__;
 import com.killrvideo.dse.utils.PageableQuery;
+import com.killrvideo.dse.utils.PageableQueryFactory;
 import com.killrvideo.service.sugestedvideo.dao.VideoDao;
 import com.killrvideo.service.sugestedvideo.dao.VideoMapper;
+import com.killrvideo.service.sugestedvideo.request.GetRelatedVideosRequestData;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,13 +47,13 @@ public class SuggestedVideosRepository {
             "SELECT * " +
             "FROM killrvideo.videos " +
             "WHERE solr_query = ?";
-    private CqlSession session;
-    private VideoDao videoDao;
+    private final CqlSession session;
+    private final VideoDao videoDao;
 
     /**
      * Precompile statements to speed up queries.
      */
-    private PageableQuery<Video> findRelatedVideos;
+    private final PageableQuery<Video> findRelatedVideos;
 
     @Inject
     private KillrVideoTraversalSource traversalSource;
@@ -73,13 +75,11 @@ public class SuggestedVideosRepository {
     @Value("#{'${killrvideo.search.ignoredWords}'.split(',')}")
     private Set<String> ignoredWords = new HashSet<>();
 
-    public SuggestedVideosRepository(CqlSession session, VideoRowMapper videoRowMapper) {
+    public SuggestedVideosRepository(CqlSession session, PageableQueryFactory pageableQueryFactory, VideoMapper mapper, VideoRowMapper videoRowMapper) {
         this.session = session;
-        VideoMapper mapper = VideoMapper.build(session).build();
         this.videoDao = mapper.getVideoDao();
-        this.findRelatedVideos = new PageableQuery<>(
+        this.findRelatedVideos = pageableQueryFactory.newPageableQuery(
                 QUERY_RELATED_VIDEOS,
-                session,
                 ConsistencyLevel.LOCAL_ONE,
                 videoRowMapper::map
         );
@@ -88,15 +88,15 @@ public class SuggestedVideosRepository {
     /**
      * Get Pageable result for related video.
      **/
-    public CompletableFuture<ResultListPage<Video>> getRelatedVideos(UUID videoId, int fetchSize, Optional<String> pagingState) {
-        return findVideoById(videoId).thenCompose(video -> {
+    public CompletableFuture<ResultListPage<Video>> getRelatedVideos(GetRelatedVideosRequestData request) {
+        return findVideoById(request.getVideoid()).thenCompose(video -> {
             if (video == null) {
-                throw new IllegalArgumentException(String.format("Video {} not found", videoId));
+                throw new IllegalArgumentException(String.format("Video %s not found", request.getVideoid()));
             }
             String query = buildSolrQueryToSearchVideos(video);
             return findRelatedVideos.queryNext(
-                    Optional.of(fetchSize),
-                    pagingState,
+                    Optional.of(request.getPageSize()),
+                    request.getPagingState(),
                     query
             );
         });
@@ -248,7 +248,7 @@ public class SuggestedVideosRepository {
      * .addE("taggedWith").from("^video").inV()))
      */
     public void updateGraphNewVideo(Video video) {
-        final KillrVideoTraversal traversal =
+        final KillrVideoTraversal<Vertex, ?> traversal =
                 // Add video Node
                 traversalSource.video(video.getVideoid(), video.getName(), new Date(), video.getDescription(), video.getPreviewImageLocation())
                         // Add Uploaded Edge
@@ -279,8 +279,8 @@ public class SuggestedVideosRepository {
      * This will create a user vertex in our graph if it does not already exist.
      *
      * @param userId       current user
-     * @param email
-     * @param userCreation
+     * @param email        email.
+     * @param userCreation user creation date.
      */
     public void updateGraphNewUser(UUID userId, String email, Date userCreation) {
         final KillrVideoTraversal<Vertex, Vertex> traversal = traversalSource.user(userId, email, userCreation);
@@ -306,7 +306,7 @@ public class SuggestedVideosRepository {
      * already exist.
      */
     public void updateGraphNewUserRating(String videoId, UUID userId, int rate) {
-        final KillrVideoTraversal traversal = traversalSource.videos(videoId).add(__.rated(userId, rate));
+        final KillrVideoTraversal<Vertex, ?> traversal = traversalSource.videos(videoId).add(__.rated(userId, rate));
         FluentGraphStatement gStatement = FluentGraphStatement.newInstance(traversal);
         //LOGGER.info("Executed transversal for 'updateGraphNewUserRating' : {}", DseUtils.displayGraphTranserval(traversal));
         session.executeAsync(gStatement).whenComplete((graphResultSet, ex) -> {
