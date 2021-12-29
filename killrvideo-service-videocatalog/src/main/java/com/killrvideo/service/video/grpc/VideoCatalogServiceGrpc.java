@@ -6,6 +6,7 @@ import com.killrvideo.messaging.dao.MessagingDao;
 import com.killrvideo.service.video.repository.VideoCatalogRepository;
 import com.killrvideo.service.video.request.GetLatestVideoPreviewsRequestData;
 import com.killrvideo.service.video.request.GetUserVideoPreviewsRequestData;
+import com.killrvideo.utils.GrpcMappingUtils;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 import killrvideo.common.CommonTypes.Uuid;
@@ -21,6 +22,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
+import static com.killrvideo.utils.GrpcMappingUtils.fromUuid;
 import static com.killrvideo.utils.GrpcUtils.returnSingleResult;
 import static java.util.stream.Collectors.toList;
 
@@ -154,7 +156,7 @@ public class VideoCatalogServiceGrpc extends VideoCatalogServiceImplBase {
         final Instant starts = Instant.now();
 
         // GRPC Parameters Mappings
-        final UUID videoId = UUID.fromString(grpcReq.getVideoId().getValue());
+        final UUID videoId = fromUuid(grpcReq.getVideoId());
 
         // Invoke Async
         videoCatalogRepository.getVideoById(videoId)
@@ -192,7 +194,7 @@ public class VideoCatalogServiceGrpc extends VideoCatalogServiceImplBase {
             LOGGER.warn("No video id provided for video preview");
         } else {
             // GRPC Parameters Mappings
-            List<UUID> listOfVideoIds = grpcReq.getVideoIdsList().stream().map(Uuid::getValue).map(UUID::fromString).collect(toList());
+            List<UUID> listOfVideoIds = grpcReq.getVideoIdsList().stream().map(GrpcMappingUtils::fromUuid).collect(toList());
 
             // Execute Async
             videoCatalogRepository.getVideoPreview(listOfVideoIds)

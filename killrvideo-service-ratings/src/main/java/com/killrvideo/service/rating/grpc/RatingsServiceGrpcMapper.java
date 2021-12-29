@@ -1,5 +1,6 @@
 package com.killrvideo.service.rating.grpc;
 
+import static com.killrvideo.utils.GrpcMappingUtils.fromUuid;
 import static com.killrvideo.utils.GrpcMappingUtils.uuidToUuid;
 
 import java.time.Instant;
@@ -48,8 +49,8 @@ public class RatingsServiceGrpcMapper {
     }
 
     public GetUserRatingRequestData parseGetUserRatingRequest(RatingsServiceOuterClass.GetUserRatingRequest grpcReq) {
-        UUID videoid = UUID.fromString(grpcReq.getVideoId().getValue());
-        UUID userid = UUID.fromString(grpcReq.getUserId().getValue());
+        UUID videoid = fromUuid(grpcReq.getVideoId());
+        UUID userid = fromUuid(grpcReq.getUserId());
 
         return new GetUserRatingRequestData(videoid, userid);
     }
@@ -64,8 +65,8 @@ public class RatingsServiceGrpcMapper {
     }
 
     public VideoRatingByUser parseRateVideoRequest(RatingsServiceOuterClass.RateVideoRequest grpcReq) {
-        UUID videoid = UUID.fromString(grpcReq.getVideoId().getValue());
-        UUID userid  = UUID.fromString(grpcReq.getUserId().getValue());
+        UUID videoid = fromUuid(grpcReq.getVideoId());
+        UUID userid  = fromUuid(grpcReq.getUserId());
         int rate = grpcReq.getRating();
 
         return new VideoRatingByUser(videoid, userid, rate);

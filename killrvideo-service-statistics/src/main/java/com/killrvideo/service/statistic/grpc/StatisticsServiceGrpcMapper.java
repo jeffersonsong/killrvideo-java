@@ -13,6 +13,8 @@ import killrvideo.statistics.StatisticsServiceOuterClass.GetNumberOfPlaysRequest
 import killrvideo.statistics.StatisticsServiceOuterClass.GetNumberOfPlaysResponse;
 import killrvideo.statistics.StatisticsServiceOuterClass.PlayStats;
 
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
+
 /**
  * Helper and mappers for DAO <=> GRPC Communications
  *
@@ -54,8 +56,8 @@ public class StatisticsServiceGrpcMapper {
     public List<UUID> parseGetNumberOfPlaysRequest(GetNumberOfPlaysRequest grpcReq) {
         return grpcReq.getVideoIdsList()
                 .stream()
-                .map(Uuid::getValue)
-                .map(UUID::fromString)
+                .filter(uuid -> isNotBlank(uuid.getValue()))
+                .map(GrpcMappingUtils::fromUuid)
                 .collect(Collectors.toList());
     }
 }

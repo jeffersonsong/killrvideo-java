@@ -12,10 +12,8 @@ import org.springframework.stereotype.Component;
 
 import java.time.Instant;
 import java.util.Optional;
-import java.util.UUID;
 
 import static com.killrvideo.utils.GrpcMappingUtils.*;
-import static java.util.UUID.fromString;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 /**
@@ -39,9 +37,9 @@ public class CommentsServiceGrpcMapper {
         QueryCommentByUser targetQuery = new QueryCommentByUser();
         if (grpcReq.hasStartingCommentId() && 
                 !isBlank(grpcReq.getStartingCommentId().getValue())) {
-            targetQuery.setCommentId(Optional.of(UUID.fromString(grpcReq.getStartingCommentId().getValue())));
+            targetQuery.setCommentId(Optional.of(fromTimeUuid(grpcReq.getStartingCommentId())));
         }
-        targetQuery.setUserId(UUID.fromString(grpcReq.getUserId().getValue()));
+        targetQuery.setUserId(fromUuid(grpcReq.getUserId()));
         targetQuery.setPageSize(grpcReq.getPageSize());
         targetQuery.setPageState(Optional.of(grpcReq.getPagingState()));
         return targetQuery;
@@ -99,9 +97,9 @@ public class CommentsServiceGrpcMapper {
         QueryCommentByVideo targetQuery = new QueryCommentByVideo();
         if (grpcReq.hasStartingCommentId() && 
                 !isBlank(grpcReq.getStartingCommentId().getValue())) {
-            targetQuery.setCommentId(Optional.of(UUID.fromString(grpcReq.getStartingCommentId().getValue())));
+            targetQuery.setCommentId(Optional.of(fromTimeUuid(grpcReq.getStartingCommentId())));
         }
-        targetQuery.setVideoId(UUID.fromString(grpcReq.getVideoId().getValue()));
+        targetQuery.setVideoId(fromUuid(grpcReq.getVideoId()));
         targetQuery.setPageSize(grpcReq.getPageSize());
         targetQuery.setPageState(Optional.of(grpcReq.getPagingState()));
         return targetQuery;
@@ -109,9 +107,9 @@ public class CommentsServiceGrpcMapper {
 
     public Comment mapToComment(CommentOnVideoRequest grpcReq) {
         Comment comment = new Comment();
-        comment.setVideoid(fromString(grpcReq.getVideoId().getValue()));
-        comment.setCommentid(fromString(grpcReq.getCommentId().getValue()));
-        comment.setUserid(fromString(grpcReq.getUserId().getValue()));
+        comment.setVideoid(fromUuid(grpcReq.getVideoId()));
+        comment.setCommentid(fromTimeUuid(grpcReq.getCommentId()));
+        comment.setUserid(fromUuid(grpcReq.getUserId()));
         comment.setComment(grpcReq.getComment());
         return comment;
     }

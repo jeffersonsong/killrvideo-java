@@ -17,6 +17,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.UUID;
 
+import static com.killrvideo.utils.GrpcMappingUtils.fromUuid;
 import static com.killrvideo.utils.GrpcMappingUtils.uuidToUuid;
 import static com.killrvideo.utils.GrpcUtils.returnSingleResult;
 
@@ -92,7 +93,7 @@ public class RatingsServiceGrpc extends RatingsServiceImplBase {
         final Instant starts = Instant.now();
 
         // Mapping GRPC => Domain (Dao)
-        UUID videoid = UUID.fromString(grpcReq.getVideoId().getValue());
+        UUID videoid = fromUuid(grpcReq.getVideoId());
 
         // Invoking Dao (Async) and map result back to GRPC (maptoRatingResponse)
         ratingRepository.findRating(videoid)

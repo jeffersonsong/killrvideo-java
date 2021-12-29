@@ -33,6 +33,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
 import static com.killrvideo.utils.GrpcMappingUtils.*;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 /**
  * Utility mapping GRPC.
@@ -44,8 +45,8 @@ public class VideoCatalogServiceGrpcMapper {
 
     public Video mapSubmitYouTubeVideoRequestAsVideo(SubmitYouTubeVideoRequest request) {
         Video targetVideo = new Video();
-        targetVideo.setVideoid(UUID.fromString(request.getVideoId().getValue()));
-        targetVideo.setUserid(UUID.fromString(request.getUserId().getValue()));
+        targetVideo.setVideoid(fromUuid(request.getVideoId()));
+        targetVideo.setUserid(fromUuid(request.getUserId()));
         targetVideo.setName(request.getName());
         targetVideo.setLocation(request.getYouTubeVideoId());
         targetVideo.setDescription(request.getDescription());
@@ -143,13 +144,11 @@ public class VideoCatalogServiceGrpcMapper {
                         .orElse(firstCustomPagingStateFactory.get());
         int pageSize = grpcReq.getPageSize();
         final Optional<Instant> startDate = Optional.of(grpcReq.getStartingAddedDate())
-                .filter(x -> StringUtils.isNotBlank(x.toString()))
+                .filter(x -> isNotBlank(x.toString()))
                 .map(GrpcMappingUtils::timestampToInstant);
         final Optional<UUID> startVideoId = Optional.of(grpcReq.getStartingVideoId())
-                .filter(x -> StringUtils.isNotBlank(x.toString()))
-                .map(CommonTypes.Uuid::getValue)
-                .filter(StringUtils::isNotBlank)
-                .map(UUID::fromString);
+                .filter(x -> isNotBlank(x.toString()))
+                .map(GrpcMappingUtils::fromUuid);
 
         return new GetLatestVideoPreviewsRequestData(pageState, pageSize, startDate, startVideoId);
     }
@@ -163,12 +162,11 @@ public class VideoCatalogServiceGrpcMapper {
     }
 
     public GetUserVideoPreviewsRequestData parseGetUserVideoPreviewsRequest(VideoCatalogServiceOuterClass.GetUserVideoPreviewsRequest grpcReq) {
-        final UUID userId = UUID.fromString(grpcReq.getUserId().getValue());
+        final UUID userId = fromUuid(grpcReq.getUserId());
         final Optional<UUID> startingVideoId = Optional
                 .of(grpcReq.getStartingVideoId())
-                .map(CommonTypes.Uuid::getValue)
-                .filter(StringUtils::isNotBlank)
-                .map(UUID::fromString);
+                .filter(uuid -> isNotBlank(uuid.getValue()))
+                .map(GrpcMappingUtils::fromUuid);
         final Optional<Instant> startingAddedDate = Optional
                 .of(grpcReq.getStartingAddedDate())
                 .map(ts -> Instant.ofEpochSecond(ts.getSeconds(), ts.getNanos()));

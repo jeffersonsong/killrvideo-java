@@ -14,6 +14,8 @@ import killrvideo.ratings.events.RatingsEvents.UserRatedVideo;
 import killrvideo.user_management.events.UserManagementEvents.UserCreated;
 import killrvideo.video_catalog.events.VideoCatalogEvents.YouTubeVideoAdded;
 
+import static com.killrvideo.utils.GrpcMappingUtils.fromUuid;
+
 /**
  * Message processing for suggestion services.
  *
@@ -38,7 +40,7 @@ public abstract class SuggestedVideosMessagingDaoSupport {
      */
     protected void onVideoRatingMessage(UserRatedVideo userVideoRated) {
         String videoId = userVideoRated.getVideoId().getValue();
-        UUID   userId  = UUID.fromString(userVideoRated.getUserId().getValue());
+        UUID   userId  = fromUuid(userVideoRated.getUserId());
         int rating     = userVideoRated.getRating();
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("[NewUserEvent] Processing rating with user {} and video {}", userId, videoId);
@@ -53,7 +55,7 @@ public abstract class SuggestedVideosMessagingDaoSupport {
      *      a user has been created
      */
     protected void onUserCreatingMessage(UserCreated userCreationMessage) {
-        final UUID userId       = UUID.fromString(userCreationMessage.getUserId().getValue());
+        final UUID userId       = fromUuid(userCreationMessage.getUserId());
         final Date userCreation = GrpcMappingUtils.timestampToDate(userCreationMessage.getTimestamp());
         final String email      = userCreationMessage.getEmail();
         if (LOGGER.isDebugEnabled()) {

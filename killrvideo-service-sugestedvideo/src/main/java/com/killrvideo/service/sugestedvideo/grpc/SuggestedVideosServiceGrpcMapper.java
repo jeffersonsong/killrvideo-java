@@ -16,6 +16,7 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.UUID;
 
+import static com.killrvideo.utils.GrpcMappingUtils.fromUuid;
 import static com.killrvideo.utils.GrpcMappingUtils.uuidToUuid;
 
 /**
@@ -28,9 +29,9 @@ public class SuggestedVideosServiceGrpcMapper {
     public Video mapVideoAddedtoVideoDTO(YouTubeVideoAdded videoAdded) {
         // Convert Stub to Dto, dao must not be related to interface GRPC
         Video video = new Video();
-        video.setVideoid(UUID.fromString(videoAdded.getVideoId().toString()));
+        video.setVideoid(fromUuid(videoAdded.getVideoId()));
         video.setAddedDate(GrpcMappingUtils.timestampToInstant(videoAdded.getAddedDate()));
-        video.setUserid(UUID.fromString(videoAdded.getUserId().toString()));
+        video.setUserid(fromUuid(videoAdded.getUserId()));
         video.setName(videoAdded.getName());
         video.setTags(new HashSet<>(videoAdded.getTagsList()));
         video.setPreviewImageLocation(videoAdded.getPreviewImageLocation());
@@ -53,7 +54,7 @@ public class SuggestedVideosServiceGrpcMapper {
 
     @SuppressWarnings("ConstantConditions")
     public GetRelatedVideosRequestData parseGetRelatedVideosRequestData(GetRelatedVideosRequest grpcReq) {
-        final UUID       videoId = UUID.fromString(grpcReq.getVideoId().getValue());
+        final UUID       videoId = fromUuid(grpcReq.getVideoId());
         int              videoPageSize = grpcReq.getPageSize();
         Optional<String> videoPagingState = Optional.ofNullable(grpcReq.getPagingState()).filter(StringUtils::isNotBlank);
 

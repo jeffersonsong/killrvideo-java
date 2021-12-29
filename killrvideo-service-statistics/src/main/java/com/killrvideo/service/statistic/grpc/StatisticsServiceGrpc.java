@@ -19,6 +19,7 @@ import killrvideo.statistics.StatisticsServiceOuterClass.GetNumberOfPlaysRespons
 import killrvideo.statistics.StatisticsServiceOuterClass.RecordPlaybackStartedRequest;
 import killrvideo.statistics.StatisticsServiceOuterClass.RecordPlaybackStartedResponse;
 
+import static com.killrvideo.utils.GrpcMappingUtils.fromUuid;
 import static com.killrvideo.utils.GrpcUtils.returnSingleResult;
 
 /**
@@ -53,7 +54,7 @@ public class StatisticsServiceGrpc extends StatisticsServiceImplBase {
         final Instant starts = Instant.now();
         
         // Mapping GRPC => Domain (Dao)
-        final UUID videoId = UUID.fromString(grpcReq.getVideoId().getValue());
+        final UUID videoId = fromUuid(grpcReq.getVideoId());
         
         // Invoke DAO Async
         statisticsRepository.recordPlaybackStartedAsync(videoId)

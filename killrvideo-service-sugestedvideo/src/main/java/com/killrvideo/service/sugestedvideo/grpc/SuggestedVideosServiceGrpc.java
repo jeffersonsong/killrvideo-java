@@ -1,5 +1,6 @@
 package com.killrvideo.service.sugestedvideo.grpc;
 
+import static com.killrvideo.utils.GrpcMappingUtils.fromUuid;
 import static com.killrvideo.utils.GrpcMappingUtils.uuidToUuid;
 
 import java.time.Duration;
@@ -85,7 +86,7 @@ public class SuggestedVideosServiceGrpc extends SuggestedVideoServiceImplBase {
         final Instant starts = Instant.now();
         
         // Mapping GRPC => Domain (Dao)
-        final UUID userid = UUID.fromString(grpcReq.getUserId().getValue());
+        final UUID userid = fromUuid(grpcReq.getUserId());
         
         // Invoke DAO Async
         suggestedVideosRepository.getSuggestedVideosForUser(userid)
