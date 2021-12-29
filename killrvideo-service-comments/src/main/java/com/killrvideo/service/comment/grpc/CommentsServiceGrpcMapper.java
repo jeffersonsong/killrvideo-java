@@ -15,6 +15,7 @@ import java.util.Optional;
 
 import static com.killrvideo.utils.GrpcMappingUtils.*;
 import static org.apache.commons.lang3.StringUtils.isBlank;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 /**
  * Validation of inputs and mapping
@@ -41,18 +42,20 @@ public class CommentsServiceGrpcMapper {
         }
         targetQuery.setUserId(fromUuid(grpcReq.getUserId()));
         targetQuery.setPageSize(grpcReq.getPageSize());
-        targetQuery.setPageState(Optional.of(grpcReq.getPagingState()));
+        if (isNotBlank(grpcReq.getPagingState())) {
+            targetQuery.setPageState(Optional.of(grpcReq.getPagingState()));
+        }
         return targetQuery;
     }
     
     // Map from CommentDseDao response bean to expected GRPC object.
-    public GetVideoCommentsResponse mapFromDseVideoCommentToGrpcResponse(ResultListPage<Comment> dseRes) {
+    public GetVideoCommentsResponse mapFromDseVideoCommentToGrpcResponse(ResultListPage<Comment> comments) {
         final GetVideoCommentsResponse.Builder builder = GetVideoCommentsResponse.newBuilder();
-        for (Comment c : dseRes.getResults()) {
+        for (Comment c : comments.getResults()) {
            builder.setVideoId(uuidToUuid(c.getVideoid()));
            builder.addComments(newVideoCommentProto(c));
         }
-        dseRes.getPagingState().ifPresent(builder::setPagingState);
+        comments.getPagingState().ifPresent(builder::setPagingState);
         return builder.build();
     }
 
