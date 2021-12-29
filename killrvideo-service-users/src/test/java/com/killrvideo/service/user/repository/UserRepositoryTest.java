@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
+import static com.killrvideo.utils.test.CassandraTestUtils.mockMappedAsyncPagingIterable;
 import static java.util.Collections.singletonList;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -81,7 +82,7 @@ class UserRepositoryTest {
         List<UUID> userids = singletonList(userid);
         List<User> users = singletonList(user);
 
-        MappedAsyncPagingIterable<User> iter = mappedAsyncPagingIterable(users);
+        MappedAsyncPagingIterable<User> iter = mockMappedAsyncPagingIterable(users);
         when(this.userDao.getUserProfiles(any())).thenReturn(
                 CompletableFuture.completedFuture(iter)
         );
@@ -96,12 +97,5 @@ class UserRepositoryTest {
         user.setUserid(userid);
         user.setEmail(email);
         return user;
-    }
-
-    private <T> MappedAsyncPagingIterable<T> mappedAsyncPagingIterable(List<T> list) {
-        MappedAsyncPagingIterable<T> iter = mock(MappedAsyncPagingIterable.class);
-        when(iter.currentPage()).thenReturn(list);
-        when(iter.hasMorePages()).thenReturn(false);
-        return iter;
     }
 }

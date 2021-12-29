@@ -45,16 +45,16 @@ public class VideoCatalogRepository {
     /**
      * Prepare Statements 'getUserVideo'.
      */
-    protected final PageableQuery<UserVideo> findUserVideoPreview_startingPoint;
-    protected final PageableQuery<UserVideo> findUserVideoPreview_noStartingPoint;
+    private final PageableQuery<UserVideo> findUserVideoPreview_startingPoint;
+    private final PageableQuery<UserVideo> findUserVideoPreview_noStartingPoint;
 
     public VideoCatalogRepository(PageableQueryFactory pageableQueryFactory,
                                   VideoCatalogMapper mapper,
                                   UserVideoRowMapper userVideoRowMapper,
-                                  LatestVideoPreviewsRepository latestVideoPreviewsRequestHandler) {
-        this.latestVideoPreviewsRequestRepository = latestVideoPreviewsRequestHandler;
+                                  LatestVideoPreviewsRepository latestVideoPreviewsRequestRepository) {
         this.videoDao = mapper.getVideoDao();
         this.userVideoDao = mapper.getUserVideoDao();
+        this.latestVideoPreviewsRequestRepository = latestVideoPreviewsRequestRepository;
 
         this.findUserVideoPreview_startingPoint = pageableQueryFactory.newPageableQuery(
                 QUERY_USER_VIDEO_PREVIEW_STARTING_POINT,
@@ -101,32 +101,20 @@ public class VideoCatalogRepository {
      */
     public CompletableFuture<ResultListPage<UserVideo>> getUserVideosPreview(GetUserVideoPreviewsRequestData request) {
         if (request.getStartingVideoId().isPresent() && request.getStartingAddedDate().isPresent()) {
-            return getUserVideosPreviewWithStartingPoint(request);
+            return findUserVideoPreview_startingPoint.queryNext(
+                    request.getPagingSize(),
+                    request.getPagingState(),
+                    request.getUserId(),
+                    request.getStartingAddedDate().get(),
+                    request.getStartingVideoId().get()
+            );
         } else {
-            return getUserVideosPreviewWithoutStartingPoint(request);
+            return findUserVideoPreview_noStartingPoint.queryNext(
+                    request.getPagingSize(),
+                    request.getPagingState(),
+                    request.getUserId()
+            );
         }
-    }
-
-    private CompletableFuture<ResultListPage<UserVideo>> getUserVideosPreviewWithStartingPoint(
-            GetUserVideoPreviewsRequestData request
-    ) {
-        return findUserVideoPreview_startingPoint.queryNext(
-                request.getPagingSize(),
-                request.getPagingState(),
-                request.getUserId(),
-                request.getStartingAddedDate().get(),
-                request.getStartingVideoId().get()
-        );
-    }
-
-    private CompletableFuture<ResultListPage<UserVideo>> getUserVideosPreviewWithoutStartingPoint(
-            GetUserVideoPreviewsRequestData request
-    ) {
-        return findUserVideoPreview_noStartingPoint.queryNext(
-                request.getPagingSize(),
-                request.getPagingState(),
-                request.getUserId()
-        );
     }
 
     public CompletableFuture<LatestVideosPage> getLatestVideoPreviewsAsync(

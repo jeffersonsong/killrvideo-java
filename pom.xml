@@ -35,7 +35,8 @@
 		<module>killrvideo-service-videocatalog</module>
 		<module>killrvideo-service-sugestedvideo</module>
 		<module>killrvideo-services</module>
-	</modules>
+        <module>killrvideo-test-utils</module>
+    </modules>
 
 	<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
 	<!-- ~ PROPERTIES ~ -->
