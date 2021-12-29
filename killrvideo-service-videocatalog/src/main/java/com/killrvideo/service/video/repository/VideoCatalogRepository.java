@@ -2,16 +2,21 @@ package com.killrvideo.service.video.repository;
 
 import com.datastax.oss.driver.api.core.ConsistencyLevel;
 import com.datastax.oss.driver.api.core.CqlSession;
-import com.datastax.oss.driver.api.core.cql.*;
+import com.datastax.oss.driver.api.core.cql.AsyncResultSet;
+import com.datastax.oss.driver.api.core.cql.BoundStatement;
+import com.datastax.oss.driver.api.core.cql.BoundStatementBuilder;
+import com.datastax.oss.driver.api.core.cql.PreparedStatement;
 import com.datastax.oss.protocol.internal.util.Bytes;
 import com.killrvideo.dse.dto.CustomPagingState;
 import com.killrvideo.dse.dto.ResultListPage;
+import com.killrvideo.dse.dto.Video;
+import com.killrvideo.dse.utils.MappedAsyncPagingIterableUtils;
 import com.killrvideo.dse.utils.PageableQuery;
 import com.killrvideo.dse.utils.PageableQueryFactory;
 import com.killrvideo.service.video.dao.*;
-import com.killrvideo.service.video.dto.*;
-import com.killrvideo.dse.dto.Video;
-import com.killrvideo.dse.utils.MappedAsyncPagingIterableUtils;
+import com.killrvideo.service.video.dto.LatestVideo;
+import com.killrvideo.service.video.dto.LatestVideosPage;
+import com.killrvideo.service.video.dto.UserVideo;
 import com.killrvideo.service.video.request.GetLatestVideoPreviewsRequestData;
 import com.killrvideo.service.video.request.GetUserVideoPreviewsRequestData;
 import org.apache.commons.lang3.StringUtils;
@@ -21,17 +26,13 @@ import org.springframework.stereotype.Repository;
 import org.springframework.util.Assert;
 
 import java.time.Instant;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Collectors;
-import java.util.stream.LongStream;
-import java.util.stream.StreamSupport;
 
 import static com.killrvideo.dse.dto.CustomPagingState.createPagingState;
 import static com.killrvideo.dse.utils.AsyncResultSetUtils.getPagingState;
@@ -48,23 +49,23 @@ public class VideoCatalogRepository {
 
     private static final String QUERY_LATEST_VIDEO_PREVIEW_STARTING_POINT =
             "SELECT * " +
-            "FROM killrvideo.latest_videos " +
-            "WHERE yyyymmdd = ? " +
-            "AND (added_date, videoid) <= (:ad, :vid)";
+                    "FROM killrvideo.latest_videos " +
+                    "WHERE yyyymmdd = ? " +
+                    "AND (added_date, videoid) <= (:ad, :vid)";
     private static final String QUERY_LATEST_VIDEO_PREVIEW_NO_STARTING_POINT =
             "SELECT * " +
-            "FROM killrvideo.latest_videos " +
-            "WHERE yyyymmdd = :ymd ";
+                    "FROM killrvideo.latest_videos " +
+                    "WHERE yyyymmdd = :ymd ";
 
     private static final String QUERY_USER_VIDEO_PREVIEW_STARTING_POINT =
             "SELECT * " +
-            "FROM killrvideo.user_videos " +
-            "WHERE userid = :uid " +
-            "AND (added_date, videoid) <= (:ad, :vid)";
+                    "FROM killrvideo.user_videos " +
+                    "WHERE userid = :uid " +
+                    "AND (added_date, videoid) <= (:ad, :vid)";
     private static final String QUERY_USER_VIDEO_PREVIEW_NO_STARTING_POINT =
             "SELECT * " +
-            "FROM killrvideo.user_videos " +
-            "WHERE userid = :uid ";
+                    "FROM killrvideo.user_videos " +
+                    "WHERE userid = :uid ";
 
 
     private final CqlSession session;
@@ -241,11 +242,12 @@ public class VideoCatalogRepository {
             }
 
             // (3) - Execute Query Asynchronously
-            CompletionStage<LatestVideosPage> cfv =
-                    this.session.executeAsync(stmt).thenApply(this::mapLatestVideosResultAsPage);
+            CompletionStage<LatestVideosPage> cfv = this.session.executeAsync(stmt)
+                    .thenApply(this::mapLatestVideosResultAsPage);
 
-            // (4) - Wait for result before triggering auery for page N+1
+            // (4) - Wait for result before triggering query for page N+1
             LatestVideosPage currentPage = cfv.toCompletableFuture().get();
+
             returnedPage.getListOfPreview().addAll(currentPage.getListOfPreview());
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug(" + bucket:{}/{} with results:{}/{} and pagingState:{}", cpState.getCurrentBucket(),
@@ -255,13 +257,17 @@ public class VideoCatalogRepository {
             // (5) Update NEXT PAGE BASE on current status
             if (returnedPage.getResultSize() == pageSize) {
                 if (!StringUtils.isBlank(currentPage.getCassandraPagingState())) {
-                    returnedPage.setNextPageState(createPagingState(cpState.getListOfBuckets(),
-                            cpState.getCurrentBucket(), currentPage.getCassandraPagingState()));
+                    returnedPage.setNextPageState(
+                            createPagingState(cpState.getListOfBuckets(), cpState.getCurrentBucket(),
+                                    currentPage.getCassandraPagingState())
+                    );
                     LOGGER.debug(" + Exiting because we got enought results.");
                 }
                 // --> Start from the beginning of the next bucket since we're out of rows in this one
             } else if (cpState.getCurrentBucket() == cpState.getListOfBucketsSize() - 1) {
-                returnedPage.setNextPageState(createPagingState(cpState.getListOfBuckets(), cpState.getCurrentBucket() + 1, ""));
+                returnedPage.setNextPageState(
+                        createPagingState(cpState.getListOfBuckets(), cpState.getCurrentBucket() + 1, "")
+                );
                 LOGGER.debug(" + Exiting because we are out of Buckets even if not enough results");
             }
 
@@ -278,14 +284,7 @@ public class VideoCatalogRepository {
             String yyyymmdd, Optional<String> pagingState, AtomicBoolean cassandraPagingStateUsed,
             Optional<Instant> startingAddedDate, Optional<UUID> startingVideoId, int recordNeeded) {
 
-        BoundStatementBuilder statementBuilder;
-        if (startingAddedDate.isPresent() && startingVideoId.isPresent()) {
-            statementBuilder = latestVideoPreview_startingPointPrepared.boundStatementBuilder(
-                    yyyymmdd, startingAddedDate.get(), startingVideoId.get()
-            );
-        } else {
-            statementBuilder = latestVideoPreview_noStartingPointPrepared.boundStatementBuilder(yyyymmdd);
-        }
+        BoundStatementBuilder statementBuilder = getBoundStatementBuilder(yyyymmdd, startingAddedDate, startingVideoId);
         statementBuilder.setPageSize(recordNeeded);
         // Use custom paging state if provided and no cassandra triggered
         pagingState.ifPresent(x -> {
@@ -294,6 +293,16 @@ public class VideoCatalogRepository {
         });
         statementBuilder.setConsistencyLevel(ConsistencyLevel.ONE);
         return statementBuilder.build();
+    }
+
+    private BoundStatementBuilder getBoundStatementBuilder(String yyyymmdd, Optional<Instant> startingAddedDate, Optional<UUID> startingVideoId) {
+        if (startingAddedDate.isPresent() && startingVideoId.isPresent()) {
+            return latestVideoPreview_startingPointPrepared.boundStatementBuilder(
+                    yyyymmdd, startingAddedDate.get(), startingVideoId.get()
+            );
+        } else {
+            return latestVideoPreview_noStartingPointPrepared.boundStatementBuilder(yyyymmdd);
+        }
     }
 
     /**
