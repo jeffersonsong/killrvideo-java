@@ -34,6 +34,8 @@ import java.util.stream.LongStream;
 import java.util.stream.StreamSupport;
 
 import static com.killrvideo.dse.dto.CustomPagingState.createPagingState;
+import static com.killrvideo.dse.utils.AsyncResultSetUtils.getPagingState;
+import static com.killrvideo.dse.utils.AsyncResultSetUtils.getResultsOnCurrentPage;
 
 /**
  * Implementations of operation for Videos.
@@ -302,12 +304,8 @@ public class VideoCatalogRepository {
      */
     private LatestVideosPage mapLatestVideosResultAsPage(AsyncResultSet rs) {
         LatestVideosPage resultPage = new LatestVideosPage();
-        if (rs.getExecutionInfo().getPagingState() != null) {
-            resultPage.setCassandraPagingState(Bytes.toHexString(rs.getExecutionInfo().getPagingState()));
-        }
-        List<LatestVideo> listOfVideos = StreamSupport.stream(rs.currentPage().spliterator(), false)
-                .map(this.latestVideoRowMapper::map)
-                .collect(Collectors.toList());
+        getPagingState(rs).ifPresent(resultPage::setCassandraPagingState);
+        List<LatestVideo> listOfVideos = getResultsOnCurrentPage(rs, this.latestVideoRowMapper::map);
         resultPage.setListOfPreview(listOfVideos);
         return resultPage;
     }
