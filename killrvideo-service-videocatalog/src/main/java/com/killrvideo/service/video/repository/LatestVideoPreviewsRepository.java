@@ -8,7 +8,9 @@ import com.datastax.oss.driver.api.core.cql.BoundStatementBuilder;
 import com.datastax.oss.driver.api.core.cql.PreparedStatement;
 import com.datastax.oss.protocol.internal.util.Bytes;
 import com.killrvideo.dse.dto.CustomPagingState;
+import com.killrvideo.service.video.dao.LatestVideoDao;
 import com.killrvideo.service.video.dao.LatestVideoRowMapper;
+import com.killrvideo.service.video.dao.VideoCatalogMapper;
 import com.killrvideo.service.video.dto.LatestVideo;
 import com.killrvideo.service.video.dto.LatestVideosPage;
 import com.killrvideo.service.video.request.GetLatestVideoPreviewsRequestData;
@@ -31,7 +33,7 @@ import static com.killrvideo.dse.utils.AsyncResultSetUtils.getPagingState;
 import static com.killrvideo.dse.utils.AsyncResultSetUtils.getResultsOnCurrentPage;
 
 @Component
-public class LatestVideoPreviewsRequestHandler {
+public class LatestVideoPreviewsRepository {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(VideoCatalogRepository.class);
     private static final String QUERY_LATEST_VIDEO_PREVIEW_STARTING_POINT =
@@ -45,6 +47,7 @@ public class LatestVideoPreviewsRequestHandler {
                     "WHERE yyyymmdd = :ymd ";
 
     private final CqlSession session;
+    private final LatestVideoDao latestVideoDao;
     private final LatestVideoRowMapper latestVideoRowMapper;
     /**
      * Prepare Statements 'getLatestVideso'.
@@ -52,15 +55,21 @@ public class LatestVideoPreviewsRequestHandler {
     private final PreparedStatement latestVideoPreview_startingPointPrepared;
     private final PreparedStatement latestVideoPreview_noStartingPointPrepared;
 
-    public LatestVideoPreviewsRequestHandler(CqlSession session, LatestVideoRowMapper latestVideoRowMapper) {
+    public LatestVideoPreviewsRepository(CqlSession session, VideoCatalogMapper mapper, LatestVideoRowMapper latestVideoRowMapper) {
         this.session = session;
+        this.latestVideoDao = mapper.getLatestVideoDao();
         this.latestVideoRowMapper = latestVideoRowMapper;
+
         this.latestVideoPreview_startingPointPrepared = session.prepare(
                 QUERY_LATEST_VIDEO_PREVIEW_STARTING_POINT
         );
         this.latestVideoPreview_noStartingPointPrepared = session.prepare(
                 QUERY_LATEST_VIDEO_PREVIEW_NO_STARTING_POINT
         );
+    }
+
+    public CompletableFuture<Void> insert(LatestVideo latestVideo) {
+        return this.latestVideoDao.insert(latestVideo);
     }
 
     public CompletableFuture<LatestVideosPage> getLatestVideoPreviewsAsync(

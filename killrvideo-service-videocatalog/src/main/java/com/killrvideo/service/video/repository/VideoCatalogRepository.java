@@ -1,7 +1,6 @@
 package com.killrvideo.service.video.repository;
 
 import com.datastax.oss.driver.api.core.ConsistencyLevel;
-import com.datastax.oss.driver.api.core.CqlSession;
 import com.killrvideo.dse.dto.ResultListPage;
 import com.killrvideo.dse.dto.Video;
 import com.killrvideo.dse.utils.MappedAsyncPagingIterableUtils;
@@ -39,11 +38,9 @@ public class VideoCatalogRepository {
                     "WHERE userid = :uid ";
 
 
-    private final CqlSession session;
     private final VideoDao videoDao;
     private final UserVideoDao userVideoDao;
-    private final LatestVideoDao latestVideoDao;
-    private final LatestVideoPreviewsRequestHandler latestVideoPreviewsRequestHandler;
+    private final LatestVideoPreviewsRepository latestVideoPreviewsRequestRepository;
 
     /**
      * Prepare Statements 'getUserVideo'.
@@ -51,16 +48,13 @@ public class VideoCatalogRepository {
     protected final PageableQuery<UserVideo> findUserVideoPreview_startingPoint;
     protected final PageableQuery<UserVideo> findUserVideoPreview_noStartingPoint;
 
-    public VideoCatalogRepository(CqlSession session,
-                                  PageableQueryFactory pageableQueryFactory,
+    public VideoCatalogRepository(PageableQueryFactory pageableQueryFactory,
                                   VideoCatalogMapper mapper,
                                   UserVideoRowMapper userVideoRowMapper,
-                                  LatestVideoPreviewsRequestHandler latestVideoPreviewsRequestHandler) {
-        this.session = session;
-        this.latestVideoPreviewsRequestHandler = latestVideoPreviewsRequestHandler;
+                                  LatestVideoPreviewsRepository latestVideoPreviewsRequestHandler) {
+        this.latestVideoPreviewsRequestRepository = latestVideoPreviewsRequestHandler;
         this.videoDao = mapper.getVideoDao();
         this.userVideoDao = mapper.getUserVideoDao();
-        this.latestVideoDao = mapper.getLatestVideoDao();
 
         this.findUserVideoPreview_startingPoint = pageableQueryFactory.newPageableQuery(
                 QUERY_USER_VIDEO_PREVIEW_STARTING_POINT,
@@ -84,7 +78,7 @@ public class VideoCatalogRepository {
         return CompletableFuture.allOf(
                 this.videoDao.insert(v),
                 this.userVideoDao.insert(UserVideo.from(v, now)),
-                this.latestVideoDao.insert(LatestVideo.from(v, now))
+                this.latestVideoPreviewsRequestRepository.insert(LatestVideo.from(v, now))
         );
     }
 
@@ -138,6 +132,6 @@ public class VideoCatalogRepository {
     public CompletableFuture<LatestVideosPage> getLatestVideoPreviewsAsync(
             GetLatestVideoPreviewsRequestData request
     ) {
-        return latestVideoPreviewsRequestHandler.getLatestVideoPreviewsAsync(request);
+        return latestVideoPreviewsRequestRepository.getLatestVideoPreviewsAsync(request);
     }
 }
