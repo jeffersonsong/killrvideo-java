@@ -34,7 +34,7 @@ services:
     command: [ -s -g ] # Run with Search and Graph capabilities enabled
     ports: # Exposes ports to be available.
       - "9042:9042" # Exposes DSE port
-      - "8983:8983" # Exposes DSE Search portpwd
+      - "8983:8983" # Exposes DSE Search port
       - "8182:8182" # Exposes DSE Graph port
     environment:
       DS_LICENSE: accept # Accept licence on start
