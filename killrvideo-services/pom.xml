@@ -50,7 +50,7 @@
 		</dependency>
 		<dependency>
 			<groupId>com.datastax</groupId>
-			<artifactId>killrvideo-service-sugestedvideo</artifactId>
+			<artifactId>killrvideo-service-suggestedvideo</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
