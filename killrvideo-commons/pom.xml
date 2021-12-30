@@ -26,6 +26,7 @@
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-classic</artifactId>
+			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
@@ -35,19 +36,7 @@
 		<!-- Java driver for DSE -->
 		<dependency>
 			<groupId>com.datastax.oss</groupId>
-			<artifactId>java-driver-core</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.datastax.oss</groupId>
-			<artifactId>java-driver-mapper-runtime</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.datastax.oss</groupId>
 			<artifactId>java-driver-mapper-processor</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.tinkerpop</groupId>
-			<artifactId>gremlin-core</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.tinkerpop</groupId>
@@ -66,10 +55,6 @@
 			<artifactId>retry4j</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.apache.commons</groupId>
-			<artifactId>commons-lang3</artifactId>
-		</dependency>
-		<dependency>
         	<groupId>javax.annotation</groupId>
         	<artifactId>javax.annotation-api</artifactId>
     	</dependency>  
@@ -78,18 +63,21 @@
 			<artifactId>validation-api</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.hibernate</groupId>
+			<groupId>org.hibernate.validator</groupId>
 			<artifactId>hibernate-validator</artifactId>
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.glassfish</groupId>
 			<artifactId>javax.el</artifactId>
+			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>javax.el</groupId>
 			<artifactId>javax.el-api</artifactId>
+			<scope>runtime</scope>
 		</dependency>
+
 		<dependency>
 			<groupId>javax.inject</groupId>
 			<artifactId>javax.inject</artifactId>
@@ -97,19 +85,11 @@
 		
 		<!-- Generate Common types -->
 		<dependency>
-			<groupId>com.google.protobuf</groupId>
-			<artifactId>protobuf-java</artifactId>
-		</dependency>
-		<dependency>
             <groupId>io.grpc</groupId>
             <artifactId>grpc-all</artifactId>
         </dependency>
 		
 		<!-- Transport Kafka -->
-		<dependency>
-			<groupId>org.apache.kafka</groupId>
-			<artifactId>connect-api</artifactId>
-		</dependency>
 		<dependency>
 			<groupId>org.apache.kafka</groupId>
 			<artifactId>connect-json</artifactId>

@@ -52,7 +52,7 @@
 		
    		<!-- Validation -->
         <javax.el.api.version>3.0.0</javax.el.api.version>
-        <validator.version>7.0.2.Final</validator.version>
+        <validator.version>6.2.0.Final</validator.version>
         <validation.api.version>2.0.1.Final</validation.api.version>
         
 		<!-- GRPC -->
@@ -140,7 +140,7 @@
 	            <version>${validation.api.version}</version>
 	        </dependency>
 	        <dependency>
-	            <groupId>org.hibernate</groupId>
+	            <groupId>org.hibernate.validator</groupId>
 	            <artifactId>hibernate-validator</artifactId>
 	            <version>${validator.version}</version>
 				<scope>runtime</scope>
@@ -166,6 +166,16 @@
 				<groupId>io.grpc</groupId>
 				<artifactId>grpc-all</artifactId>
 				<version>${grpc.version}</version>
+				<exclusions>
+					<exclusion>
+						<groupId>io.grpc</groupId>
+						<artifactId>grpc-testing</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>junit</groupId>
+						<artifactId>junit</artifactId>
+					</exclusion>
+				</exclusions>
 			</dependency>
 			<dependency>
 				<groupId>com.google.protobuf</groupId>
