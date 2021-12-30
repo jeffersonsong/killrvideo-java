@@ -1,4 +1,4 @@
-package com.killrvideo.service.sugestedvideo.dao;
+package com.killrvideo.service.suggestedvideo.dao;
 
 import com.datastax.oss.driver.api.core.CqlSession;
 import org.springframework.context.annotation.Bean;

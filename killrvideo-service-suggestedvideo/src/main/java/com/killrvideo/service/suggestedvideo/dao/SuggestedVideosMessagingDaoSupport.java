@@ -1,10 +1,10 @@
-package com.killrvideo.service.sugestedvideo.dao;
+package com.killrvideo.service.suggestedvideo.dao;
 
 import java.util.Date;
 import java.util.UUID;
 
-import com.killrvideo.service.sugestedvideo.grpc.SuggestedVideosServiceGrpcMapper;
-import com.killrvideo.service.sugestedvideo.repository.SuggestedVideosRepository;
+import com.killrvideo.service.suggestedvideo.grpc.SuggestedVideosServiceGrpcMapper;
+import com.killrvideo.service.suggestedvideo.repository.SuggestedVideosRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

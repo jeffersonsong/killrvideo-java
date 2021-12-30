@@ -1,4 +1,4 @@
-package com.killrvideo.service.sugestedvideo.dao;
+package com.killrvideo.service.suggestedvideo.dao;
 
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.mapper.MapperBuilder;

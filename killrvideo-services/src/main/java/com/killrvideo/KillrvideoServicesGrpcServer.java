@@ -15,7 +15,7 @@ import com.killrvideo.service.comment.grpc.CommentsServiceGrpc;
 import com.killrvideo.service.rating.grpc.RatingsServiceGrpc;
 import com.killrvideo.service.search.grpc.SearchServiceGrpc;
 import com.killrvideo.service.statistic.grpc.StatisticsServiceGrpc;
-import com.killrvideo.service.sugestedvideo.grpc.SuggestedVideosServiceGrpc;
+import com.killrvideo.service.suggestedvideo.grpc.SuggestedVideosServiceGrpc;
 import com.killrvideo.service.user.grpc.UserManagementServiceGrpc;
 import com.killrvideo.service.video.grpc.VideoCatalogServiceGrpc;
 

@@ -1,4 +1,4 @@
-package com.killrvideo.service.sugestedvideo.grpc;
+package com.killrvideo.service.suggestedvideo.grpc;
 
 import com.killrvideo.utils.FluentValidator;
 import io.grpc.stub.StreamObserver;

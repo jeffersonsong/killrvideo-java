@@ -1,9 +1,9 @@
-package com.killrvideo.service.sugestedvideo.grpc;
+package com.killrvideo.service.suggestedvideo.grpc;
 
 import com.killrvideo.dse.dto.ResultListPage;
 import com.killrvideo.dse.dto.Video;
-import com.killrvideo.service.sugestedvideo.request.GetRelatedVideosRequestData;
-import com.killrvideo.service.sugestedvideo.repository.SuggestedVideosRepository;
+import com.killrvideo.service.suggestedvideo.request.GetRelatedVideosRequestData;
+import com.killrvideo.service.suggestedvideo.repository.SuggestedVideosRepository;
 import io.grpc.stub.StreamObserver;
 import killrvideo.suggested_videos.SuggestedVideosService.*;
 import org.junit.jupiter.api.AfterEach;

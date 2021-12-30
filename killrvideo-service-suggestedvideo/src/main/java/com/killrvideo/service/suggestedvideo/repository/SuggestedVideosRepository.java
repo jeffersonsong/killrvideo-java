@@ -1,4 +1,4 @@
-package com.killrvideo.service.sugestedvideo.repository;
+package com.killrvideo.service.suggestedvideo.repository;
 
 import com.datastax.dse.driver.api.core.graph.AsyncGraphResultSet;
 import com.datastax.dse.driver.api.core.graph.FluentGraphStatement;
@@ -14,9 +14,9 @@ import com.killrvideo.dse.graph.KillrVideoTraversalSource;
 import com.killrvideo.dse.graph.__;
 import com.killrvideo.dse.utils.PageableQuery;
 import com.killrvideo.dse.utils.PageableQueryFactory;
-import com.killrvideo.service.sugestedvideo.dao.VideoDao;
-import com.killrvideo.service.sugestedvideo.dao.VideoMapper;
-import com.killrvideo.service.sugestedvideo.request.GetRelatedVideosRequestData;
+import com.killrvideo.service.suggestedvideo.dao.VideoDao;
+import com.killrvideo.service.suggestedvideo.dao.VideoMapper;
+import com.killrvideo.service.suggestedvideo.request.GetRelatedVideosRequestData;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

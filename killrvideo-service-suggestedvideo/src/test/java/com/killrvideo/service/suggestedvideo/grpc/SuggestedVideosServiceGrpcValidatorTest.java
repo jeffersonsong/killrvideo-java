@@ -1,4 +1,4 @@
-package com.killrvideo.service.sugestedvideo.grpc;
+package com.killrvideo.service.suggestedvideo.grpc;
 
 import io.grpc.stub.StreamObserver;
 import killrvideo.suggested_videos.SuggestedVideosService.GetRelatedVideosRequest;

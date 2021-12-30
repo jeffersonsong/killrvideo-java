@@ -1,8 +1,8 @@
-package com.killrvideo.service.sugestedvideo.grpc;
+package com.killrvideo.service.suggestedvideo.grpc;
 
 import com.killrvideo.dse.dto.ResultListPage;
 import com.killrvideo.dse.dto.Video;
-import com.killrvideo.service.sugestedvideo.request.GetRelatedVideosRequestData;
+import com.killrvideo.service.suggestedvideo.request.GetRelatedVideosRequestData;
 import killrvideo.suggested_videos.SuggestedVideosService.*;
 import killrvideo.video_catalog.events.VideoCatalogEvents.*;
 import org.junit.jupiter.api.Test;

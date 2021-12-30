@@ -1,9 +1,9 @@
-package com.killrvideo.service.sugestedvideo.dao;
+package com.killrvideo.service.suggestedvideo.dao;
 
 import com.google.common.eventbus.Subscribe;
 import com.killrvideo.conf.KillrVideoConfiguration;
-import com.killrvideo.service.sugestedvideo.grpc.SuggestedVideosServiceGrpcMapper;
-import com.killrvideo.service.sugestedvideo.repository.SuggestedVideosRepository;
+import com.killrvideo.service.suggestedvideo.grpc.SuggestedVideosServiceGrpcMapper;
+import com.killrvideo.service.suggestedvideo.repository.SuggestedVideosRepository;
 import killrvideo.ratings.events.RatingsEvents.UserRatedVideo;
 import killrvideo.user_management.events.UserManagementEvents.UserCreated;
 import killrvideo.video_catalog.events.VideoCatalogEvents.YouTubeVideoAdded;

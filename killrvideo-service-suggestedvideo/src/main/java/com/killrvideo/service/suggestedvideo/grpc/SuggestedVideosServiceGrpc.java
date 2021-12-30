@@ -1,4 +1,4 @@
-package com.killrvideo.service.sugestedvideo.grpc;
+package com.killrvideo.service.suggestedvideo.grpc;
 
 import static com.killrvideo.utils.GrpcMappingUtils.fromUuid;
 import static com.killrvideo.utils.GrpcMappingUtils.uuidToUuid;
@@ -7,8 +7,8 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.UUID;
 
-import com.killrvideo.service.sugestedvideo.request.GetRelatedVideosRequestData;
-import com.killrvideo.service.sugestedvideo.repository.SuggestedVideosRepository;
+import com.killrvideo.service.suggestedvideo.request.GetRelatedVideosRequestData;
+import com.killrvideo.service.suggestedvideo.repository.SuggestedVideosRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;

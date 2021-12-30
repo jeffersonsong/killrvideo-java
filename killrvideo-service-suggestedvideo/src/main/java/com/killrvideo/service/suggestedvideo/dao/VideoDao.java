@@ -1,4 +1,4 @@
-package com.killrvideo.service.sugestedvideo.dao;
+package com.killrvideo.service.suggestedvideo.dao;
 
 import com.datastax.oss.driver.api.mapper.annotations.*;
 import com.killrvideo.dse.dto.Video;

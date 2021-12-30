@@ -1,4 +1,4 @@
-package com.killrvideo.service.sugestedvideo.request;
+package com.killrvideo.service.suggestedvideo.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
