@@ -21,7 +21,7 @@ import static com.killrvideo.utils.test.CassandraTestUtils.mockPageableQueryFact
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-@SuppressWarnings("unchecked")
+@SuppressWarnings({"unchecked", "SameParameterValue"})
 class CommentRepositoryTest {
     private CommentRepository repository;
 
@@ -49,7 +49,7 @@ class CommentRepositoryTest {
     }
 
     @Test
-    void testInsertCommentAsync() throws Exception {
+    void testInsertCommentAsync() {
         when(commentByUserDao.insert(any())).thenReturn(
                 CompletableFuture.completedFuture(null)
         );
@@ -65,7 +65,7 @@ class CommentRepositoryTest {
     }
 
     @Test
-    void testInsertCommentAsyncWithOneOfInsertFailed() throws Exception {
+    void testInsertCommentAsyncWithOneOfInsertFailed() {
         when(commentByUserDao.insert(any())).thenReturn(
                 CompletableFuture.failedFuture(new Exception())
         );

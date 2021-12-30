@@ -29,6 +29,7 @@ class CommentsServiceGrpcMapperTest {
 
         QueryCommentByUser pojo = mapper.mapFromGrpcUserCommentToDseQuery(request);
         assertEquals(userId, pojo.getUserId());
+        assertTrue(pojo.getCommentId().isPresent());
         assertEquals(startingCommentId, pojo.getCommentId().get());
         assertEquals(5, pojo.getPageSize());
         assertTrue(pojo.getPageState().isPresent());
@@ -73,6 +74,7 @@ class CommentsServiceGrpcMapperTest {
 
         QueryCommentByVideo pojo = mapper.mapFromGrpcVideoCommentToDseQuery(request);
         assertEquals(videoid, pojo.getVideoId());
+        assertTrue(pojo.getCommentId().isPresent());
         assertEquals(startingCommentId, pojo.getCommentId().get());
         assertEquals(5, pojo.getPageSize());
         assertTrue(pojo.getPageState().isPresent());

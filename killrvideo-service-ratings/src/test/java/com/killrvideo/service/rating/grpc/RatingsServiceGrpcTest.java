@@ -244,6 +244,7 @@ class RatingsServiceGrpcTest {
         verify(grpcResObserver, times(1)).onCompleted();
     }
 
+    @SuppressWarnings("SameParameterValue")
     private RateVideoRequest rateVideoRequest(UUID videoid, UUID userid, int rating) {
         return RateVideoRequest.newBuilder()
                 .setVideoId(uuidToUuid(videoid))

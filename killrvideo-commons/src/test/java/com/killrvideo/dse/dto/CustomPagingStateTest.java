@@ -10,6 +10,7 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -18,10 +19,6 @@ class CustomPagingStateTest {
     private static final DateTimeFormatter DATEFORMATTER =
             DateTimeFormatter.ofPattern("yyyyMMdd").withZone(ZoneId.from(ZoneOffset.UTC));
 
-    @BeforeEach
-    void setUp() {
-    }
-
     @Test
     public void testCustomPagingState() {
         CustomPagingState firstState = CustomPagingState.buildFirstCustomPagingState();
@@ -29,7 +26,9 @@ class CustomPagingStateTest {
         String serialized = state.serialize();
         LOGGER.info("serialized: " + serialized);
         LOGGER.info("toString  : " + state);
-        CustomPagingState parsed = CustomPagingState.deserialize(serialized).get();
+        Optional<CustomPagingState> deserialized = CustomPagingState.deserialize(serialized);
+        assertTrue(deserialized.isPresent());
+        CustomPagingState parsed = deserialized.get();
 
         assertEquals(state.getCurrentBucket(), parsed.getCurrentBucket());
         assertEquals(state.getListOfBucketsSize(), parsed.getListOfBucketsSize());

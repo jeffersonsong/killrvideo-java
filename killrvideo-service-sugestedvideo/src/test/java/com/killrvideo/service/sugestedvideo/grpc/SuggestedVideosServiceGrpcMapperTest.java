@@ -70,6 +70,7 @@ class SuggestedVideosServiceGrpcMapperTest {
 
         assertEquals(videoid, pojo.getVideoid());
         assertEquals(2, pojo.getPageSize());
+        assertTrue(pojo.getPagingState().isPresent());
         assertEquals("Paging state", pojo.getPagingState().get());
     }
 

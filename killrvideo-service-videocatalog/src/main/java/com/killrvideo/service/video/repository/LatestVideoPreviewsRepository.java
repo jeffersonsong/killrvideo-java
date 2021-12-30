@@ -183,12 +183,14 @@ public class LatestVideoPreviewsRepository {
     /**
      * Update NEXT PAGE BASE on current status
      */
+    @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
     private void updateNextPage(LatestVideosPage returnedPage,
                                 CustomPagingState cpState,
                                 int pageSize,
                                 Optional<String> currentCassandraPagingState) {
         if (returnedPage.getResultSize() == pageSize) {
             if (isNotBlank(currentCassandraPagingState)) {
+                //noinspection OptionalGetWithoutIsPresent
                 returnedPage.setNextPageState(
                         cpState.changeCassandraPagingState(currentCassandraPagingState.get())
                                 .serialize()

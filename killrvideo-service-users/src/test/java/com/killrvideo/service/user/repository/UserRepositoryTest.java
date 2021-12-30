@@ -91,6 +91,7 @@ class UserRepositoryTest {
         });
     }
 
+    @SuppressWarnings("SameParameterValue")
     private User user(UUID userid, String email, String passwd) {
         User user = new User();
         user.setUserid(userid);

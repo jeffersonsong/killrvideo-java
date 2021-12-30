@@ -29,6 +29,7 @@ import static java.util.Collections.singletonList;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+@SuppressWarnings("unchecked")
 class VideoCatalogRepositoryTest {
     private VideoCatalogRepository repository;
     private VideoDao videoDao;

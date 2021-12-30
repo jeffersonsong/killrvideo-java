@@ -18,6 +18,7 @@ import com.killrvideo.conf.KillrVideoConfiguration;
  * 
  * @author Cedrick LUNVEN (@clunven)
  */
+@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 @Component("killrvideo.discovery.network")
 @Profile(KillrVideoConfiguration.PROFILE_DISCOVERY_STATIC)
 public class ServiceDiscoveryDaoStatic implements ServiceDiscoveryDao {

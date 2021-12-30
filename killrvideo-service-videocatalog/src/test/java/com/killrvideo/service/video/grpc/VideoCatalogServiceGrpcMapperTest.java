@@ -22,8 +22,7 @@ import static com.killrvideo.utils.GrpcMappingUtils.instantToTimeStamp;
 import static com.killrvideo.utils.GrpcMappingUtils.uuidToUuid;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 class VideoCatalogServiceGrpcMapperTest {
     private final VideoCatalogServiceGrpcMapper mapper = new VideoCatalogServiceGrpcMapper();
@@ -106,6 +105,7 @@ class VideoCatalogServiceGrpcMapperTest {
 
         assertEquals(2, pojo.getPageSize());
         assertNotNull(pojo.getPageState());
+        assertTrue(pojo.getStartVideoId().isPresent());
         assertEquals(startingVidoId, pojo.getStartVideoId().get());
     }
 
@@ -141,9 +141,13 @@ class VideoCatalogServiceGrpcMapperTest {
         GetUserVideoPreviewsRequestData pojo = mapper.parseGetUserVideoPreviewsRequest(request);
 
         assertEquals(userid, pojo.getUserId());
+        assertTrue(pojo.getStartingVideoId().isPresent());
         assertEquals(startingVideioId, pojo.getStartingVideoId().get());
+        assertTrue(pojo.getStartingAddedDate().isPresent());
         assertEquals(startingAddedDate, pojo.getStartingAddedDate().get());
+        assertTrue(pojo.getPagingSize().isPresent());
         assertEquals(pageSize, pojo.getPagingSize().get());
+        assertTrue(pojo.getPagingState().isPresent());
         assertEquals(pagingState, pojo.getPagingState().get());
     }
 

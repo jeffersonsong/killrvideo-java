@@ -79,6 +79,7 @@ class RatingRepositoryTest {
         });
     }
 
+    @SuppressWarnings("SameParameterValue")
     private VideoRatingByUser videoRatingByUser(UUID videoid, UUID userid, int rating) {
         return new VideoRatingByUser(videoid, userid, rating);
     }

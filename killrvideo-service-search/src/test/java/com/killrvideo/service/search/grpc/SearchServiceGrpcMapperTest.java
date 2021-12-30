@@ -30,6 +30,7 @@ class SearchServiceGrpcMapperTest {
 
         SearchVideosResponse response = mapper.buildSearchGrpcResponse(resultPage, "query");
         assertEquals("query", response.getQuery());
+        assertTrue(resultPage.getPagingState().isPresent());
         assertEquals(resultPage.getPagingState().get(), response.getPagingState());
         assertEquals(1, response.getVideosCount());
     }
@@ -45,6 +46,7 @@ class SearchServiceGrpcMapperTest {
         SearchVideosRequestData pojo = mapper.parseSearchVideosRequestData(request);
         assertEquals(request.getQuery(), pojo.getQuery());
         assertEquals(request.getPageSize(), pojo.getPageSize());
+        assertTrue(pojo.getPagingState().isPresent());
         assertEquals(request.getPagingState(), pojo.getPagingState().get());
     }
 

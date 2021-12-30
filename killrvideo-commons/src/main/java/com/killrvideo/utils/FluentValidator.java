@@ -44,7 +44,7 @@ public class FluentValidator {
         return error(String.format("%s should be strictly positive for %s", fieldName, this.requestName), assertion);
     }
 
-    public FluentValidator validate() {
+    public void validate() {
         if (!isValid) {
             final String description = errorMessage.toString();
             logger.error(description);
@@ -52,6 +52,5 @@ public class FluentValidator {
             streamObserver.onCompleted();
             throw new IllegalArgumentException(String.format("Invalid parameter for '%s'", method));
         }
-        return this;
     }
 }

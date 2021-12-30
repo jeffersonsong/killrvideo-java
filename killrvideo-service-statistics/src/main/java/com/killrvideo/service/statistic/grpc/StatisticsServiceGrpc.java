@@ -102,6 +102,7 @@ public class StatisticsServiceGrpc extends StatisticsServiceImplBase {
      * @param starts
      *      timestamp for starting
      */
+    @SuppressWarnings("SameParameterValue")
     private void traceSuccess(String method, Instant starts) {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("End successfully '{}' in {} millis", method, Duration.between(starts, Instant.now()).getNano()/1000);

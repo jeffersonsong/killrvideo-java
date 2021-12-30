@@ -111,6 +111,7 @@ class SuggestedVideosServiceGrpcTest {
         );
     }
 
+    @SuppressWarnings("SameParameterValue")
     private GetRelatedVideosRequest getRelatedVideosRequest(UUID videoid, int pageSize, String pagingState) {
         return GetRelatedVideosRequest.newBuilder()
                 .setVideoId(uuidToUuid(videoid))
