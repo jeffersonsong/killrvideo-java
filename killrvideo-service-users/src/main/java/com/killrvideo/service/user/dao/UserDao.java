@@ -4,7 +4,6 @@ import com.datastax.oss.driver.api.core.MappedAsyncPagingIterable;
 import com.datastax.oss.driver.api.mapper.annotations.*;
 import com.killrvideo.service.user.dto.User;
 
-import java.sql.ResultSet;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;

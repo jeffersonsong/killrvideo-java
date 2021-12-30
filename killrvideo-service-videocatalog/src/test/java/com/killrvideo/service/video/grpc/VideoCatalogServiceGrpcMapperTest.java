@@ -26,7 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 class VideoCatalogServiceGrpcMapperTest {
-    private VideoCatalogServiceGrpcMapper mapper = new VideoCatalogServiceGrpcMapper();
+    private final VideoCatalogServiceGrpcMapper mapper = new VideoCatalogServiceGrpcMapper();
 
     @Test
     public void testMapSubmitYouTubeVideoRequestAsVideo() {

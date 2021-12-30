@@ -1,7 +1,6 @@
 package com.killrvideo.service.video.repository;
 
 import com.datastax.oss.driver.api.core.MappedAsyncPagingIterable;
-import com.datastax.oss.driver.api.core.cql.Row;
 import com.killrvideo.dse.dto.ResultListPage;
 import com.killrvideo.dse.dto.Video;
 import com.killrvideo.dse.utils.PageableQuery;
@@ -23,13 +22,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Function;
 
 import static com.killrvideo.utils.test.CassandraTestUtils.mockMappedAsyncPagingIterable;
 import static com.killrvideo.utils.test.CassandraTestUtils.mockPageableQueryFactory;
 import static java.util.Collections.singletonList;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 class VideoCatalogRepositoryTest {
@@ -42,6 +39,7 @@ class VideoCatalogRepositoryTest {
 
     @BeforeEach
     public void setUp() {
+        //noinspection unchecked
         this.findUserVideoPreview_startingPoint = mock(PageableQuery.class);
         this.findUserVideoPreview_noStartingPoint = mock(PageableQuery.class);
         PageableQueryFactory pageableQueryFactory = mockPageableQueryFactory(
@@ -69,9 +67,7 @@ class VideoCatalogRepositoryTest {
         when(this.videoDao.insert(any())).thenReturn(CompletableFuture.completedFuture(null));
         when(this.userVideoDao.insert(any())).thenReturn(CompletableFuture.completedFuture(null));
         when(this.latestVideoPreviewsRequestRepository.insert(any())).thenReturn(CompletableFuture.completedFuture(null));
-        this.repository.insertVideoAsync(v).whenComplete((result, error) -> {
-            assertNull(error);
-        });
+        this.repository.insertVideoAsync(v).whenComplete((result, error) -> assertNull(error));
         verify(v, times(1)).setAddedDate(any());
         verify(this.videoDao, times(1)).insert(any());
         verify(this.userVideoDao, times(1)).insert(any());
@@ -84,9 +80,7 @@ class VideoCatalogRepositoryTest {
         Video video = mock(Video.class);
         when(this.videoDao.getVideoById(any())).thenReturn(CompletableFuture.completedFuture(video));
 
-        this.repository.getVideoById(videoid).whenComplete((result, error) -> {
-           assertEquals(video, result);
-        });
+        this.repository.getVideoById(videoid).whenComplete((result, error) -> assertEquals(video, result));
     }
 
     @Test
@@ -101,9 +95,7 @@ class VideoCatalogRepositoryTest {
                 CompletableFuture.completedFuture(iter)
         );
 
-        this.repository.getVideoPreview(videoids).whenComplete((result, error) -> {
-            assertEquals(videos, result);
-        });
+        this.repository.getVideoPreview(videoids).whenComplete((result, error) -> assertEquals(videos, result));
     }
 
     @Test
@@ -114,9 +106,7 @@ class VideoCatalogRepositoryTest {
 
         UUID userid = UUID.randomUUID();
         GetUserVideoPreviewsRequestData request = new GetUserVideoPreviewsRequestData(userid);
-        this.repository.getUserVideosPreview(request).whenComplete((result, error) -> {
-            assertEquals(resultListPage, result);
-        });
+        this.repository.getUserVideosPreview(request).whenComplete((result, error) -> assertEquals(resultListPage, result));
     }
 
     @Test
@@ -136,9 +126,7 @@ class VideoCatalogRepositoryTest {
                 Optional.of(2),
                 Optional.empty()
         );
-        this.repository.getUserVideosPreview(request).whenComplete((result, error) -> {
-            assertEquals(resultListPage, result);
-        });
+        this.repository.getUserVideosPreview(request).whenComplete((result, error) -> assertEquals(resultListPage, result));
     }
 
     @Test
@@ -148,8 +136,6 @@ class VideoCatalogRepositoryTest {
         when(latestVideoPreviewsRequestRepository.getLatestVideoPreviewsAsync(request))
                 .thenReturn(CompletableFuture.completedFuture(latestVideosPage));
 
-        this.repository.getLatestVideoPreviewsAsync(request).whenComplete((result, error) -> {
-            assertEquals(latestVideosPage, result);
-        });
+        this.repository.getLatestVideoPreviewsAsync(request).whenComplete((result, error) -> assertEquals(latestVideosPage, result));
     }
 }

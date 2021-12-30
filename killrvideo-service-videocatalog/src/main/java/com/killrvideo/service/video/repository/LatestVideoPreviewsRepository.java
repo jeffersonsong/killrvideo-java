@@ -1,7 +1,6 @@
 package com.killrvideo.service.video.repository;
 
 import com.datastax.oss.driver.api.core.ConsistencyLevel;
-import com.datastax.oss.driver.api.core.CqlSession;
 import com.killrvideo.dse.dto.CustomPagingState;
 import com.killrvideo.dse.dto.ResultListPage;
 import com.killrvideo.dse.utils.PageableQuery;
@@ -39,20 +38,16 @@ public class LatestVideoPreviewsRepository {
                     "FROM killrvideo.latest_videos " +
                     "WHERE yyyymmdd = :ymd ";
 
-    private final CqlSession session;
     private final LatestVideoDao latestVideoDao;
-    private final LatestVideoRowMapper latestVideoRowMapper;
     /**
      * Prepare Statements 'getLatestVideso'.
      */
     private final PageableQuery<LatestVideo> findLatestVideoPreview_startingPoint;
     private final PageableQuery<LatestVideo> findLatestVideoPreview_noStartingPoint;
 
-    public LatestVideoPreviewsRepository(CqlSession session, PageableQueryFactory pageableQueryFactory,
+    public LatestVideoPreviewsRepository(PageableQueryFactory pageableQueryFactory,
                                          VideoCatalogMapper mapper, LatestVideoRowMapper latestVideoRowMapper) {
-        this.session = session;
         this.latestVideoDao = mapper.getLatestVideoDao();
-        this.latestVideoRowMapper = latestVideoRowMapper;
 
         this.findLatestVideoPreview_startingPoint = pageableQueryFactory.newPageableQuery(
                 QUERY_LATEST_VIDEO_PREVIEW_STARTING_POINT,
@@ -102,6 +97,7 @@ public class LatestVideoPreviewsRepository {
      * @throws ExecutionException   error duing invoation
      * @throws InterruptedException error in asynchronism
      */
+    @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
     private LatestVideosPage getLatestVideoPreviews(
             CustomPagingState cpState,
             int pageSize,

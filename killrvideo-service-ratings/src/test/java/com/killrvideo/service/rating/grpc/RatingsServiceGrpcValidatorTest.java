@@ -9,11 +9,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static com.killrvideo.utils.GrpcMappingUtils.randomUuid;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 class RatingsServiceGrpcValidatorTest {
-    private RatingsServiceGrpcValidator validator = new RatingsServiceGrpcValidator();
+    private final RatingsServiceGrpcValidator validator = new RatingsServiceGrpcValidator();
     private StreamObserver<?> streamObserver;
 
     @BeforeEach

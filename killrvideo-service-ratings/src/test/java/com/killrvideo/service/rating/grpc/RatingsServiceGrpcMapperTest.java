@@ -13,7 +13,7 @@ import static com.killrvideo.utils.GrpcMappingUtils.uuidToUuid;
 import static org.junit.jupiter.api.Assertions.*;
 
 class RatingsServiceGrpcMapperTest {
-    private RatingsServiceGrpcMapper mapper = new RatingsServiceGrpcMapper();
+    private final RatingsServiceGrpcMapper mapper = new RatingsServiceGrpcMapper();
 
     @Test
     public void testMapToRatingResponse() {

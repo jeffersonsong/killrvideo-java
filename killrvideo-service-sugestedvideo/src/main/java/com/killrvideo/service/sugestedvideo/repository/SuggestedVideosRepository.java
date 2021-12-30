@@ -73,7 +73,7 @@ public class SuggestedVideosRepository {
      * https://github.com/spring-projects/spring-boot/issues/501
      */
     @Value("#{'${killrvideo.search.ignoredWords}'.split(',')}")
-    private Set<String> ignoredWords = new HashSet<>();
+    private final Set<String> ignoredWords = new HashSet<>();
 
     public SuggestedVideosRepository(CqlSession session, PageableQueryFactory pageableQueryFactory, VideoMapper mapper, VideoRowMapper videoRowMapper) {
         this.session = session;

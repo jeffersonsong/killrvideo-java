@@ -9,7 +9,6 @@ import com.killrvideo.service.video.request.GetUserVideoPreviewsRequestData;
 import com.killrvideo.utils.GrpcMappingUtils;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
-import killrvideo.common.CommonTypes.Uuid;
 import killrvideo.video_catalog.VideoCatalogServiceGrpc.VideoCatalogServiceImplBase;
 import killrvideo.video_catalog.VideoCatalogServiceOuterClass.*;
 import org.slf4j.Logger;

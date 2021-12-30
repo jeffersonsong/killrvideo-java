@@ -4,7 +4,6 @@ import com.killrvideo.dse.dto.ResultListPage;
 import com.killrvideo.dse.dto.Video;
 import com.killrvideo.service.search.request.GetQuerySuggestionsRequestData;
 import com.killrvideo.service.search.request.SearchVideosRequestData;
-import jnr.ffi.annotations.In;
 import killrvideo.search.SearchServiceOuterClass.*;
 import org.junit.jupiter.api.Test;
 
@@ -16,7 +15,7 @@ import static java.util.Collections.singletonList;
 import static org.junit.jupiter.api.Assertions.*;
 
 class SearchServiceGrpcMapperTest {
-    private SearchServiceGrpcMapper mapper = new SearchServiceGrpcMapper();
+    private final SearchServiceGrpcMapper mapper = new SearchServiceGrpcMapper();
 
     @Test
     public void testBuildSearchGrpcResponse() {

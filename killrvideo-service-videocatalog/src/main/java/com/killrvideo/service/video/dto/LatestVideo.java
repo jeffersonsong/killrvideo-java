@@ -1,7 +1,5 @@
 package com.killrvideo.service.video.dto;
 
-import java.sql.Date;
-import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZoneOffset;

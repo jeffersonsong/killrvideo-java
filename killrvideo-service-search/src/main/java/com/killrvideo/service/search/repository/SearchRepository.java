@@ -61,7 +61,7 @@ public class SearchRepository {
      * https://github.com/spring-projects/spring-boot/issues/501
      */
     @Value("#{'${killrvideo.search.ignoredWords}'.split(',')}")
-    private Set<String> ignoredWords = new HashSet<>();
+    private final Set<String> ignoredWords = new HashSet<>();
 
     private final CqlSession session;
 

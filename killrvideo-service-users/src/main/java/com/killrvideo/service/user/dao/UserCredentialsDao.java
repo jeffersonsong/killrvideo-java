@@ -6,7 +6,6 @@ import com.datastax.oss.driver.api.mapper.annotations.Select;
 import com.datastax.oss.driver.api.mapper.annotations.StatementAttributes;
 import com.killrvideo.service.user.dto.UserCredentials;
 
-import java.sql.ResultSet;
 import java.util.concurrent.CompletableFuture;
 
 @Dao

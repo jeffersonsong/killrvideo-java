@@ -14,7 +14,7 @@ import static java.util.Collections.singletonList;
 import static org.junit.jupiter.api.Assertions.*;
 
 class UserManagementServiceGrpcMapperTest {
-    private UserManagementServiceGrpcMapper mapper = new UserManagementServiceGrpcMapper();
+    private final UserManagementServiceGrpcMapper mapper = new UserManagementServiceGrpcMapper();
 
     @Test
     public void testMapUserRequest2User() {
