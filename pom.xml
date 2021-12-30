@@ -33,7 +33,7 @@
 		<module>killrvideo-service-statistics</module>
 		<module>killrvideo-service-users</module>
 		<module>killrvideo-service-videocatalog</module>
-		<module>killrvideo-service-sugestedvideo</module>
+		<module>killrvideo-service-suggestedvideo</module>
 		<module>killrvideo-services</module>
         <module>killrvideo-test-utils</module>
     </modules>
