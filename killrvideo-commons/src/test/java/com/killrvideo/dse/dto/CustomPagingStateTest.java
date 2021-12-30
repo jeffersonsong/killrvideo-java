@@ -25,12 +25,12 @@ class CustomPagingStateTest {
 
     @Test
     public void testCustomPagingState() {
-        CustomPagingState state = CustomPagingState.buildFirstCustomPagingState()
-                .cassandraPagingState("CassamdraState");
+        CustomPagingState firstState = CustomPagingState.buildFirstCustomPagingState();
+        CustomPagingState state = new CustomPagingState(firstState.getListOfBuckets(), 0, "CassamdraState");
         String serialized = CustomPagingState.createPagingState(state.getListOfBuckets(), state.getCurrentBucket(), state.getCassandraPagingState());
         LOGGER.info("serialized: " + serialized);
         LOGGER.info("toString  : " + state);
-        CustomPagingState parsed = CustomPagingState.parse(Optional.of(serialized)).get();
+        CustomPagingState parsed = CustomPagingState.parse(serialized).get();
 
         assertEquals(state.getCurrentBucket(), parsed.getCurrentBucket());
         assertEquals(state.getListOfBucketsSize(), parsed.getListOfBucketsSize());

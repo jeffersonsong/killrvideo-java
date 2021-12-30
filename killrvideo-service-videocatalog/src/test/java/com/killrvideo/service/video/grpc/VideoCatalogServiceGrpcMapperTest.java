@@ -101,7 +101,7 @@ class VideoCatalogServiceGrpcMapperTest {
 
         GetLatestVideoPreviewsRequestData pojo = mapper.parseGetLatestVideoPreviewsRequest(
                 request,
-                CustomPagingState::new
+                CustomPagingState::buildFirstCustomPagingState
         );
 
         assertEquals(2, pojo.getPageSize());

@@ -1,6 +1,5 @@
 package com.killrvideo.service.video.request;
 
-import com.killrvideo.dse.dto.CustomPagingState;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -10,8 +9,9 @@ import java.util.UUID;
 
 @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 @Getter @AllArgsConstructor
-public class GetLatestVideoPreviewsRequestData {
-    private final CustomPagingState pageState;
+public class GetLatestVideoPreviewsForGivenDateRequestData {
+    private final String yyyymmdd;
+    private final Optional<String> pagingState;
     private final int pageSize;
     private final Optional<Instant> startDate;
     private final Optional<UUID> startVideoId;

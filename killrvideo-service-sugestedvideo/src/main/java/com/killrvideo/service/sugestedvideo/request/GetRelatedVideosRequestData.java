@@ -9,8 +9,8 @@ import java.util.UUID;
 
 @Getter @AllArgsConstructor @ToString
 public class GetRelatedVideosRequestData {
-    private UUID videoid;
-    private int pageSize;
+    private final UUID videoid;
+    private final int pageSize;
     @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-    private Optional<String> pagingState;
+    private final Optional<String> pagingState;
 }

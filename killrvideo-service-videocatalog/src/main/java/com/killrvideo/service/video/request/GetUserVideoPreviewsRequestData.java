@@ -11,11 +11,11 @@ import java.util.UUID;
 @Getter
 @AllArgsConstructor
 public class GetUserVideoPreviewsRequestData {
-    private UUID userId;
-    private Optional<UUID> startingVideoId;
-    private Optional<Instant> startingAddedDate;
-    private Optional<Integer> pagingSize;
-    private Optional<String> pagingState;
+    private final UUID userId;
+    private final Optional<UUID> startingVideoId;
+    private final Optional<Instant> startingAddedDate;
+    private final Optional<Integer> pagingSize;
+    private final Optional<String> pagingState;
 
     public GetUserVideoPreviewsRequestData(UUID userId) {
         this(

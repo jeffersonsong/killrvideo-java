@@ -8,6 +8,6 @@ import java.util.UUID;
 
 @Getter @AllArgsConstructor @ToString
 public class GetUserRatingRequestData {
-    private UUID videoid;
-    private UUID userid;
+    private final UUID videoid;
+    private final UUID userid;
 }

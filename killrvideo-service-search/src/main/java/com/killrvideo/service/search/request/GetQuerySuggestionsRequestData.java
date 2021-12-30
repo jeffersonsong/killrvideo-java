@@ -8,6 +8,6 @@ import lombok.ToString;
 @AllArgsConstructor
 @ToString
 public class GetQuerySuggestionsRequestData {
-    private String query;
-    private int pageSize;
+    private final String query;
+    private final int pageSize;
 }
