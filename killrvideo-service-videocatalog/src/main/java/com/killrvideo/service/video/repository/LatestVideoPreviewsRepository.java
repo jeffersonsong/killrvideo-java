@@ -207,6 +207,7 @@ public class LatestVideoPreviewsRepository {
         }
     }
 
+    @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
     private boolean isNotBlank(Optional<String> pagingState) {
         return pagingState.isPresent() && StringUtils.isNotBlank(pagingState.get());
     }
