@@ -2,22 +2,20 @@ package com.killrvideo.dse.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.Setter;
+import org.springframework.util.Assert;
 
 import java.io.Serializable;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-import java.util.StringJoiner;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 
+import static java.util.Collections.emptyList;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 /**
@@ -26,8 +24,6 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
  * @author DataStax Developer Advocates team.
  */
 @Getter
-@Setter
-@AllArgsConstructor
 public class CustomPagingState implements Serializable {
     private static final long serialVersionUID = 8160171855827276965L;
 
@@ -47,12 +43,18 @@ public class CustomPagingState implements Serializable {
     /**
      * Current Bucket.
      */
-    private int currentBucket = 0;
+    private final int currentBucket;
 
     /**
      * Paging.
      */
     private final String cassandraPagingState;
+
+    private CustomPagingState(List<String> listOfBuckets, int currentBucket, String cassandraPagingState) {
+        this.listOfBuckets = listOfBuckets != null ? Collections.unmodifiableList(listOfBuckets) : emptyList();
+        this.currentBucket = currentBucket;
+        this.cassandraPagingState = cassandraPagingState != null ? cassandraPagingState : "";
+    }
 
     /**
      * Build the first paging state if one does not already exist and return an object containing 3 elements
@@ -75,7 +77,7 @@ public class CustomPagingState implements Serializable {
      * @param customPagingStateString current paging state.
      * @return current pageing state
      */
-    public static Optional<CustomPagingState> parse(String customPagingStateString) {
+    public static Optional<CustomPagingState> deserialize(String customPagingStateString) {
         if (isNotBlank(customPagingStateString)) {
             Matcher matcher = PARSE_LATEST_PAGING_STATE.matcher(customPagingStateString);
             if (matcher.matches()) {
@@ -93,20 +95,6 @@ public class CustomPagingState implements Serializable {
     }
 
     /**
-     * Create a paging state string from the passed in parameters
-     *
-     * @param buckets
-     * @param bucketIndex
-     * @param rowsPagingState
-     * @return String
-     */
-    public static String createPagingState(List<String> buckets, int bucketIndex, String rowsPagingState) {
-        StringJoiner joiner = new StringJoiner("_");
-        buckets.forEach(joiner::add);
-        return joiner + "," + bucketIndex + "," + rowsPagingState;
-    }
-
-    /**
      * Get size of bucket list.
      */
     public int getListOfBucketsSize() {
@@ -116,8 +104,12 @@ public class CustomPagingState implements Serializable {
     /**
      * Increment index.
      */
-    public void incCurrentBucketIndex() {
-        currentBucket++;
+    public CustomPagingState incCurrentBucketIndex() {
+        return new CustomPagingState(listOfBuckets, currentBucket + 1, cassandraPagingState);
+    }
+
+    public CustomPagingState changeCassandraPagingState(String newCassandraPagingState) {
+        return new CustomPagingState(listOfBuckets, currentBucket, newCassandraPagingState);
     }
 
     /**
@@ -125,6 +117,12 @@ public class CustomPagingState implements Serializable {
      */
     public String getCurrentBucketValue() {
         return getListOfBuckets().get(getCurrentBucket());
+    }
+
+    public String serialize() {
+        StringJoiner joiner = new StringJoiner("_");
+        getListOfBuckets().forEach(joiner::add);
+        return joiner + "," + getCurrentBucket() + "," + getCassandraPagingState();
     }
 
     /**

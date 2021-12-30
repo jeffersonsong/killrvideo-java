@@ -128,7 +128,7 @@ public class VideoCatalogServiceGrpcMapper {
             GetLatestVideoPreviewsRequest grpcReq,
             Supplier<CustomPagingState> firstCustomPagingStateFactory) {
         CustomPagingState pageState =
-                CustomPagingState.parse(grpcReq.getPagingState())
+                CustomPagingState.deserialize(grpcReq.getPagingState())
                         .orElse(firstCustomPagingStateFactory.get());
         int pageSize = grpcReq.getPageSize();
         final Optional<Instant> startDate = Optional.of(grpcReq.getStartingAddedDate())

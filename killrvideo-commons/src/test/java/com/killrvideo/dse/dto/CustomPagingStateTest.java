@@ -10,7 +10,6 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -26,11 +25,11 @@ class CustomPagingStateTest {
     @Test
     public void testCustomPagingState() {
         CustomPagingState firstState = CustomPagingState.buildFirstCustomPagingState();
-        CustomPagingState state = new CustomPagingState(firstState.getListOfBuckets(), 0, "CassamdraState");
-        String serialized = CustomPagingState.createPagingState(state.getListOfBuckets(), state.getCurrentBucket(), state.getCassandraPagingState());
+        CustomPagingState state = firstState.changeCassandraPagingState("CassamdraState");
+        String serialized = state.serialize();
         LOGGER.info("serialized: " + serialized);
         LOGGER.info("toString  : " + state);
-        CustomPagingState parsed = CustomPagingState.parse(serialized).get();
+        CustomPagingState parsed = CustomPagingState.deserialize(serialized).get();
 
         assertEquals(state.getCurrentBucket(), parsed.getCurrentBucket());
         assertEquals(state.getListOfBucketsSize(), parsed.getListOfBucketsSize());
@@ -44,7 +43,7 @@ class CustomPagingStateTest {
         CustomPagingState state = CustomPagingState.buildFirstCustomPagingState();
 
         assertEquals(format(now), state.getCurrentBucketValue());
-        state.incCurrentBucketIndex();
+        state = state.incCurrentBucketIndex();
         Instant yesterday = now.minus(1, ChronoUnit.DAYS);
         assertEquals(format(yesterday), state.getCurrentBucketValue());
     }

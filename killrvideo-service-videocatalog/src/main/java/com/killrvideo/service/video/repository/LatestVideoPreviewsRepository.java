@@ -25,8 +25,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static com.killrvideo.dse.dto.CustomPagingState.createPagingState;
-
 @Component
 public class LatestVideoPreviewsRepository {
 
@@ -150,7 +148,7 @@ public class LatestVideoPreviewsRepository {
             updateNextPage(returnedPage, cpState, pageSize, currentPage.getPagingState());
 
             // (6) Move to next BUCKET
-            cpState.incCurrentBucketIndex();
+            cpState = cpState.incCurrentBucketIndex();
 
         } while ((returnedPage.getListOfPreview().size() < pageSize)               // Result has enough element to fill the page
                 && cpState.getCurrentBucket() < cpState.getListOfBucketsSize()); // No nore bucket available
@@ -171,7 +169,7 @@ public class LatestVideoPreviewsRepository {
     ) {
         if (request.getStartDate().isPresent() && request.getStartVideoId().isPresent()) {
             return findLatestVideoPreview_startingPoint.queryNext(
-                Optional.of(request.getPageSize()),
+                    Optional.of(request.getPageSize()),
                     request.getPagingState(),
                     request.getYyyymmdd(),
                     request.getStartDate().get(),
@@ -186,7 +184,8 @@ public class LatestVideoPreviewsRepository {
         }
     }
 
-    /** Update NEXT PAGE BASE on current status
+    /**
+     * Update NEXT PAGE BASE on current status
      */
     private void updateNextPage(LatestVideosPage returnedPage,
                                 CustomPagingState cpState,
@@ -195,8 +194,8 @@ public class LatestVideoPreviewsRepository {
         if (returnedPage.getResultSize() == pageSize) {
             if (isNotBlank(currentCassandraPagingState)) {
                 returnedPage.setNextPageState(
-                        createPagingState(cpState.getListOfBuckets(), cpState.getCurrentBucket(),
-                                currentCassandraPagingState.get())
+                        cpState.changeCassandraPagingState(currentCassandraPagingState.get())
+                                .serialize()
                 );
                 LOGGER.debug(" + Exiting because we got enought results.");
             }
@@ -204,7 +203,7 @@ public class LatestVideoPreviewsRepository {
         } else if (cpState.getCurrentBucket() == cpState.getListOfBucketsSize() - 1) {
             // --> Start from the beginning of the next bucket since we're out of rows in this one
             returnedPage.setNextPageState(
-                    createPagingState(cpState.getListOfBuckets(), cpState.getCurrentBucket() + 1, "")
+                    cpState.incCurrentBucketIndex().changeCassandraPagingState("").serialize()
             );
             LOGGER.debug(" + Exiting because we are out of Buckets even if not enough results");
         }
