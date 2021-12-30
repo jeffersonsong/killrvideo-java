@@ -1,8 +1,6 @@
 package com.killrvideo.dse.dto;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
-import org.springframework.util.Assert;
 
 import java.io.Serializable;
 import java.time.Instant;
@@ -36,12 +34,12 @@ public class CustomPagingState implements Serializable {
             DateTimeFormatter.ofPattern("yyyyMMdd").withZone(ZoneId.from(ZoneOffset.UTC));
 
     /**
-     * List of Buckets.
+     * List of Buckets of dates in yyyyMMdd format.
      */
     private final List<String> listOfBuckets;
 
     /**
-     * Current Bucket.
+     * Current Bucket index.
      */
     private final int currentBucket;
 

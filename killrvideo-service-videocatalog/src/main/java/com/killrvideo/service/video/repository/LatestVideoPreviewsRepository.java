@@ -197,7 +197,7 @@ public class LatestVideoPreviewsRepository {
                         cpState.changeCassandraPagingState(currentCassandraPagingState.get())
                                 .serialize()
                 );
-                LOGGER.debug(" + Exiting because we got enought results.");
+                LOGGER.debug(" + Exiting because we got enough results.");
             }
 
         } else if (cpState.getCurrentBucket() == cpState.getListOfBucketsSize() - 1) {
