@@ -19,7 +19,7 @@ import static java.util.Collections.singletonList;
 import static org.junit.jupiter.api.Assertions.*;
 
 class CommentsServiceGrpcMapperTest {
-    private CommentsServiceGrpcMapper mapper = new CommentsServiceGrpcMapper();
+    private final CommentsServiceGrpcMapper mapper = new CommentsServiceGrpcMapper();
 
     @Test
     public void testMapFromGrpcUserCommentToDseQuery() {
@@ -29,6 +29,7 @@ class CommentsServiceGrpcMapperTest {
 
         QueryCommentByUser pojo = mapper.mapFromGrpcUserCommentToDseQuery(request);
         assertEquals(userId, pojo.getUserId());
+        assertTrue(pojo.getCommentId().isPresent());
         assertEquals(startingCommentId, pojo.getCommentId().get());
         assertEquals(5, pojo.getPageSize());
         assertTrue(pojo.getPageState().isPresent());
@@ -73,6 +74,7 @@ class CommentsServiceGrpcMapperTest {
 
         QueryCommentByVideo pojo = mapper.mapFromGrpcVideoCommentToDseQuery(request);
         assertEquals(videoid, pojo.getVideoId());
+        assertTrue(pojo.getCommentId().isPresent());
         assertEquals(startingCommentId, pojo.getCommentId().get());
         assertEquals(5, pojo.getPageSize());
         assertTrue(pojo.getPageState().isPresent());
@@ -116,49 +118,44 @@ class CommentsServiceGrpcMapperTest {
     }
 
     private GetUserCommentsRequest getUserCommentsRequestInitial(UUID userId) {
-        GetUserCommentsRequest request = GetUserCommentsRequest.newBuilder()
+        return GetUserCommentsRequest.newBuilder()
                 .setUserId(uuidToUuid(userId))
                 .setPageSize(5)
                 .build();
-        return request;
     }
 
     private GetUserCommentsRequest getUserCommentsRequestWithStartingCommentIdAndState(UUID userId, UUID startingCommentId) {
-        GetUserCommentsRequest request = GetUserCommentsRequest.newBuilder()
+        return GetUserCommentsRequest.newBuilder()
                 .setStartingCommentId(uuidToTimeUuid(startingCommentId))
                 .setUserId(uuidToUuid(userId))
                 .setPageSize(5)
                 .setPagingState("paging state")
                 .build();
-        return request;
     }
 
     private GetVideoCommentsRequest getVideoCommentsRequestWithStartingCommentIdAndState(UUID videoid, UUID startingCommentId) {
-        GetVideoCommentsRequest request = GetVideoCommentsRequest.newBuilder()
+        return GetVideoCommentsRequest.newBuilder()
                 .setStartingCommentId(uuidToTimeUuid(startingCommentId))
                 .setVideoId(uuidToUuid(videoid))
                 .setPageSize(5)
                 .setPagingState("paging state")
                 .build();
-        return request;
     }
 
     private GetVideoCommentsRequest getVideoCommentsRequestInitial(UUID videoid) {
-        GetVideoCommentsRequest request = GetVideoCommentsRequest.newBuilder()
+        return GetVideoCommentsRequest.newBuilder()
                 .setVideoId(uuidToUuid(videoid))
                 .setPageSize(5)
                 .build();
-        return request;
     }
 
     private CommentOnVideoRequest commentOnVideoRequest(UUID vidoid, UUID userid, UUID commentid, String commentText) {
-        CommentOnVideoRequest request = CommentOnVideoRequest.newBuilder()
+        return CommentOnVideoRequest.newBuilder()
                 .setVideoId(uuidToUuid(vidoid))
                 .setCommentId(uuidToTimeUuid(commentid))
                 .setUserId(uuidToUuid(userid))
                 .setComment(commentText)
                 .build();
-        return request;
     }
 
     private Comment comment() {

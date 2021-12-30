@@ -13,8 +13,6 @@ import com.killrvideo.service.rating.dto.VideoRatingByUser;
 import com.killrvideo.service.rating.request.GetUserRatingRequestData;
 import com.killrvideo.utils.GrpcMappingUtils;
 import killrvideo.ratings.RatingsServiceOuterClass.*;
-import killrvideo.ratings.RatingsServiceOuterClass.GetRatingResponse;
-import killrvideo.ratings.RatingsServiceOuterClass.GetUserRatingResponse;
 import killrvideo.ratings.events.RatingsEvents;
 import org.springframework.stereotype.Component;
 

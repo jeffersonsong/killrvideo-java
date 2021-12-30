@@ -14,8 +14,6 @@ import java.util.concurrent.CompletableFuture;
 import static com.killrvideo.utils.test.CassandraTestUtils.mockMappedAsyncPagingIterable;
 import static java.util.Collections.singletonList;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 
 class StatisticsRepositoryTest {

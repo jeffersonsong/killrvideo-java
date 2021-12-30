@@ -12,11 +12,10 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static com.killrvideo.utils.GrpcMappingUtils.randomUuid;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 class UserManagementServiceGrpcValidatorTest {
-    private UserManagementServiceGrpcValidator validator = new UserManagementServiceGrpcValidator();
+    private final UserManagementServiceGrpcValidator validator = new UserManagementServiceGrpcValidator();
     private StreamObserver<?> streamObserver;
 
     @BeforeEach

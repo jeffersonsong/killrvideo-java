@@ -65,6 +65,7 @@ public class PageableQueryFactory {
             return result;
         }
 
+        @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
         private BoundStatement buildStatement(
                 Object[] queryParams,
                 Optional<Integer> pageSize,

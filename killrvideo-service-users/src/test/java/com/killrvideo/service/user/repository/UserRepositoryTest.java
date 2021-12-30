@@ -16,7 +16,6 @@ import java.util.concurrent.CompletableFuture;
 import static com.killrvideo.utils.test.CassandraTestUtils.mockMappedAsyncPagingIterable;
 import static java.util.Collections.singletonList;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 class UserRepositoryTest {
@@ -58,7 +57,7 @@ class UserRepositoryTest {
         when(this.userDao.insert(any())).thenReturn(CompletableFuture.completedFuture(true));
 
         this.repository.createUserAsync(user, "passwd").whenComplete((result, error) -> {
-            assertEquals(user, result);
+            assertTrue(result);
             assertNull(error);
         });
     }
@@ -92,6 +91,7 @@ class UserRepositoryTest {
         });
     }
 
+    @SuppressWarnings("SameParameterValue")
     private User user(UUID userid, String email, String passwd) {
         User user = new User();
         user.setUserid(userid);

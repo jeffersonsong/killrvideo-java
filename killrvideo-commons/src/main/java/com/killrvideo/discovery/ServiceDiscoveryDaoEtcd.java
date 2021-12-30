@@ -90,6 +90,7 @@ public class ServiceDiscoveryDaoEtcd implements ServiceDiscoveryDao {
                 .withDelayBetweenTries(delayBetweenTriesEtcd, ChronoUnit.SECONDS)
                 .withFixedBackoff()
                 .build();
+        //noinspection ResultOfMethodCallIgnored
         new CallExecutor<List <EtcdNode>>(etcdRetryConfig)
                 .afterFailedTry(s -> LOGGER.info("Attempt #{}/{} : ETCD is not ready (retry in {}s)",
                          atomicCount.getAndIncrement(), maxNumberOfTriesEtcd, delayBetweenTriesEtcd))

@@ -4,7 +4,6 @@ import com.killrvideo.dse.dto.ResultListPage;
 import com.killrvideo.dse.dto.Video;
 import com.killrvideo.service.search.request.GetQuerySuggestionsRequestData;
 import com.killrvideo.service.search.request.SearchVideosRequestData;
-import jnr.ffi.annotations.In;
 import killrvideo.search.SearchServiceOuterClass.*;
 import org.junit.jupiter.api.Test;
 
@@ -16,7 +15,7 @@ import static java.util.Collections.singletonList;
 import static org.junit.jupiter.api.Assertions.*;
 
 class SearchServiceGrpcMapperTest {
-    private SearchServiceGrpcMapper mapper = new SearchServiceGrpcMapper();
+    private final SearchServiceGrpcMapper mapper = new SearchServiceGrpcMapper();
 
     @Test
     public void testBuildSearchGrpcResponse() {
@@ -31,6 +30,7 @@ class SearchServiceGrpcMapperTest {
 
         SearchVideosResponse response = mapper.buildSearchGrpcResponse(resultPage, "query");
         assertEquals("query", response.getQuery());
+        assertTrue(resultPage.getPagingState().isPresent());
         assertEquals(resultPage.getPagingState().get(), response.getPagingState());
         assertEquals(1, response.getVideosCount());
     }
@@ -46,6 +46,7 @@ class SearchServiceGrpcMapperTest {
         SearchVideosRequestData pojo = mapper.parseSearchVideosRequestData(request);
         assertEquals(request.getQuery(), pojo.getQuery());
         assertEquals(request.getPageSize(), pojo.getPageSize());
+        assertTrue(pojo.getPagingState().isPresent());
         assertEquals(request.getPagingState(), pojo.getPagingState().get());
     }
 

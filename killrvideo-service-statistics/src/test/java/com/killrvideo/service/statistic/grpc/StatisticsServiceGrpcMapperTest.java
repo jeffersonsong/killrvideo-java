@@ -12,7 +12,7 @@ import static java.util.Collections.singletonList;
 import static org.junit.jupiter.api.Assertions.*;
 
 class StatisticsServiceGrpcMapperTest {
-    private StatisticsServiceGrpcMapper mapper = new StatisticsServiceGrpcMapper();
+    private final StatisticsServiceGrpcMapper mapper = new StatisticsServiceGrpcMapper();
 
     @Test
     public void testBuildGetNumberOfPlayResponse() {

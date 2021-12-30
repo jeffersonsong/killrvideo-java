@@ -1,7 +1,6 @@
 package com.killrvideo.service.video.repository;
 
 import com.datastax.oss.driver.api.core.ConsistencyLevel;
-import com.datastax.oss.driver.api.core.CqlSession;
 import com.killrvideo.dse.dto.CustomPagingState;
 import com.killrvideo.dse.dto.ResultListPage;
 import com.killrvideo.dse.utils.PageableQuery;
@@ -23,9 +22,6 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import static com.killrvideo.dse.dto.CustomPagingState.createPagingState;
 
 @Component
 public class LatestVideoPreviewsRepository {
@@ -41,20 +37,17 @@ public class LatestVideoPreviewsRepository {
                     "FROM killrvideo.latest_videos " +
                     "WHERE yyyymmdd = :ymd ";
 
-    private final CqlSession session;
     private final LatestVideoDao latestVideoDao;
-    private final LatestVideoRowMapper latestVideoRowMapper;
     /**
      * Prepare Statements 'getLatestVideso'.
      */
     private final PageableQuery<LatestVideo> findLatestVideoPreview_startingPoint;
     private final PageableQuery<LatestVideo> findLatestVideoPreview_noStartingPoint;
 
-    public LatestVideoPreviewsRepository(CqlSession session, PageableQueryFactory pageableQueryFactory,
-                                         VideoCatalogMapper mapper, LatestVideoRowMapper latestVideoRowMapper) {
-        this.session = session;
+    public LatestVideoPreviewsRepository(PageableQueryFactory pageableQueryFactory,
+                                         VideoCatalogMapper mapper,
+                                         LatestVideoRowMapper latestVideoRowMapper) {
         this.latestVideoDao = mapper.getLatestVideoDao();
-        this.latestVideoRowMapper = latestVideoRowMapper;
 
         this.findLatestVideoPreview_startingPoint = pageableQueryFactory.newPageableQuery(
                 QUERY_LATEST_VIDEO_PREVIEW_STARTING_POINT,
@@ -104,56 +97,57 @@ public class LatestVideoPreviewsRepository {
      * @throws ExecutionException   error duing invoation
      * @throws InterruptedException error in asynchronism
      */
+    @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
     private LatestVideosPage getLatestVideoPreviews(
-            CustomPagingState cpState,
-            int pageSize,
-            Optional<Instant> startDate,
-            Optional<UUID> startVid
+            final CustomPagingState cpState,
+            final int pageSize,
+            final Optional<Instant> startDate,
+            final Optional<UUID> startVid
     ) throws InterruptedException, ExecutionException {
         LatestVideosPage returnedPage = new LatestVideosPage();
         LOGGER.debug("Looking for {} latest video(s)", pageSize);
 
-        // Flag to synchronize usage of cassandra paging state
-        final AtomicBoolean isCassandraPageState = new AtomicBoolean(false);
+        CustomPagingState currState = cpState;
 
         do {
             // (1) - Paging state (custom or cassandra)
             final Optional<String> pagingState =
-                    Optional.ofNullable(cpState.getCassandraPagingState())  // Only if present .get()
-                            .filter(StringUtils::isNotBlank)                // ..and not empty
-                            .filter(pg -> !isCassandraPageState.get());     // ..and cassandra paging is off
+                    Optional.ofNullable(currState.getCassandraPagingState())  // Only if present .get()
+                            .filter(StringUtils::isNotBlank);                // ..and not empty
 
             GetLatestVideoPreviewsForGivenDateRequestData query =
                     new GetLatestVideoPreviewsForGivenDateRequestData(
-                            cpState.getCurrentBucketValue(),
+                            currState.getCurrentBucketValue(),
                             pagingState,
                             pageSize - returnedPage.getResultSize(),
                             startDate,
                             startVid
                     );
-            ResultListPage<LatestVideo> currentPage = loadCurrentPage(query).get();
 
-            pagingState.ifPresent(x -> isCassandraPageState.compareAndSet(false, true));
+            ResultListPage<LatestVideo> currentPage =
+                    loadCurrentPage(query).get();
 
             returnedPage.getListOfPreview().addAll(currentPage.getResults());
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug(" + bucket:{}/{} with results:{}/{} and pagingState:{}",
-                        cpState.getCurrentBucket(),
-                        cpState.getListOfBucketsSize(),
+                        currState.getCurrentBucket(),
+                        currState.getListOfBucketsSize(),
                         returnedPage.getResultSize(),
                         pageSize,
                         returnedPage.getCassandraPagingState()
                 );
             }
 
-            // (5) Update NEXT PAGE BASE on current status
-            updateNextPage(returnedPage, cpState, pageSize, currentPage.getPagingState());
-
-            // (6) Move to next BUCKET
-            cpState.incCurrentBucketIndex();
+            currState = nextState(
+                    currState,
+                    currentPage.getPagingState(),
+                    gotEnough(returnedPage, pageSize)
+            );
 
         } while ((returnedPage.getListOfPreview().size() < pageSize)               // Result has enough element to fill the page
-                && cpState.getCurrentBucket() < cpState.getListOfBucketsSize()); // No nore bucket available
+                && currState.getCurrentBucket() < currState.getListOfBucketsSize()); // No nore bucket available
+
+        returnedPage.setNextPageState(currState.serialize());
 
         return returnedPage;
     }
@@ -163,15 +157,13 @@ public class LatestVideoPreviewsRepository {
      *
      * @param request Query for latest videos for given date.
      * @return latest videos for current bucket date.
-     * @throws InterruptedException
-     * @throws ExecutionException
      */
     private CompletableFuture<ResultListPage<LatestVideo>> loadCurrentPage(
             GetLatestVideoPreviewsForGivenDateRequestData request
     ) {
         if (request.getStartDate().isPresent() && request.getStartVideoId().isPresent()) {
             return findLatestVideoPreview_startingPoint.queryNext(
-                Optional.of(request.getPageSize()),
+                    Optional.of(request.getPageSize()),
                     request.getPagingState(),
                     request.getYyyymmdd(),
                     request.getStartDate().get(),
@@ -186,31 +178,16 @@ public class LatestVideoPreviewsRepository {
         }
     }
 
-    /** Update NEXT PAGE BASE on current status
-     */
-    private void updateNextPage(LatestVideosPage returnedPage,
-                                CustomPagingState cpState,
-                                int pageSize,
-                                Optional<String> currentCassandraPagingState) {
-        if (returnedPage.getResultSize() == pageSize) {
-            if (isNotBlank(currentCassandraPagingState)) {
-                returnedPage.setNextPageState(
-                        createPagingState(cpState.getListOfBuckets(), cpState.getCurrentBucket(),
-                                currentCassandraPagingState.get())
-                );
-                LOGGER.debug(" + Exiting because we got enought results.");
-            }
-
-        } else if (cpState.getCurrentBucket() == cpState.getListOfBucketsSize() - 1) {
-            // --> Start from the beginning of the next bucket since we're out of rows in this one
-            returnedPage.setNextPageState(
-                    createPagingState(cpState.getListOfBuckets(), cpState.getCurrentBucket() + 1, "")
-            );
-            LOGGER.debug(" + Exiting because we are out of Buckets even if not enough results");
-        }
+    private boolean gotEnough(LatestVideosPage returnedPage, int pageSize) {
+        return returnedPage.getResultSize() == pageSize;
     }
 
-    private boolean isNotBlank(Optional<String> pagingState) {
-        return pagingState.isPresent() && StringUtils.isNotBlank(pagingState.get());
+    private CustomPagingState nextState(
+            CustomPagingState cpState,
+            Optional<String> pagingState,
+            boolean gotEnough) {
+        return gotEnough ?
+                cpState.changeCassandraPagingState(pagingState.orElse("")):
+                cpState.incCurrentBucketIndex();
     }
 }

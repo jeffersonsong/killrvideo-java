@@ -49,43 +49,43 @@ public class KillrvideoServicesGrpcServer {
     private CommentsServiceGrpc commentService;
     
     @Value("${killrvideo.services.comment: true}")
-    private boolean commentServiceEnabled = true;
+    private final boolean commentServiceEnabled = true;
     
     @Inject
     private RatingsServiceGrpc ratingService;
     
     @Value("${killrvideo.services.rating: true}")
-    private boolean ratingServiceEnabled = true;
+    private final boolean ratingServiceEnabled = true;
     
     @Inject
     private SearchServiceGrpc searchService;
     
     @Value("${killrvideo.services.search: true}")
-    private boolean searchServiceEnabled = true;
+    private final boolean searchServiceEnabled = true;
     
     @Inject
     private StatisticsServiceGrpc statisticsService;
     
     @Value("${killrvideo.services.statistic: true}")
-    private boolean statisticServiceEnabled = true;
+    private final boolean statisticServiceEnabled = true;
     
     @Inject
     private VideoCatalogServiceGrpc videoCatalogService;
  
     @Value("${killrvideo.services.videoCatalog: true}")
-    private boolean videoCatalogServiceEnabled = true;
+    private final boolean videoCatalogServiceEnabled = true;
     
     @Inject
     private UserManagementServiceGrpc userService;
     
     @Value("${killrvideo.services.user: true}")
-    private boolean userServiceEnabled = true;
+    private final boolean userServiceEnabled = true;
     
     @Inject
     private SuggestedVideosServiceGrpc suggestedVideosService;
     
     @Value("${killrvideo.services.suggestedVideo: true}")
-    private boolean suggestedVideoServiceEnabled = true;
+    private final boolean suggestedVideoServiceEnabled = true;
   
     /**
      * GRPC Server to set up.
@@ -122,11 +122,7 @@ public class KillrvideoServicesGrpcServer {
         grpcServer = builder.build();
         
         // Declare a shutdown hook otherwise JVM is listening on  a port forever
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-            public void run() {
-                stopGrpcServer();
-            }
-        });
+        Runtime.getRuntime().addShutdownHook(new Thread(this::stopGrpcServer));
 
         // Start Grpc listener
         grpcServer.start();

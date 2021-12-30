@@ -8,7 +8,6 @@ import com.evanlennick.retry4j.config.RetryConfig;
 import com.evanlennick.retry4j.config.RetryConfigBuilder;
 import com.killrvideo.discovery.ServiceDiscoveryDao;
 import com.killrvideo.dse.graph.KillrVideoTraversalSource;
-import com.killrvideo.dse.utils.PageableQueryFactory;
 import com.killrvideo.model.CommonConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,6 +33,7 @@ import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicInteger;
 
+@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 @Configuration
 public class DseConfiguration {
 
@@ -85,7 +85,7 @@ public class DseConfiguration {
     public Optional<Boolean> dseEnableSSLEnvVar;
 
     @Value("${killrvideo.etcd.enabled : true}")
-    private boolean etcdLookup = false;
+    private final boolean etcdLookup = false;
 
     @Inject
     private ServiceDiscoveryDao discoveryDao;
@@ -105,9 +105,7 @@ public class DseConfiguration {
 
         maxNumberOfTriesFromEnvVar.ifPresent(integer -> maxNumberOfTries = integer);
 
-        if (delayBetweenTriesFromEnvVar.isPresent()) {
-            delayBetweenTries = delayBetweenTriesFromEnvVar.get();
-        }
+        delayBetweenTriesFromEnvVar.ifPresent(integer -> delayBetweenTries = integer);
 
         // Connecting to DSE with a retry mechanism :
         // In docker deployments we may have to wait until all components are up and running.
@@ -243,9 +241,7 @@ public class DseConfiguration {
         // Reading Environment Variables to eventually override default config
         if (dseEnableSSLEnvVar.isPresent()) {
             dseEnableSSL = dseEnableSSLEnvVar.get();
-            if (sslCACertFileLocationEnvVar.isPresent()) {
-                sslCACertFileLocation = sslCACertFileLocationEnvVar.get();
-            }
+            sslCACertFileLocationEnvVar.ifPresent(s -> sslCACertFileLocation = s);
         }
 
         if (dseEnableSSL) {

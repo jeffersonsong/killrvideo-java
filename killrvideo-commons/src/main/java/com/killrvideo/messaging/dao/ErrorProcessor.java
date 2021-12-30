@@ -24,7 +24,7 @@ import killrvideo.common.CommonEvents.ErrorEvent;
 public class ErrorProcessor {
     private static final Logger LOGGER = LoggerFactory.getLogger(ErrorProcessor.class);
 
-    private PrintWriter errorLogFile;
+    private final PrintWriter errorLogFile;
 
     @Autowired
     public ErrorProcessor(@Value("${killrvideo.cassandra.mutation-error-log: /tmp/killrvideo-mutation-errors.log}")

@@ -1,6 +1,5 @@
 package com.killrvideo.service.comment.repository;
 
-import com.datastax.oss.driver.api.core.cql.Row;
 import com.datastax.oss.driver.api.core.uuid.Uuids;
 import com.killrvideo.dse.dto.ResultListPage;
 import com.killrvideo.dse.utils.PageableQuery;
@@ -17,13 +16,12 @@ import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Function;
 
 import static com.killrvideo.utils.test.CassandraTestUtils.mockPageableQueryFactory;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+@SuppressWarnings({"unchecked", "SameParameterValue"})
 class CommentRepositoryTest {
     private CommentRepository repository;
 
@@ -51,7 +49,7 @@ class CommentRepositoryTest {
     }
 
     @Test
-    void testInsertCommentAsync() throws Exception {
+    void testInsertCommentAsync() {
         when(commentByUserDao.insert(any())).thenReturn(
                 CompletableFuture.completedFuture(null)
         );
@@ -67,7 +65,7 @@ class CommentRepositoryTest {
     }
 
     @Test
-    void testInsertCommentAsyncWithOneOfInsertFailed() throws Exception {
+    void testInsertCommentAsyncWithOneOfInsertFailed() {
         when(commentByUserDao.insert(any())).thenReturn(
                 CompletableFuture.failedFuture(new Exception())
         );

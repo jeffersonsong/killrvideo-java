@@ -22,11 +22,6 @@ import com.killrvideo.service.video.request.GetUserVideoPreviewsRequestData;
 import com.killrvideo.utils.GrpcMappingUtils;
 import killrvideo.common.CommonTypes;
 import killrvideo.video_catalog.VideoCatalogServiceOuterClass.*;
-import killrvideo.video_catalog.VideoCatalogServiceOuterClass.GetLatestVideoPreviewsResponse;
-import killrvideo.video_catalog.VideoCatalogServiceOuterClass.GetVideoResponse;
-import killrvideo.video_catalog.VideoCatalogServiceOuterClass.SubmitYouTubeVideoRequest;
-import killrvideo.video_catalog.VideoCatalogServiceOuterClass.VideoLocationType;
-import killrvideo.video_catalog.VideoCatalogServiceOuterClass.VideoPreview;
 import killrvideo.video_catalog.events.VideoCatalogEvents;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -128,7 +123,7 @@ public class VideoCatalogServiceGrpcMapper {
             GetLatestVideoPreviewsRequest grpcReq,
             Supplier<CustomPagingState> firstCustomPagingStateFactory) {
         CustomPagingState pageState =
-                CustomPagingState.parse(grpcReq.getPagingState())
+                CustomPagingState.deserialize(grpcReq.getPagingState())
                         .orElse(firstCustomPagingStateFactory.get());
         int pageSize = grpcReq.getPageSize();
         final Optional<Instant> startDate = Optional.of(grpcReq.getStartingAddedDate())

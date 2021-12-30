@@ -13,7 +13,7 @@ import static com.killrvideo.utils.GrpcMappingUtils.randomUuid;
 import static org.mockito.Mockito.*;
 
 class CommentsServiceGrpcValidatorTest {
-    private CommentsServiceGrpcValidator validator = new CommentsServiceGrpcValidator();
+    private final CommentsServiceGrpcValidator validator = new CommentsServiceGrpcValidator();
     private StreamObserver<?> streamObserver;
 
     @BeforeEach

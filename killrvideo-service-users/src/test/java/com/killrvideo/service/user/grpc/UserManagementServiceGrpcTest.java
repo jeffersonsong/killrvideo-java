@@ -244,7 +244,7 @@ class UserManagementServiceGrpcTest {
         verify(grpcResObserver, times(1)).onCompleted();
     }
 
-
+    @SuppressWarnings("SameParameterValue")
     private CreateUserRequest createUserRequest(String passwd, String email) {
         return CreateUserRequest.newBuilder()
                 .setPassword(passwd)
@@ -252,6 +252,7 @@ class UserManagementServiceGrpcTest {
                 .build();
     }
 
+    @SuppressWarnings("SameParameterValue")
     private VerifyCredentialsRequest verifyCredentialsRequest(String email, String passwd) {
         return VerifyCredentialsRequest.newBuilder()
                 .setEmail(email)
@@ -259,6 +260,7 @@ class UserManagementServiceGrpcTest {
                 .build();
     }
 
+    @SuppressWarnings("SameParameterValue")
     private UserCredentials userCredentials(String email, String passwd) {
         User user = mock(User.class);
         when(user.getEmail()).thenReturn(email);

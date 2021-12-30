@@ -14,6 +14,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class CassandraTestUtils {
+    @SuppressWarnings("unchecked")
     public static <T> MappedAsyncPagingIterable<T> mockMappedAsyncPagingIterable(List<T> list) {
         MappedAsyncPagingIterable<T> iter = mock(MappedAsyncPagingIterable.class);
         when(iter.hasMorePages()).thenReturn(false);
@@ -22,6 +23,8 @@ public class CassandraTestUtils {
         return iter;
     }
 
+    @SuppressWarnings("unchecked")
+    @SafeVarargs
     public static <T> PageableQueryFactory mockPageableQueryFactory(PageableQuery<T>... queries) {
         PageableQueryFactory pageableQueryFactory = mock(PageableQueryFactory.class);
 

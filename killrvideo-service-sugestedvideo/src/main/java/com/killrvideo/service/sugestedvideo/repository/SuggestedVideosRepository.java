@@ -72,8 +72,9 @@ public class SuggestedVideosRepository {
      * Had to use .split() below because of the following conversation:
      * https://github.com/spring-projects/spring-boot/issues/501
      */
+    @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
     @Value("#{'${killrvideo.search.ignoredWords}'.split(',')}")
-    private Set<String> ignoredWords = new HashSet<>();
+    private final Set<String> ignoredWords = new HashSet<>();
 
     public SuggestedVideosRepository(CqlSession session, PageableQueryFactory pageableQueryFactory, VideoMapper mapper, VideoRowMapper videoRowMapper) {
         this.session = session;

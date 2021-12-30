@@ -1,6 +1,5 @@
 package com.killrvideo.dse.dto;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,18 +18,16 @@ class CustomPagingStateTest {
     private static final DateTimeFormatter DATEFORMATTER =
             DateTimeFormatter.ofPattern("yyyyMMdd").withZone(ZoneId.from(ZoneOffset.UTC));
 
-    @BeforeEach
-    void setUp() {
-    }
-
     @Test
     public void testCustomPagingState() {
         CustomPagingState firstState = CustomPagingState.buildFirstCustomPagingState();
-        CustomPagingState state = new CustomPagingState(firstState.getListOfBuckets(), 0, "CassamdraState");
-        String serialized = CustomPagingState.createPagingState(state.getListOfBuckets(), state.getCurrentBucket(), state.getCassandraPagingState());
+        CustomPagingState state = firstState.changeCassandraPagingState("CassamdraState");
+        String serialized = state.serialize();
         LOGGER.info("serialized: " + serialized);
         LOGGER.info("toString  : " + state);
-        CustomPagingState parsed = CustomPagingState.parse(serialized).get();
+        Optional<CustomPagingState> deserialized = CustomPagingState.deserialize(serialized);
+        assertTrue(deserialized.isPresent());
+        CustomPagingState parsed = deserialized.get();
 
         assertEquals(state.getCurrentBucket(), parsed.getCurrentBucket());
         assertEquals(state.getListOfBucketsSize(), parsed.getListOfBucketsSize());
@@ -44,7 +41,7 @@ class CustomPagingStateTest {
         CustomPagingState state = CustomPagingState.buildFirstCustomPagingState();
 
         assertEquals(format(now), state.getCurrentBucketValue());
-        state.incCurrentBucketIndex();
+        state = state.incCurrentBucketIndex();
         Instant yesterday = now.minus(1, ChronoUnit.DAYS);
         assertEquals(format(yesterday), state.getCurrentBucketValue());
     }

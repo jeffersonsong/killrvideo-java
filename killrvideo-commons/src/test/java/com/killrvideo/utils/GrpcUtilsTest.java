@@ -4,9 +4,9 @@ import io.grpc.stub.StreamObserver;
 import org.junit.jupiter.api.Test;
 
 import static com.killrvideo.utils.GrpcUtils.returnSingleResult;
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+@SuppressWarnings("unchecked")
 class GrpcUtilsTest {
 
     @Test

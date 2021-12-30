@@ -21,6 +21,7 @@ import io.grpc.ServerServiceDefinition;
  *
  * @author Cedrick LUNVEN (@clunven)
  */
+@SuppressWarnings("unused")
 public abstract class AbstractSingleServiceGrpcServer {
     
     /** Some logger. */

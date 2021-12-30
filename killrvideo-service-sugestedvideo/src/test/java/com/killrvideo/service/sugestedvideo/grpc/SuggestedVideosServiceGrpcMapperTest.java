@@ -19,7 +19,7 @@ import static java.util.Collections.singletonList;
 import static org.junit.jupiter.api.Assertions.*;
 
 class SuggestedVideosServiceGrpcMapperTest {
-    private SuggestedVideosServiceGrpcMapper mapper = new SuggestedVideosServiceGrpcMapper();
+    private final SuggestedVideosServiceGrpcMapper mapper = new SuggestedVideosServiceGrpcMapper();
 
     @Test
     public void testMapVideoAddedtoVideoDTO() {
@@ -70,6 +70,7 @@ class SuggestedVideosServiceGrpcMapperTest {
 
         assertEquals(videoid, pojo.getVideoid());
         assertEquals(2, pojo.getPageSize());
+        assertTrue(pojo.getPagingState().isPresent());
         assertEquals("Paging state", pojo.getPagingState().get());
     }
 

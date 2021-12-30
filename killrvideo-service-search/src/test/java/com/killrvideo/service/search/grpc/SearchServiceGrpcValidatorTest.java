@@ -7,11 +7,10 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 class SearchServiceGrpcValidatorTest {
-    private SearchServiceGrpcValidator validator = new SearchServiceGrpcValidator();
+    private final SearchServiceGrpcValidator validator = new SearchServiceGrpcValidator();
     private StreamObserver<?> streamObserver;
 
     @BeforeEach

@@ -28,6 +28,7 @@ public class QueryCommentByUser extends QueryDefinition {
     @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
     private Optional<UUID> commentId = Optional.empty();
 
+    @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
     public QueryCommentByUser(UUID userId, Optional<UUID> commentId, int pageSize, Optional<String> pageState) {
         super(pageSize, pageState);
         this.userId = userId;

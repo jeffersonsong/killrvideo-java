@@ -30,6 +30,7 @@ public class QueryCommentByVideo extends QueryDefinition {
     @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
     private Optional<UUID> commentId = Optional.empty();
 
+    @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
     public QueryCommentByVideo(UUID videoId, Optional<UUID> commentId, int pageSize, Optional<String> pageState) {
         super(pageSize, pageState);
         this.videoId = videoId;
