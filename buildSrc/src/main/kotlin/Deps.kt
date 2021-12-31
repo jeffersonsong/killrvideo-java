@@ -1,4 +1,6 @@
 object Deps {
+    const val coroutinesVersion = "1.5.2"
+
     object Datastax {
         private const val datastaxDriverVersion = "4.13.0"
         val core = "com.datastax.oss:java-driver-core:$datastaxDriverVersion"
@@ -39,13 +41,20 @@ object Deps {
         private const val protobufVersion = "3.19.1"
         private const val guavaVersion = "31.0.1-jre"
         val protobuf = "com.google.protobuf:protoc:$protobufVersion"
+        val protobufJavaUtils = "com.google.protobuf:protobuf-java-util:3.19.0-rc-2"
+        val protobufKotlin = "com.google.protobuf:protobuf-kotlin:$protobufVersion"
         val guava = "com.google.guava:guava:$guavaVersion"
     }
 
     object Grpc {
         private const val grpcVersion = "1.43.1"
-        val protocGen = "io.grpc:protoc-gen-grpc-java:$grpcVersion"
+        private const val grpcKotlinVersion = "1.2.0"
+
+        val protocGenJava = "io.grpc:protoc-gen-grpc-java:$grpcVersion"
+        val protocGenKotlin = "io.grpc:protoc-gen-grpc-kotlin:$grpcKotlinVersion:jdk7@jar"
         val all = "io.grpc:grpc-all:$grpcVersion"
+        val protobuf = "io.grpc:grpc-protobuf:$grpcVersion"
+        val kotlinStub = "io.grpc:grpc-kotlin-stub:$grpcKotlinVersion"
     }
 
     const val lombok = "org.projectlombok:lombok:1.18.20"
@@ -90,5 +99,11 @@ object Deps {
     object Mockito {
         const val mockitoVersion = "4.0.0"
         val core = "org.mockito:mockito-core:$mockitoVersion"
+    }
+
+    object JetBrian {
+        object Kotlinx {
+            val coroutinesCore = "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion"
+        }
     }
 }

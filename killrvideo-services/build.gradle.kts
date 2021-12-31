@@ -4,6 +4,7 @@ plugins {
     application
     id("com.datastax.java-conventions")
     id("org.springframework.boot")
+    kotlin("jvm")
 }
 
 application {
@@ -11,6 +12,8 @@ application {
 }
 
 dependencies {
+    api(kotlin("stdlib"))
+
     implementation(project(":killrvideo-commons"))
     implementation(project(":killrvideo-service-ratings"))
     implementation(project(":killrvideo-service-comments"))

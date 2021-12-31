@@ -7,6 +7,7 @@ import com.google.protobuf.gradle.protoc
 plugins {
     id("com.datastax.java-conventions")
     id("com.google.protobuf")
+    kotlin("jvm")
 }
 
 repositories {
@@ -15,6 +16,15 @@ repositories {
 }
 
 dependencies {
+    api(kotlin("stdlib"))
+    api(Deps.JetBrian.Kotlinx.coroutinesCore)
+    api(Deps.Grpc.protobuf)
+    api(Deps.Google.protobufJavaUtils)
+    api(Deps.Google.protobufKotlin)
+    api(Deps.Grpc.kotlinStub)
+
+    runtimeOnly(Deps.Google.protobufJavaUtils)
+
     // Spring, Inversion Of Control
     implementation(Deps.Spring.context)
     implementation(Deps.Javax.inject)
@@ -77,13 +87,20 @@ protobuf {
     }
     plugins {
         id("grpc") {
-            artifact = Deps.Grpc.protocGen
+            artifact = Deps.Grpc.protocGenJava
+        }
+        id("grpckt") {
+            artifact = Deps.Grpc.protocGenKotlin
         }
     }
     generateProtoTasks {
         all().forEach {
             it.plugins {
                 id("grpc")
+                id("grpckt")
+            }
+            it.builtins {
+                id("kotlin")
             }
         }
     }

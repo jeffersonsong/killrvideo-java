@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 buildscript {
     repositories {
         mavenCentral()
@@ -10,6 +12,7 @@ plugins {
     id("org.springframework.boot") version "2.6.2" apply false
     id("com.google.protobuf") version "0.8.15" apply false
     id("java")
+    kotlin("jvm") version "1.6.10"
 }
 
 allprojects {
@@ -24,12 +27,20 @@ subprojects {
 
     apply {
         plugin("java")
-        plugin("com.google.protobuf")
+        plugin("org.jetbrains.kotlin.jvm")
+        // plugin("com.google.protobuf")
     }
 
     tasks.withType<JavaCompile> {
         sourceCompatibility = JavaVersion.VERSION_11.toString()
         targetCompatibility = JavaVersion.VERSION_11.toString()
+    }
+
+    tasks.withType<KotlinCompile> {
+        kotlinOptions {
+            freeCompilerArgs = listOf("-Xopt-in=kotlin.RequiresOptIn")
+            jvmTarget = JavaVersion.VERSION_11.toString()
+        }
     }
 
     tasks.withType<Test>() {
@@ -39,5 +50,6 @@ subprojects {
     dependencies {
         testImplementation(Deps.Junit.jupiter)
         testImplementation(Deps.Junit.jupiterEngine)
+        api(kotlin("stdlib"))
     }
 }
