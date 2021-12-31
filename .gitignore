@@ -30,3 +30,4 @@ dse-data/
 */.gradle/
 .gradle
 /build/
+*/out/
