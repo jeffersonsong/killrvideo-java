@@ -30,7 +30,7 @@ services:
 
   # DataStax Enterprise Database
   dse: 
-    image: datastax/dse-server:6.7.0
+    image: datastax/dse-server:6.8.18-1
     command: [ -s -g ] # Run with Search and Graph capabilities enabled
     ports: # Exposes ports to be available.
       - "9042:9042" # Exposes DSE port
