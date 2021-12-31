@@ -1,6 +1,3 @@
-import org.gradle.api.tasks.testing.logging.TestExceptionFormat
-import org.gradle.api.tasks.testing.logging.TestLogEvent
-
 buildscript {
     repositories {
         mavenCentral()
@@ -18,7 +15,6 @@ plugins {
 allprojects {
     group = "com.datastax"
     version = "3.0.8"
-
 }
 
 subprojects {
@@ -41,7 +37,7 @@ subprojects {
     }
 
     dependencies {
-        testImplementation("org.junit.jupiter:junit-jupiter-api:${Junit.jupiter}")
-        testImplementation("org.junit.jupiter:junit-jupiter-engine:${Junit.jupiter}")
+        testImplementation(Deps.Junit.jupiter)
+        testImplementation(Deps.Junit.jupiterEngine)
     }
 }

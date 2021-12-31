@@ -8,10 +8,10 @@ plugins {
 
 dependencies {
     implementation(project(":killrvideo-commons"))
-    implementation("org.junit.jupiter:junit-jupiter-api:${Junit.jupiter}")
+    implementation(Deps.Junit.jupiter)
 
-    implementation("org.mockito:mockito-core:$mockito")
-    implementation("com.datastax.oss:java-driver-core:$datastaxDriver")
+    implementation(Deps.Mockito.core)
+    implementation(Deps.Datastax.core)
 }
 
 description = "killrvideo-test-utils"

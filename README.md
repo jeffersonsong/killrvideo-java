@@ -61,3 +61,5 @@ limitations under the License.
 [issues]: https://github.com/KillrVideo/killrvideo-java/issues
 [gremlindsljava]: https://www.datastax.com/dev/blog/gremlin-dsls-in-java-with-dse-graph
 [v2.1.0]: https://github.com/KillrVideo/killrvideo-java/tree/v2.1.0
+
+https://reul.space/post/2021-03-02-dependency-management-kts/

@@ -3,16 +3,19 @@
  */
 
 rootProject.name = "killrvideo-parent"
-include(":killrvideo-commons")
-include(":killrvideo-service-comments")
-include(":killrvideo-service-ratings")
-include(":killrvideo-service-statistics")
-include(":killrvideo-service-suggestedvideo")
-include(":killrvideo-service-search")
-include(":killrvideo-service-users")
-include(":killrvideo-service-videocatalog")
-include(":killrvideo-services")
-include(":killrvideo-test-utils")
+
+include(
+    "killrvideo-commons",
+    "killrvideo-test-utils",
+    "killrvideo-service-users",
+    "killrvideo-service-videocatalog",
+    "killrvideo-service-comments",
+    "killrvideo-service-ratings",
+    "killrvideo-service-statistics",
+    "killrvideo-service-search",
+    "killrvideo-service-suggestedvideo",
+    "killrvideo-services"
+)
 
 pluginManagement {
     repositories {

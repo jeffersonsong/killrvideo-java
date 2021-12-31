@@ -17,38 +17,39 @@ repositories {
 dependencies {
     implementation(project(":killrvideo-commons"))
     testImplementation(project(":killrvideo-test-utils"))
-    compileOnly("org.projectlombok:lombok:$lombok")
 
-    testImplementation("org.junit.jupiter:junit-jupiter-api:${Junit.jupiter}")
-    testImplementation("org.mockito:mockito-core:$mockito")
+    compileOnly(Deps.lombok)
 
-    implementation("org.springframework:spring-context:${Spring.context}")
+    testImplementation(Deps.Junit.jupiter)
+    testImplementation(Deps.Mockito.core)
 
-    implementation("com.datastax.oss:java-driver-mapper-runtime:$datastaxDriver")
+    implementation(Deps.Spring.context)
 
-    implementation("com.google.protobuf:protobuf-java:${Google.protobuf}")
-    implementation("io.grpc:grpc-all:$grpcVersion") {
+    implementation(Deps.Datastax.mapperRuntime)
+
+    implementation(Deps.Google.protobuf)
+    implementation(Deps.Grpc.all) {
         exclude(group = "io.grpc", module = "grpc-testing");
         exclude(group = "junit", module = "junit");
     }
 
-    implementation("org.apache.commons:commons-lang3:${Apache.Commons.lang3}")
-    implementation("javax.validation:validation-api:${Javax.validation}")
-    implementation("javax.annotation:javax.annotation-api:${Javax.annotation}")
+    implementation(Deps.Apache.Commons.lang3)
+    implementation(Deps.Javax.validation)
+    implementation(Deps.Javax.annotation)
 
-    annotationProcessor("org.projectlombok:lombok:$lombok")
-    annotationProcessor("com.datastax.oss:java-driver-mapper-processor:$datastaxDriver")
+    annotationProcessor(Deps.lombok)
+    annotationProcessor(Deps.Datastax.mapperProcessor)
 }
 
 description = "+ killrvideo-service-comments"
 
 protobuf {
     protoc {
-        artifact = "com.google.protobuf:protoc:${Google.protobuf}"
+        artifact = Deps.Google.protobuf
     }
     plugins {
         id("grpc") {
-            artifact = "io.grpc:protoc-gen-grpc-java:$grpcVersion"
+            artifact = Deps.Grpc.protocGen
         }
     }
     generateProtoTasks {

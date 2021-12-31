@@ -16,36 +16,36 @@ repositories {
 
 dependencies {
     implementation(project(":killrvideo-commons"))
-    testImplementation("org.junit.jupiter:junit-jupiter-api:${Junit.jupiter}")
-    testImplementation("org.mockito:mockito-core:$mockito")
-    compileOnly("org.projectlombok:lombok:$lombok")
+    testImplementation(Deps.Junit.jupiter)
+    testImplementation(Deps.Mockito.core)
+    compileOnly(Deps.lombok)
 
-    implementation("io.grpc:grpc-all:$grpcVersion") {
+    implementation(Deps.Grpc.all) {
         exclude(group = "io.grpc", module = "grpc-testing");
         exclude(group = "junit", module = "junit");
     }
-    implementation("com.datastax.oss:java-driver-core:$datastaxDriver")
-    implementation("com.datastax.oss:java-driver-mapper-runtime:$datastaxDriver")
-    implementation("org.apache.commons:commons-lang3:${Apache.Commons.lang3}")
-    implementation("org.springframework:spring-context:${Spring.context}")
-    implementation("javax.annotation:javax.annotation-api:${Javax.annotation}")
-    implementation("javax.inject:javax.inject:${Javax.inject}")
-    implementation("org.apache.kafka:connect-api:${Apache.kafka}")
-    implementation("org.apache.tinkerpop:tinkergraph-gremlin:${Apache.tinkerpop}")
+    implementation(Deps.Datastax.core)
+    implementation(Deps.Datastax.mapperRuntime)
+    implementation(Deps.Apache.Commons.lang3)
+    implementation(Deps.Spring.context)
+    implementation(Deps.Javax.annotation)
+    implementation(Deps.Javax.inject)
+    implementation(Deps.Apache.Kafka.connectApi)
+    implementation(Deps.Apache.Tinkerpop.tinkergraph)
 
-    annotationProcessor("org.projectlombok:lombok:$lombok")
-    annotationProcessor("com.datastax.oss:java-driver-mapper-processor:$datastaxDriver")
+    annotationProcessor(Deps.lombok)
+    annotationProcessor(Deps.Datastax.mapperProcessor)
 }
 
 description = "+ killrvideo-service-suggestedvideo"
 
 protobuf {
     protoc {
-        artifact = "com.google.protobuf:protoc:${Google.protobuf}"
+        artifact = Deps.Google.protobuf
     }
     plugins {
         id("grpc") {
-            artifact = "io.grpc:protoc-gen-grpc-java:$grpcVersion"
+            artifact = Deps.Grpc.protocGen
         }
     }
     generateProtoTasks {

@@ -20,12 +20,12 @@ dependencies {
     implementation(project(":killrvideo-service-users"))
     implementation(project(":killrvideo-service-videocatalog"))
 
-    implementation("org.springframework.boot:spring-boot-starter:${Spring.Boot.starter}")
-    implementation("io.grpc:grpc-all:$grpcVersion") {
+    implementation(Deps.Spring.Boot.starter)
+    implementation(Deps.Grpc.all) {
         exclude(group = "io.grpc", module = "grpc-testing");
         exclude(group = "junit", module = "junit");
     }
-    implementation("javax.inject:javax.inject:${Javax.inject}")
+    implementation(Deps.Javax.inject)
 }
 
 tasks.getByName<BootJar>("bootJar") {

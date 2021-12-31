@@ -17,36 +17,37 @@ repositories {
 dependencies {
     implementation(project(":killrvideo-commons"))
     testImplementation(project(":killrvideo-test-utils"))
-    implementation("org.apache.commons:commons-collections4:${Apache.Commons.collections4}")
-    testImplementation("org.junit.jupiter:junit-jupiter-api:${Junit.jupiter}")
-    testImplementation("org.mockito:mockito-core:$mockito")
-    compileOnly("org.projectlombok:lombok:$lombok")
 
-    implementation("com.google.protobuf:protobuf-java:${Google.protobuf}")
-    implementation("io.grpc:grpc-all:$grpcVersion") {
+    implementation(Deps.Apache.Commons.collections4)
+    testImplementation(Deps.Junit.jupiter)
+    testImplementation(Deps.Mockito.core)
+    compileOnly(Deps.lombok)
+
+    implementation(Deps.Google.protobuf)
+    implementation(Deps.Grpc.all) {
         exclude(group = "io.grpc", module = "grpc-testing");
         exclude(group = "junit", module = "junit");
     }
 
-    implementation("org.springframework:spring-context:${Spring.context}")
-    implementation("com.datastax.oss:java-driver-mapper-runtime:$datastaxDriver")
-    implementation("javax.validation:validation-api:${Javax.validation}")
-    implementation("javax.annotation:javax.annotation-api:${Javax.annotation}")
-    implementation("org.apache.commons:commons-lang3:${Apache.Commons.lang3}")
+    implementation(Deps.Spring.context)
+    implementation(Deps.Datastax.mapperRuntime)
+    implementation(Deps.Javax.validation)
+    implementation(Deps.Javax.annotation)
+    implementation(Deps.Apache.Commons.lang3)
 
-    annotationProcessor("org.projectlombok:lombok:$lombok")
-    annotationProcessor("com.datastax.oss:java-driver-mapper-processor:$datastaxDriver")
+    annotationProcessor(Deps.lombok)
+    annotationProcessor(Deps.Datastax.mapperProcessor)
 }
 
 description = "+ killrvideo-service-users"
 
 protobuf {
     protoc {
-        artifact = "com.google.protobuf:protoc:${Google.protobuf}"
+        artifact = Deps.Google.protobuf
     }
     plugins {
         id("grpc") {
-            artifact = "io.grpc:protoc-gen-grpc-java:$grpcVersion"
+            artifact = Deps.Grpc.protocGen
         }
     }
     generateProtoTasks {
