@@ -15,7 +15,7 @@ services:
     environment:
       KILLRVIDEO_LOGGING_LEVEL: debug # More logging
     extra_hosts:
-      #- "host.docker.internal:host-gateway"
+      - "host.docker.internal:host-gateway"
       - "backend:$KILLRVIDEO_BACKEND"
 
   # Datastax Studio provides convenient web interface to work directly with DataStax Enterprise
@@ -43,8 +43,8 @@ services:
     ulimits:
       memlock: -1
     volumes:
-      #- /home/jeffersons/Tutorial/github.com/KillrVideo/dse2/var/lib/cassandra:/var/lib/cassandra
-      - /Users/jeffersons/Tutorials/github.com/KillrVideo/dse2/var/lib/cassandra:/var/lib/cassandra
+      - /home/jeffersons/Tutorial/github.com/KillrVideo/dse2/var/lib/cassandra:/var/lib/cassandra
+      #- /Users/jeffersons/Tutorials/github.com/KillrVideo/dse2/var/lib/cassandra:/var/lib/cassandra
 
   # One-Time Bootstrap Container, configures DSE to have required keyspaces etc.
   #dse-config:
