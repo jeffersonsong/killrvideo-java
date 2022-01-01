@@ -8,6 +8,7 @@ plugins {
     id("com.datastax.java-conventions")
     id("com.google.protobuf")
     kotlin("jvm")
+    kotlin("kapt")
 }
 
 repositories {
@@ -26,15 +27,16 @@ dependencies {
     implementation(project(":killrvideo-commons"))
     testImplementation(project(":killrvideo-test-utils"))
 
+    implementation(Deps.JetBrian.Kotlinx.coroutinesJdk8)
     implementation(Deps.Apache.Commons.collections4)
+    implementation(Deps.kotlinLogging)
     testImplementation(Deps.Junit.jupiter)
-    testImplementation(Deps.Mockito.core)
-    compileOnly(Deps.lombok)
+    testImplementation(Deps.mockk)
 
     implementation(Deps.Google.protobuf)
     implementation(Deps.Grpc.all) {
-        exclude(group = "io.grpc", module = "grpc-testing");
-        exclude(group = "junit", module = "junit");
+        exclude(group = "io.grpc", module = "grpc-testing")
+        exclude(group = "junit", module = "junit")
     }
 
     implementation(Deps.Spring.context)
@@ -43,8 +45,7 @@ dependencies {
     implementation(Deps.Javax.annotation)
     implementation(Deps.Apache.Commons.lang3)
 
-    annotationProcessor(Deps.lombok)
-    annotationProcessor(Deps.Datastax.mapperProcessor)
+    kapt(Deps.Datastax.mapperProcessor)
 }
 
 description = "+ killrvideo-service-users"
@@ -73,3 +74,26 @@ protobuf {
         }
     }
 }
+
+sourceSets.getByName("main") {
+    java.srcDir("src/main/java")
+    java.srcDir("build/generated/source/kaptKotlin/main")
+    java.srcDir("build/generated/source/proto/main/java")
+    java.srcDir("build/generated/source/proto/main/kotlin")
+    java.srcDir("build/generated/source/proto/main/grpc")
+    java.srcDir("build/generated/source/proto/main/grpckt")
+}
+
+/*
+sourceSets {
+    main {
+        kotlin {
+            srcDirs(
+                'src/main/kotlin',
+                'build/generated/source/kaptKotlin/main',
+                'build/generated/source/proto/main/kotlin',
+                'build/generated/source/proto/main/grpckt'
+            )
+        }
+    }
+}*/

@@ -1,5 +1,6 @@
 object Deps {
     const val coroutinesVersion = "1.5.2"
+    const val kotlinLogging= "io.github.microutils:kotlin-logging:2.1.21"
 
     object Datastax {
         private const val datastaxDriverVersion = "4.13.0"
@@ -64,6 +65,7 @@ object Deps {
 
     const val commonsCodec = "commons-codec:commons-codec:1.15"
     const val hamcrest = "org.hamcrest:hamcrest:2.2"
+    const val mockk = "io.mockk:mockk:1.12.2"
 
     object Apache {
         object Commons {
@@ -104,6 +106,7 @@ object Deps {
     object JetBrian {
         object Kotlinx {
             val coroutinesCore = "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion"
+            val coroutinesJdk8 = "org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:$coroutinesVersion"
         }
     }
 }

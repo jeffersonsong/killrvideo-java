@@ -13,11 +13,16 @@ plugins {
     id("com.google.protobuf") version "0.8.15" apply false
     id("java")
     kotlin("jvm") version "1.6.10"
+    kotlin("kapt") version "1.6.10"
 }
 
 allprojects {
     group = "com.datastax"
     version = "3.0.8"
+}
+
+repositories {
+    mavenCentral()
 }
 
 subprojects {
@@ -38,7 +43,7 @@ subprojects {
 
     tasks.withType<KotlinCompile> {
         kotlinOptions {
-            freeCompilerArgs = listOf("-Xopt-in=kotlin.RequiresOptIn")
+            freeCompilerArgs = listOf("-Xuse-experimental=kotlin.Experimental")
             jvmTarget = JavaVersion.VERSION_11.toString()
         }
     }
@@ -50,6 +55,6 @@ subprojects {
     dependencies {
         testImplementation(Deps.Junit.jupiter)
         testImplementation(Deps.Junit.jupiterEngine)
-        api(kotlin("stdlib"))
+        //api(kotlin("stdlib"))
     }
 }

@@ -13,6 +13,10 @@ public class FluentValidator {
     private final StringBuilder errorMessage;
     private boolean isValid;
 
+    public static FluentValidator of(String method, Object request,  Logger logger) {
+        return of(method, request, logger, null);
+    }
+
     public static FluentValidator of(String method, Object request,  Logger logger, StreamObserver<?> streamObserver) {
         return new FluentValidator(request, method, logger, streamObserver);
     }
@@ -48,9 +52,13 @@ public class FluentValidator {
         if (!isValid) {
             final String description = errorMessage.toString();
             logger.error(description);
-            streamObserver.onError(Status.INVALID_ARGUMENT.withDescription(description).asRuntimeException());
-            streamObserver.onCompleted();
-            throw new IllegalArgumentException(String.format("Invalid parameter for '%s'", method));
+            if (streamObserver != null) {
+                streamObserver.onError(Status.INVALID_ARGUMENT.withDescription(description).asRuntimeException());
+                streamObserver.onCompleted();
+                throw new IllegalArgumentException(String.format("Invalid parameter for '%s'", method));
+            } else {
+                throw Status.INVALID_ARGUMENT.withDescription(description).asRuntimeException();
+            }
         }
     }
 }
