@@ -9,7 +9,6 @@ import com.killrvideo.service.rating.request.GetUserRatingRequestData
 import com.killrvideo.service.utils.ServiceGrpcUtils.trace
 import com.killrvideo.utils.GrpcMappingUtils.fromUuid
 import com.killrvideo.utils.GrpcMappingUtils.uuidToUuid
-import killrvideo.ratings.RatingsServiceGrpc.RatingsServiceImplBase
 import killrvideo.ratings.RatingsServiceGrpcKt
 import killrvideo.ratings.RatingsServiceOuterClass.*
 import killrvideo.ratings.getRatingResponse
@@ -98,15 +97,15 @@ class RatingsServiceGrpc(
     /**
      * {@inheritDoc}
      */
-    override suspend fun getUserRating(grpcReq: GetUserRatingRequest): GetUserRatingResponse {
+    override suspend fun getUserRating(request: GetUserRatingRequest): GetUserRatingResponse {
         // Validate Parameters
-        validator.validateGrpcRequest_GetUserRating(grpcReq)
+        validator.validateGrpcRequest_GetUserRating(request)
 
         // Stands as stopwatch for logging and messaging 
         val starts = Instant.now()
 
         // Mapping GRPC => Domain (Dao)
-        val requestData = grpcReq.parse()
+        val requestData = request.parse()
 
         // Invoking Dao (Async) and map result back to GRPC (maptoRatingResponse)
         return runCatching { ratingRepository.findUserRating(requestData) }

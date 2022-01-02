@@ -1,61 +1,56 @@
-package com.killrvideo.service.statistic.repository;
+package com.killrvideo.service.statistic.repository
 
-import com.datastax.oss.driver.api.core.MappedAsyncPagingIterable;
-import com.killrvideo.service.statistic.dao.VideoPlaybackStatsDao;
-import com.killrvideo.service.statistic.dao.VideoPlaybackStatsMapper;
-import com.killrvideo.service.statistic.dto.VideoPlaybackStats;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import com.datastax.oss.driver.api.core.MappedAsyncPagingIterable
+import com.killrvideo.service.statistic.dao.VideoPlaybackStatsDao
+import com.killrvideo.service.statistic.dao.VideoPlaybackStatsMapper
+import com.killrvideo.service.statistic.dto.VideoPlaybackStats
+import com.killrvideo.utils.test.CassandraTestUtils.mockMappedAsyncPagingIterable
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.verify
+import kotlinx.coroutines.runBlocking
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import java.util.*
+import java.util.concurrent.CompletableFuture
 
-import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-
-import static com.killrvideo.utils.test.CassandraTestUtils.mockMappedAsyncPagingIterable;
-import static java.util.Collections.singletonList;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
-
-class StatisticsRepositoryTest {
-    private StatisticsRepository repository;
-    private VideoPlaybackStatsDao videoPlaybackStatsDao;
+internal class StatisticsRepositoryTest {
+    private lateinit var repository: StatisticsRepository
+    private lateinit var videoPlaybackStatsDao: VideoPlaybackStatsDao
 
     @BeforeEach
-    public void setUp() {
-        VideoPlaybackStatsMapper mapper = mock(VideoPlaybackStatsMapper.class);
-        this.videoPlaybackStatsDao = mock(VideoPlaybackStatsDao.class);
-        when(mapper.getVideoPlaybackStatsDao()).thenReturn(videoPlaybackStatsDao);
-
-        this.repository = new StatisticsRepository(mapper);
+    fun setUp() {
+        videoPlaybackStatsDao = mockk()
+        val mapper = mockk<VideoPlaybackStatsMapper>()
+        every { mapper.videoPlaybackStatsDao } returns videoPlaybackStatsDao
+        repository = StatisticsRepository(mapper)
     }
 
     @Test
-    public void testRecordPlaybackStartedAsync() {
-        UUID videoid = UUID.randomUUID();
-        CompletableFuture<Void> future = CompletableFuture.completedFuture(null);
-        when(videoPlaybackStatsDao.increment(any(), anyLong())).thenReturn(future);
-
-        CompletableFuture<Void> result = this.repository.recordPlaybackStartedAsync(videoid);
-        assertEquals(future, result);
-        verify(this.videoPlaybackStatsDao, times(1)).increment(any(), anyLong());
+    fun testRecordPlaybackStartedAsync() {
+        val videoid = UUID.randomUUID()
+        val future = CompletableFuture.completedFuture<Void?>(null)
+        every { videoPlaybackStatsDao.increment(any(), any()) } returns future
+        runBlocking { repository.recordPlaybackStartedAsync(videoid) }
+        verify(exactly = 1) {
+            videoPlaybackStatsDao.increment(any(), any())
+        }
     }
 
     @Test
-    public void testGetNumberOfPlaysAsync() {
-        UUID videoid = UUID.randomUUID();
-        VideoPlaybackStats videoPlaybackStats = mock(VideoPlaybackStats.class);
-        List<UUID> videoids = singletonList(videoid);
-        List<VideoPlaybackStats> videoPlaybackStatsList = singletonList(videoPlaybackStats);
+    fun testGetNumberOfPlaysAsync() {
+        val videoid = UUID.randomUUID()
+        val videoPlaybackStats = mockk<VideoPlaybackStats>()
 
-        MappedAsyncPagingIterable<VideoPlaybackStats> iter = mockMappedAsyncPagingIterable(videoPlaybackStatsList);
+        val videoids: List<UUID> = listOf(videoid)
+        val videoPlaybackStatsList = listOf(videoPlaybackStats)
 
-        when(videoPlaybackStatsDao.getNumberOfPlays(any())).thenReturn(
-            CompletableFuture.completedFuture(iter)
-        );
-
-        repository.getNumberOfPlaysAsync(videoids).whenComplete((result, error) -> {
-            assertEquals(1, result.size());
-            assertNull(error);
-        });
+        val iter: MappedAsyncPagingIterable<VideoPlaybackStats> =
+            mockMappedAsyncPagingIterable(videoPlaybackStatsList)
+        every { videoPlaybackStatsDao.getNumberOfPlays(any()) } returns
+                CompletableFuture.completedFuture(iter)
+        val result = runBlocking { repository.getNumberOfPlaysAsync(videoids) }
+        assertEquals(1, result.size)
     }
 }

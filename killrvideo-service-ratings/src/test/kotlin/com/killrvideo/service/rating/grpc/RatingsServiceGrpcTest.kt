@@ -183,7 +183,7 @@ internal class RatingsServiceGrpcTest {
             userId = uuidToUuid(userid)
         }
         every {validator.validateGrpcRequest_GetUserRating(any()) } just Runs
-        coEvery { ratingRepository!!.findUserRating(any())} returns null
+        coEvery { ratingRepository.findUserRating(any())} returns null
         val result = runBlocking { service.getUserRating(grpcReq) }
         assertEquals(0, result.rating)
     }

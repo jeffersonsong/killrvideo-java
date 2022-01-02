@@ -1,170 +1,117 @@
-package com.killrvideo.service.statistic.grpc;
+package com.killrvideo.service.statistic.grpc
 
-import com.killrvideo.service.statistic.dto.VideoPlaybackStats;
-import com.killrvideo.service.statistic.repository.StatisticsRepository;
-import com.killrvideo.utils.GrpcMappingUtils;
-import io.grpc.stub.StreamObserver;
-import killrvideo.statistics.StatisticsServiceOuterClass.GetNumberOfPlaysRequest;
-import killrvideo.statistics.StatisticsServiceOuterClass.GetNumberOfPlaysResponse;
-import killrvideo.statistics.StatisticsServiceOuterClass.RecordPlaybackStartedRequest;
-import killrvideo.statistics.StatisticsServiceOuterClass.RecordPlaybackStartedResponse;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import com.killrvideo.service.statistic.dto.VideoPlaybackStats
+import com.killrvideo.service.statistic.repository.StatisticsRepository
+import com.killrvideo.utils.GrpcMappingUtils.randomUuid
+import com.killrvideo.utils.GrpcMappingUtils.uuidToUuid
+import io.grpc.Status
+import io.grpc.StatusRuntimeException
+import io.mockk.*
+import io.mockk.impl.annotations.InjectMockKs
+import io.mockk.impl.annotations.MockK
+import killrvideo.statistics.StatisticsServiceOuterClass.GetNumberOfPlaysResponse
+import killrvideo.statistics.getNumberOfPlaysRequest
+import killrvideo.statistics.recordPlaybackStartedRequest
+import kotlinx.coroutines.runBlocking
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
+import java.util.*
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
+internal class StatisticsServiceGrpcTest {
+    @InjectMockKs
+    private lateinit var service: StatisticsServiceGrpc
 
-import static com.killrvideo.utils.GrpcMappingUtils.uuidToUuid;
-import static java.util.Collections.singletonList;
-import static org.mockito.Mockito.*;
+    @MockK
+    private lateinit var statisticsRepository: StatisticsRepository
 
-@SuppressWarnings("unchecked")
-class StatisticsServiceGrpcTest {
-    @InjectMocks
-    StatisticsServiceGrpc service;
+    @MockK
+    private lateinit var validator: StatisticsServiceGrpcValidator
 
-    @Mock
-    private StatisticsRepository statisticsRepository;
-    @Mock
-    private StatisticsServiceGrpcValidator validator;
-    @Mock
-    private StatisticsServiceGrpcMapper mapper;
-
-    private AutoCloseable closeable;
+    @MockK
+    private lateinit var mapper: StatisticsServiceGrpcMapper
 
     @BeforeEach
-    public void openMocks() {
-        closeable = MockitoAnnotations.openMocks(this);
-    }
+    fun setUp() = MockKAnnotations.init(this, relaxUnitFun = true)
 
-    @AfterEach
-    public void releaseMocks() throws Exception {
-        closeable.close();
+    @Test
+    fun testRecordPlaybackStartedWithValidationFailure() {
+        val grpcReq = recordPlaybackStartedRequest {}
+        every { validator.validateGrpcRequest_RecordPlayback(any()) } throws
+                Status.INVALID_ARGUMENT.asRuntimeException()
+        assertThrows<StatusRuntimeException> {
+            runBlocking { service.recordPlaybackStarted(grpcReq) }
+        }
     }
 
     @Test
-    void testRecordPlaybackStartedWithValidationFailure() {
-        RecordPlaybackStartedRequest grpcReq = RecordPlaybackStartedRequest.getDefaultInstance();
-        StreamObserver<RecordPlaybackStartedResponse> grpcResObserver = mock(StreamObserver.class);
+    fun testRecordPlaybackStartedWithQueryFailure() {
+        val grpcReq = recordPlaybackStartedRequest { videoId = randomUuid() }
+        every { validator.validateGrpcRequest_RecordPlayback(any()) } just Runs
+        coEvery { statisticsRepository.recordPlaybackStartedAsync(any()) } throws Exception()
 
-        doThrow(new IllegalArgumentException()).when(this.validator)
-                .validateGrpcRequest_RecordPlayback(any(), any());
-
-        Assertions.assertThrows(IllegalArgumentException.class, () ->
-                service.recordPlaybackStarted(grpcReq, grpcResObserver)
-        );
+        assertThrows<Exception> {
+            runBlocking { service.recordPlaybackStarted(grpcReq) }
+        }
     }
 
     @Test
-    void testRecordPlaybackStartedWithQueryFailure() {
-        RecordPlaybackStartedRequest grpcReq = recordPlaybackStartedRequest(UUID.randomUUID());
-        StreamObserver<RecordPlaybackStartedResponse> grpcResObserver = mock(StreamObserver.class);
-
-        doNothing().when(this.validator).validateGrpcRequest_RecordPlayback(any(), any());
-
-        when(this.statisticsRepository.recordPlaybackStartedAsync(any())).thenReturn(
-                CompletableFuture.failedFuture(new Exception())
-        );
-
-        service.recordPlaybackStarted(grpcReq, grpcResObserver);
-        verify(grpcResObserver, times(1)).onError(any());
-        verify(grpcResObserver, times(0)).onNext(any());
-        verify(grpcResObserver, times(0)).onCompleted();
+    fun testRecordPlayback() {
+        val grpcReq = recordPlaybackStartedRequest { videoId = randomUuid() }
+        every { validator.validateGrpcRequest_RecordPlayback(any()) } just Runs
+        coEvery { statisticsRepository.recordPlaybackStartedAsync(any()) } returns 1
+        runBlocking { service.recordPlaybackStarted(grpcReq) }
     }
 
     @Test
-    void testRecordPlayback() {
-        RecordPlaybackStartedRequest grpcReq = recordPlaybackStartedRequest(UUID.randomUUID());
-        StreamObserver<RecordPlaybackStartedResponse> grpcResObserver = mock(StreamObserver.class);
-
-        doNothing().when(this.validator).validateGrpcRequest_RecordPlayback(any(), any());
-
-        when(this.statisticsRepository.recordPlaybackStartedAsync(any())).thenReturn(
-                CompletableFuture.completedFuture(null)
-        );
-
-        service.recordPlaybackStarted(grpcReq, grpcResObserver);
-        verify(grpcResObserver, times(0)).onError(any());
-        verify(grpcResObserver, times(1)).onNext(any());
-        verify(grpcResObserver, times(1)).onCompleted();
+    fun testGetNumberOfPlaysWithValidationFailure() {
+        val grpcReq = getNumberOfPlaysRequest {}
+        every { validator.validateGrpcRequest_GetNumberPlays(any()) } throws
+                Status.INVALID_ARGUMENT.asRuntimeException()
+        assertThrows<StatusRuntimeException> {
+            runBlocking { service.getNumberOfPlays(grpcReq) }
+        }
     }
 
     @Test
-    void testGetNumberOfPlaysWithValidationFailure() {
-        GetNumberOfPlaysRequest grpcReq = GetNumberOfPlaysRequest.getDefaultInstance();
-        StreamObserver<GetNumberOfPlaysResponse> grpcResObserver = mock(StreamObserver.class);
+    fun testGetNumberOfPlaysWithQueryFailure() {
+        val videoid = UUID.randomUUID()
+        val grpcReq = getNumberOfPlaysRequest {
+            videoIds.add(uuidToUuid(videoid))
+        }
+        every { validator.validateGrpcRequest_GetNumberPlays(any()) } just Runs
+        coEvery { statisticsRepository.getNumberOfPlaysAsync(any()) } throws Exception()
 
-        doThrow(new IllegalArgumentException()).when(this.validator)
-                .validateGrpcRequest_GetNumberPlays(any(), any());
-
-        Assertions.assertThrows(IllegalArgumentException.class, () ->
-                service.getNumberOfPlays(grpcReq, grpcResObserver)
-        );
+        assertThrows<Exception> {
+            runBlocking { service.getNumberOfPlays(grpcReq) }
+        }
     }
 
     @Test
-    void testGetNumberOfPlaysWithQueryFailure() {
-        UUID videoid = UUID.randomUUID();
-        GetNumberOfPlaysRequest grpcReq = getNumberOfPlaysRequest(videoid);
-        StreamObserver<GetNumberOfPlaysResponse> grpcResObserver = mock(StreamObserver.class);
+    fun testGetNumberOfPlaysWithEmptyVideIdsList() {
+        val grpcReq = getNumberOfPlaysRequest {}
+        every { validator.validateGrpcRequest_GetNumberPlays(any()) } just Runs
 
-        doNothing().when(this.validator).validateGrpcRequest_GetNumberPlays(any(), any());
-        when(this.mapper.parseGetNumberOfPlaysRequest(any())).thenReturn(singletonList(videoid));
-        when(this.statisticsRepository.getNumberOfPlaysAsync(any())).thenReturn(
-                CompletableFuture.failedFuture(new Exception())
-        );
-
-        service.getNumberOfPlays(grpcReq, grpcResObserver);
-        verify(grpcResObserver, times(1)).onError(any());
-        verify(grpcResObserver, times(0)).onNext(any());
-        verify(grpcResObserver, times(0)).onCompleted();
+        val result = runBlocking { service.getNumberOfPlays(grpcReq) }
+        assertEquals(0, result.statsCount)
     }
 
     @Test
-    void testGetNumberOfPlays() {
-        UUID videoid = UUID.randomUUID();
-        GetNumberOfPlaysRequest grpcReq = getNumberOfPlaysRequest(videoid);
-        StreamObserver<GetNumberOfPlaysResponse> grpcResObserver = mock(StreamObserver.class);
+    fun testGetNumberOfPlays() {
+        val videoid = UUID.randomUUID()
+        val grpcReq = getNumberOfPlaysRequest {
+            videoIds.add(uuidToUuid(videoid))
+        }
+        every { validator.validateGrpcRequest_GetNumberPlays(any()) } just Runs
+        val videoList = emptyList<VideoPlaybackStats>()
+        coEvery { statisticsRepository.getNumberOfPlaysAsync(any()) } returns videoList
 
-        doNothing().when(this.validator).validateGrpcRequest_GetNumberPlays(any(), any());
-        when(this.mapper.parseGetNumberOfPlaysRequest(any())).thenReturn(singletonList(videoid));
+        val response = GetNumberOfPlaysResponse.getDefaultInstance()
+        every { mapper.buildGetNumberOfPlayResponse(any(), any()) } returns response
 
-        List<VideoPlaybackStats> videoList = Collections.emptyList();
-        GetNumberOfPlaysResponse response = GetNumberOfPlaysResponse.getDefaultInstance();
-        when(mapper.buildGetNumberOfPlayResponse(any(), any())).thenReturn(response);
-
-        when(this.statisticsRepository.getNumberOfPlaysAsync(any())).thenReturn(
-                CompletableFuture.completedFuture(videoList)
-        );
-
-        service.getNumberOfPlays(grpcReq, grpcResObserver);
-        verify(grpcResObserver, times(0)).onError(any());
-        verify(grpcResObserver, times(1)).onNext(any());
-        verify(grpcResObserver, times(1)).onCompleted();
-    }
-
-    private RecordPlaybackStartedRequest recordPlaybackStartedRequest(UUID videoid) {
-        return RecordPlaybackStartedRequest.newBuilder()
-                .setVideoId(uuidToUuid(videoid))
-                .build();
-    }
-
-    private GetNumberOfPlaysRequest getNumberOfPlaysRequest(UUID... videoids) {
-        return GetNumberOfPlaysRequest.newBuilder()
-                .addAllVideoIds(
-                        Arrays.stream(videoids)
-                                .map(GrpcMappingUtils::uuidToUuid)
-                                .collect(Collectors.toList())
-                )
-                .build();
+        val result = runBlocking { service.getNumberOfPlays(grpcReq) }
+        assertEquals(response, result)
     }
 }

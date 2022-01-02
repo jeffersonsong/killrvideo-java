@@ -1,45 +1,38 @@
-package com.killrvideo.service.statistic.grpc;
+package com.killrvideo.service.statistic.grpc
 
-import com.killrvideo.service.statistic.dto.VideoPlaybackStats;
-import killrvideo.statistics.StatisticsServiceOuterClass.*;
-import org.junit.jupiter.api.Test;
+import com.killrvideo.service.statistic.dto.VideoPlaybackStats
+import com.killrvideo.service.statistic.grpc.StatisticsServiceGrpcMapper.GetNumberOfPlaysRequestExtensions.parse
+import com.killrvideo.utils.GrpcMappingUtils.uuidToUuid
+import killrvideo.statistics.getNumberOfPlaysRequest
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Test
+import java.util.*
 
-import java.util.List;
-import java.util.UUID;
-
-import static com.killrvideo.utils.GrpcMappingUtils.uuidToUuid;
-import static java.util.Collections.singletonList;
-import static org.junit.jupiter.api.Assertions.*;
-
-class StatisticsServiceGrpcMapperTest {
-    private final StatisticsServiceGrpcMapper mapper = new StatisticsServiceGrpcMapper();
-
+internal class StatisticsServiceGrpcMapperTest {
+    private val mapper = StatisticsServiceGrpcMapper()
     @Test
-    public void testBuildGetNumberOfPlayResponse() {
-        UUID videoid1 = UUID.randomUUID();
-        UUID videoid2 = UUID.randomUUID();
-
-        GetNumberOfPlaysRequest request = GetNumberOfPlaysRequest.newBuilder()
-                .addVideoIds(uuidToUuid(videoid1))
-                .addVideoIds(uuidToUuid(videoid2))
-                .build();
-
-        VideoPlaybackStats videoPlaybackStats1 = new VideoPlaybackStats(videoid1, 2001L);
-        List<VideoPlaybackStats> videoPlaybackStatsList = singletonList(videoPlaybackStats1);
-
-        GetNumberOfPlaysResponse response = mapper.buildGetNumberOfPlayResponse(request, videoPlaybackStatsList);
-        assertEquals(2, response.getStatsCount());
+    fun testBuildGetNumberOfPlayResponse() {
+        val videoid1 = UUID.randomUUID()
+        val videoid2 = UUID.randomUUID()
+        val request = getNumberOfPlaysRequest {
+            videoIds.add(uuidToUuid(videoid1))
+            videoIds.add(uuidToUuid(videoid2))
+        }
+        val videoPlaybackStats1 = VideoPlaybackStats(videoid = videoid1, views = 2001L)
+        val videoPlaybackStatsList = listOf(videoPlaybackStats1)
+        val response = mapper.buildGetNumberOfPlayResponse(request, videoPlaybackStatsList)
+        assertEquals(2, response.statsCount)
     }
 
     @Test
-    public void testParseGetNumberOfPlaysRequest() {
-        UUID videio = UUID.randomUUID();
-        GetNumberOfPlaysRequest request = GetNumberOfPlaysRequest.newBuilder()
-                .addVideoIds(uuidToUuid(videio))
-                .build();
-
-        List<UUID> result = mapper.parseGetNumberOfPlaysRequest(request);
-        assertEquals(1, result.size());
-        assertTrue(result.contains(videio));
+    fun testParseGetNumberOfPlaysRequest() {
+        val videoid = UUID.randomUUID()
+        val request = getNumberOfPlaysRequest {
+            videoIds.add(uuidToUuid(videoid))
+        }
+        val result = request.parse()
+        assertEquals(1, result.size)
+        assertTrue(result.contains(videoid))
     }
 }

@@ -1,20 +1,16 @@
-package com.killrvideo.service.statistic.grpc;
+package com.killrvideo.service.statistic.grpc
 
-import java.util.*;
-import java.util.stream.Collectors;
-
-import org.springframework.stereotype.Component;
-
-import com.killrvideo.service.statistic.dto.VideoPlaybackStats;
-import com.killrvideo.utils.GrpcMappingUtils;
-
-import killrvideo.common.CommonTypes.Uuid;
-import killrvideo.statistics.StatisticsServiceOuterClass.GetNumberOfPlaysRequest;
-import killrvideo.statistics.StatisticsServiceOuterClass.GetNumberOfPlaysResponse;
-import killrvideo.statistics.StatisticsServiceOuterClass.PlayStats;
-
-import static com.killrvideo.utils.GrpcMappingUtils.uuidToUuid;
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import com.killrvideo.service.statistic.dto.VideoPlaybackStats
+import com.killrvideo.utils.GrpcMappingUtils.fromUuid
+import com.killrvideo.utils.GrpcMappingUtils.uuidToUuid
+import killrvideo.common.CommonTypes
+import killrvideo.statistics.StatisticsServiceOuterClass.*
+import killrvideo.statistics.getNumberOfPlaysResponse
+import killrvideo.statistics.playStats
+import org.apache.commons.lang3.StringUtils.isNotBlank
+import org.springframework.stereotype.Component
+import java.util.*
+import java.util.stream.Collectors
 
 /**
  * Helper and mappers for DAO <=> GRPC Communications
@@ -22,44 +18,48 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
  * @author DataStax Developer Advocates Team
  */
 @Component
-public class StatisticsServiceGrpcMapper {
-    
-    public GetNumberOfPlaysResponse buildGetNumberOfPlayResponse(GetNumberOfPlaysRequest grpcReq, List<VideoPlaybackStats> videoList) {
-        final Map<Uuid, PlayStats> result = videoList.stream()
-                .filter(Objects::nonNull)
-                .map(this::mapVideoPlayBacktoPlayStats)
-                .collect(Collectors.toMap(PlayStats::getVideoId, x -> x));
+class StatisticsServiceGrpcMapper {
 
-        final GetNumberOfPlaysResponse.Builder builder = GetNumberOfPlaysResponse.newBuilder();
-        for (Uuid requestedVideoId : grpcReq.getVideoIdsList()) {
-            PlayStats playStats = result.computeIfAbsent(requestedVideoId, this::defaultPlayStats);
-            builder.addStats(playStats);
+    object GetNumberOfPlaysRequestExtensions {
+        fun GetNumberOfPlaysRequest.parse(): List<UUID> =
+            this.videoIdsList.stream()
+                .filter { isNotBlank(it.value) }
+                .map { fromUuid(it) }
+                .collect(Collectors.toList())
+    }
+
+    fun buildGetNumberOfPlayResponse(
+        grpcReq: GetNumberOfPlaysRequest,
+        videoList: List<VideoPlaybackStats>
+    ): GetNumberOfPlaysResponse {
+        val result = videoList.stream()
+            .map { mapVideoPlayBacktoPlayStats(it) }
+            .collect(Collectors.toMap(
+                { obj: PlayStats -> obj.videoId }, { x: PlayStats -> x })
+            )
+        return getNumberOfPlaysResponse {
+            for (requestedVideoId in grpcReq.videoIdsList) {
+                val playStats = result.computeIfAbsent(requestedVideoId) {
+                    defaultPlayStats(it)
+                }
+
+                stats.add(playStats)
+            }
         }
-        return builder.build();
     }
 
-    private PlayStats defaultPlayStats(Uuid requestedVideoId) {
-        return PlayStats
-                .newBuilder()
-                .setVideoId(requestedVideoId)
-                .setViews(0L)
-                .build();
-    }
+    private fun defaultPlayStats(requestedVideoId: CommonTypes.Uuid): PlayStats =
+        playStats {
+            videoId = requestedVideoId
+            views = 0L
+        }
 
     /**
      * Mapping to generated GPRC beans.
      */
-    private PlayStats mapVideoPlayBacktoPlayStats(VideoPlaybackStats v) {
-        return PlayStats.newBuilder()
-                .setVideoId(uuidToUuid(v.getVideoid()))
-                .setViews(Optional.ofNullable(v.getViews()).orElse(0L)).build();
-    }
-
-    public List<UUID> parseGetNumberOfPlaysRequest(GetNumberOfPlaysRequest grpcReq) {
-        return grpcReq.getVideoIdsList()
-                .stream()
-                .filter(uuid -> isNotBlank(uuid.getValue()))
-                .map(GrpcMappingUtils::fromUuid)
-                .collect(Collectors.toList());
-    }
+    private fun mapVideoPlayBacktoPlayStats(v: VideoPlaybackStats): PlayStats =
+        playStats {
+            videoId = uuidToUuid(v.videoid)
+            views = v.views ?: 0L
+        }
 }

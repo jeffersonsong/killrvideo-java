@@ -1,15 +1,9 @@
-package com.killrvideo.service.statistic.dto;
+package com.killrvideo.service.statistic.dto
 
-import java.io.Serializable;
-import java.util.UUID;
-
-import com.datastax.oss.driver.api.mapper.annotations.CqlName;
-import com.datastax.oss.driver.api.mapper.annotations.Entity;
-import com.datastax.oss.driver.api.mapper.annotations.PartitionKey;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import com.datastax.oss.driver.api.mapper.annotations.CqlName
+import com.datastax.oss.driver.api.mapper.annotations.Entity
+import com.datastax.oss.driver.api.mapper.annotations.PartitionKey
+import java.util.*
 
 /**
  * Pojo representing DTO for table 'video_playback_stats'.
@@ -18,20 +12,14 @@ import lombok.Setter;
  */
 @Entity
 @CqlName("video_playback_stats")
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-public class VideoPlaybackStats implements Serializable {
-    private static final long serialVersionUID = -8636413035520458200L;
-
+data class VideoPlaybackStats(
     @PartitionKey
-    private UUID videoid;
+    var videoid: UUID?,
 
     /**
      * "views" column is a counter type in the underlying DSE database.  As of driver version 3.2 there
      * is no "@Counter" annotation that I know of.  No worries though, just use the incr() function
      * while using the QueryBuilder.  Something similar to with(QueryBuilder.incr("views")).
      */
-    private Long views;
-}
+    var views: Long?
+)

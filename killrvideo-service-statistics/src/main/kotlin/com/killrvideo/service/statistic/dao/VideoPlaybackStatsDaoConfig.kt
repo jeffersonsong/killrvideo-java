@@ -1,13 +1,13 @@
-package com.killrvideo.service.statistic.dao;
+package com.killrvideo.service.statistic.dao
 
-import com.datastax.oss.driver.api.core.CqlSession;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+import com.datastax.oss.driver.api.core.CqlSession
+import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Configuration
 
 @Configuration
-public class VideoPlaybackStatsDaoConfig {
+open class VideoPlaybackStatsDaoConfig {
     @Bean
-    public VideoPlaybackStatsMapper videoPlaybackStatsMapper(CqlSession session) {
-        return VideoPlaybackStatsMapper.build(session).build();
+    open fun videoPlaybackStatsMapper(session: CqlSession?): VideoPlaybackStatsMapper? {
+        return VideoPlaybackStatsMapperBuilder(session).build()
     }
 }

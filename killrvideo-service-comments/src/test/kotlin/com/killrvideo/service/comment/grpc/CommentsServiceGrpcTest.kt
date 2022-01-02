@@ -132,7 +132,7 @@ class CommentsServiceGrpcTest {
             commentRepository.findCommentsByUserIdAsync(any())
         } throws Exception()
         assertThrows<Exception> {
-            runBlocking { service!!.getUserComments(grpcReq) }
+            runBlocking { service.getUserComments(grpcReq) }
         }
     }
 

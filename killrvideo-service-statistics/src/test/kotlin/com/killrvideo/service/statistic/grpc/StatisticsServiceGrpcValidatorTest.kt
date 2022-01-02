@@ -1,75 +1,44 @@
-package com.killrvideo.service.statistic.grpc;
+package com.killrvideo.service.statistic.grpc
 
-import io.grpc.stub.StreamObserver;
-import killrvideo.statistics.StatisticsServiceOuterClass.GetNumberOfPlaysRequest;
-import killrvideo.statistics.StatisticsServiceOuterClass.RecordPlaybackStartedRequest;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import com.killrvideo.utils.GrpcMappingUtils.randomUuid
+import io.grpc.StatusRuntimeException
+import killrvideo.statistics.getNumberOfPlaysRequest
+import killrvideo.statistics.recordPlaybackStartedRequest
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 
-import static com.killrvideo.utils.GrpcMappingUtils.randomUuid;
-import static org.mockito.Mockito.*;
+internal class StatisticsServiceGrpcValidatorTest {
+    private val validator = StatisticsServiceGrpcValidator()
 
-class StatisticsServiceGrpcValidatorTest {
-    private final StatisticsServiceGrpcValidator validator = new StatisticsServiceGrpcValidator();
-    private StreamObserver<?> streamObserver;
-
-    @BeforeEach
-    public void setUp() {
-        this.streamObserver = mock(StreamObserver.class);
+    @Test
+    fun testValidateGrpcRequest_GetNumberPlays_Success() {
+        val request = getNumberOfPlaysRequest {
+            videoIds.add(randomUuid())
+        }
+        validator.validateGrpcRequest_GetNumberPlays(request)
     }
 
     @Test
-    public void testValidateGrpcRequest_GetNumberPlays_Success() {
-        GetNumberOfPlaysRequest request = GetNumberOfPlaysRequest.newBuilder()
-                .addVideoIds(randomUuid())
-                .build();
-
-        validator.validateGrpcRequest_GetNumberPlays(request, streamObserver);
-
-        verifySuccess();
+    fun testValidateGrpcRequest_GetNumberPlays_Failure() {
+        val request = getNumberOfPlaysRequest {}
+        assertThrows<StatusRuntimeException> {
+            validator.validateGrpcRequest_GetNumberPlays(request)
+        }
     }
 
     @Test
-    public void testValidateGrpcRequest_GetNumberPlays_Failure() {
-        GetNumberOfPlaysRequest request = GetNumberOfPlaysRequest.getDefaultInstance();
-
-        Assertions.assertThrows(IllegalArgumentException.class, () ->
-                validator.validateGrpcRequest_GetNumberPlays(request, streamObserver)
-        );
-
-        verifyFailure();
+    fun testValidateGrpcRequest_RecordPlayback_Success() {
+        val request = recordPlaybackStartedRequest {
+            videoId = randomUuid()
+        }
+        validator.validateGrpcRequest_RecordPlayback(request)
     }
 
     @Test
-    public void testValidateGrpcRequest_RecordPlayback_Success() {
-        RecordPlaybackStartedRequest request = RecordPlaybackStartedRequest.newBuilder()
-                .setVideoId(randomUuid())
-                .build();
-
-        validator.validateGrpcRequest_RecordPlayback(request, streamObserver);
-
-        verifySuccess();
-    }
-
-    @Test
-    public void testValidateGrpcRequest_RecordPlayback_Failure() {
-        RecordPlaybackStartedRequest request = RecordPlaybackStartedRequest.getDefaultInstance();
-
-        Assertions.assertThrows(IllegalArgumentException.class, () ->
-                validator.validateGrpcRequest_RecordPlayback(request, streamObserver)
-        );
-
-        verifyFailure();
-    }
-
-    private void verifySuccess() {
-        verify(streamObserver, times(0)).onError(any());
-        verify(streamObserver, times(0)).onCompleted();
-    }
-
-    private void verifyFailure() {
-        verify(streamObserver, times(1)).onError(any());
-        verify(streamObserver, times(1)).onCompleted();
+    fun testValidateGrpcRequest_RecordPlayback_Failure() {
+        val request = recordPlaybackStartedRequest {}
+        assertThrows<StatusRuntimeException> {
+            validator.validateGrpcRequest_RecordPlayback(request)
+        }
     }
 }

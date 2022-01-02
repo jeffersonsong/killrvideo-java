@@ -31,7 +31,6 @@ dependencies {
     implementation(Deps.kotlinLogging)
 
     testImplementation(Deps.Junit.jupiter)
-    testImplementation(Deps.Mockito.core)
     testImplementation(Deps.mockk)
 
     implementation(Deps.Spring.context)
