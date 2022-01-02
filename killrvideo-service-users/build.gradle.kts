@@ -30,13 +30,10 @@ dependencies {
     implementation(Deps.JetBrian.Kotlinx.coroutinesJdk8)
     implementation(Deps.kotlinLogging)
 
-    testImplementation(Deps.Junit.jupiter)
-    testImplementation(Deps.mockk)
-
     implementation(Deps.Spring.context)
     implementation(Deps.Datastax.mapperRuntime)
 
-    implementation(Deps.Google.protobuf)
+    //implementation(Deps.Google.protobuf)
     implementation(Deps.Grpc.all) {
         exclude(group = "io.grpc", module = "grpc-testing")
         exclude(group = "junit", module = "junit")
@@ -46,6 +43,9 @@ dependencies {
     implementation(Deps.Apache.Commons.collections4)
     implementation(Deps.Javax.validation)
     implementation(Deps.Javax.annotation)
+
+    testImplementation(Deps.Junit.jupiter)
+    testImplementation(Deps.mockk)
 
     kapt(Deps.Datastax.mapperProcessor)
 }

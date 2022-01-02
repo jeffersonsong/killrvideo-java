@@ -30,9 +30,6 @@ dependencies {
     implementation(Deps.JetBrian.Kotlinx.coroutinesJdk8)
     implementation(Deps.kotlinLogging)
 
-    testImplementation(Deps.Junit.jupiter)
-    testImplementation(Deps.mockk)
-
     implementation(Deps.Spring.context)
     implementation(Deps.Datastax.mapperRuntime)
 
@@ -48,6 +45,8 @@ dependencies {
     implementation(Deps.Javax.annotation)
     implementation(Deps.Google.guava)
 
+    testImplementation(Deps.Junit.jupiter)
+    testImplementation(Deps.mockk)
     testImplementation(Deps.hamcrest)
 
     kapt(Deps.Datastax.mapperProcessor)
