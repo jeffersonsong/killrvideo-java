@@ -28,7 +28,6 @@ dependencies {
     testImplementation(project(":killrvideo-test-utils"))
 
     implementation(Deps.JetBrian.Kotlinx.coroutinesJdk8)
-    implementation(Deps.Apache.Commons.collections4)
     implementation(Deps.kotlinLogging)
 
     testImplementation(Deps.Junit.jupiter)
@@ -44,6 +43,7 @@ dependencies {
     }
 
     implementation(Deps.Apache.Commons.lang3)
+    implementation(Deps.Apache.Commons.collections4)
     implementation(Deps.Javax.validation)
     implementation(Deps.Javax.annotation)
     implementation(Deps.Google.guava)
