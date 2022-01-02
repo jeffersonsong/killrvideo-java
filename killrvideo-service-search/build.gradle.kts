@@ -8,6 +8,7 @@ plugins {
     id("com.datastax.java-conventions")
     id("com.google.protobuf")
     kotlin("jvm")
+    kotlin("kapt")
 }
 
 repositories {
@@ -24,10 +25,10 @@ dependencies {
     api(Deps.Grpc.kotlinStub)
 
     implementation(project(":killrvideo-commons"))
+    testImplementation(project(":killrvideo-test-utils"))
 
-    testImplementation(Deps.Junit.jupiter)
-    testImplementation(Deps.Mockito.core)
-    compileOnly(Deps.lombok)
+    implementation(Deps.JetBrian.Kotlinx.coroutinesJdk8)
+    implementation(Deps.kotlinLogging)
 
     implementation(Deps.Spring.context)
     implementation(Deps.Datastax.mapperRuntime)
@@ -44,8 +45,11 @@ dependencies {
     implementation(Deps.Logback.core)
     runtimeOnly(Deps.Logback.classic)
 
-    annotationProcessor(Deps.lombok)
-    annotationProcessor(Deps.Datastax.mapperProcessor)
+    testImplementation(Deps.Junit.jupiter)
+    testImplementation(Deps.mockk)
+    testImplementation(Deps.hamcrest)
+
+    kapt(Deps.Datastax.mapperProcessor)
 }
 
 description = "+ killrvideo-service-search"

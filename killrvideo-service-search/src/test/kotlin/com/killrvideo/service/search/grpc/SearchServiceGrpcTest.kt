@@ -1,158 +1,102 @@
-package com.killrvideo.service.search.grpc;
+package com.killrvideo.service.search.grpc
 
-import com.killrvideo.dse.dto.ResultListPage;
-import com.killrvideo.service.search.dto.Video;
-import com.killrvideo.service.search.repository.SearchRepository;
-import com.killrvideo.service.search.request.GetQuerySuggestionsRequestData;
-import com.killrvideo.service.search.request.SearchVideosRequestData;
-import io.grpc.stub.StreamObserver;
-import killrvideo.search.SearchServiceOuterClass.GetQuerySuggestionsRequest;
-import killrvideo.search.SearchServiceOuterClass.GetQuerySuggestionsResponse;
-import killrvideo.search.SearchServiceOuterClass.SearchVideosRequest;
-import killrvideo.search.SearchServiceOuterClass.SearchVideosResponse;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import com.killrvideo.dse.dto.ResultListPage
+import com.killrvideo.service.search.dto.Video
+import com.killrvideo.service.search.repository.SearchRepository
+import io.grpc.Status
+import io.grpc.StatusRuntimeException
+import io.mockk.*
+import io.mockk.impl.annotations.InjectMockKs
+import io.mockk.impl.annotations.MockK
+import killrvideo.search.getQuerySuggestionsRequest
+import killrvideo.search.getQuerySuggestionsResponse
+import killrvideo.search.searchVideosRequest
+import killrvideo.search.searchVideosResponse
+import kotlinx.coroutines.runBlocking
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 
-import java.util.Collections;
-import java.util.Set;
-import java.util.concurrent.CompletableFuture;
+internal class SearchServiceGrpcTest {
+    @InjectMockKs
+    private lateinit var service: SearchServiceGrpc
 
-import static org.mockito.Mockito.*;
+    @MockK
+    private lateinit var searchRepository: SearchRepository
 
-@SuppressWarnings("unchecked")
-class SearchServiceGrpcTest {
-    @InjectMocks private SearchServiceGrpc service;
-    @Mock
-    private SearchRepository searchRepository;
-    @Mock
-    private SearchServiceGrpcValidator validator;
-    @Mock
-    private SearchServiceGrpcMapper mapper;
+    @MockK
+    private lateinit var validator: SearchServiceGrpcValidator
 
-    private AutoCloseable closeable;
+    @MockK
+    private lateinit var mapper: SearchServiceGrpcMapper
 
     @BeforeEach
-    public void openMocks() {
-        closeable = MockitoAnnotations.openMocks(this);
-    }
+    fun setUp() = MockKAnnotations.init(this, relaxUnitFun = true)
 
-    @AfterEach
-    public void releaseMocks() throws Exception {
-        closeable.close();
+    @Test
+    fun testSearchVideosWithValidationFailed() {
+        val grpcReq = searchVideosRequest { }
+        every { validator.validateGrpcRequest_SearchVideos(any()) } throws
+                Status.INVALID_ARGUMENT.asRuntimeException()
+        assertThrows<StatusRuntimeException> {
+            runBlocking { service.searchVideos(grpcReq) }
+        }
     }
 
     @Test
-    void testSearchVideosWithValidationFailed() {
-        SearchVideosRequest grpcReq = SearchVideosRequest.getDefaultInstance();
-        StreamObserver<SearchVideosResponse> grpcResObserver = mock(StreamObserver.class);
-
-        doThrow(new IllegalArgumentException()).when(this.validator)
-                .validateGrpcRequest_SearchVideos(any(), any());
-
-        Assertions.assertThrows(IllegalArgumentException.class, () ->
-                this.service.searchVideos(grpcReq, grpcResObserver));
+    fun testSearchVideosWithQueryFailed() {
+        val grpcReq = searchVideosRequest { }
+        every { validator.validateGrpcRequest_SearchVideos(any()) } just Runs
+        coEvery { searchRepository.searchVideosAsync(any()) } throws Exception()
+        assertThrows<Exception> {
+            runBlocking { service.searchVideos(grpcReq) }
+        }
     }
 
     @Test
-    void testSearchVideosWithQueryFailed() {
-        SearchVideosRequest grpcReq = SearchVideosRequest.getDefaultInstance();
-        StreamObserver<SearchVideosResponse> grpcResObserver = mock(StreamObserver.class);
-
-        doNothing().when(this.validator).validateGrpcRequest_SearchVideos(any(), any());
-        SearchVideosRequestData requestData = mock(SearchVideosRequestData.class);
-        when(mapper.parseSearchVideosRequestData(any())).thenReturn(requestData);
-
-        when(searchRepository.searchVideosAsync(any()))
-                .thenReturn(CompletableFuture.failedFuture(new Exception()));
-
-        this.service.searchVideos(grpcReq, grpcResObserver);
-
-        verify(grpcResObserver, times(1)).onError(any());
-        verify(grpcResObserver, times(0)).onNext(any());
-        verify(grpcResObserver, times(0)).onCompleted();
+    fun testSearchVideos() {
+        val grpcReq = searchVideosRequest { }
+        every { validator.validateGrpcRequest_SearchVideos(any()) } just Runs
+        val resultPage: ResultListPage<Video?> = mockk()
+        val response = searchVideosResponse {}
+        every { mapper.buildSearchGrpcResponse(any(), any()) } returns response
+        coEvery {
+            searchRepository.searchVideosAsync(any())
+        } returns resultPage
+        val result = runBlocking { service.searchVideos(grpcReq) }
+        assertEquals(response, result)
     }
 
     @Test
-    void testSearchVideos() {
-        SearchVideosRequest grpcReq = SearchVideosRequest.getDefaultInstance();
-        StreamObserver<SearchVideosResponse> grpcResObserver = mock(StreamObserver.class);
-
-        doNothing().when(this.validator).validateGrpcRequest_SearchVideos(any(), any());
-
-        ResultListPage<Video> resultPage = mock(ResultListPage.class);
-        SearchVideosResponse response = SearchVideosResponse.getDefaultInstance();
-        when(mapper.buildSearchGrpcResponse(any(), any())).thenReturn(response);
-
-        SearchVideosRequestData requestData = mock(SearchVideosRequestData.class);
-        when(mapper.parseSearchVideosRequestData(any())).thenReturn(requestData);
-
-        when(searchRepository.searchVideosAsync(any()))
-                .thenReturn(CompletableFuture.completedFuture(resultPage));
-
-        this.service.searchVideos(grpcReq, grpcResObserver);
-
-        verify(grpcResObserver, times(0)).onError(any());
-        verify(grpcResObserver, times(1)).onNext(any());
-        verify(grpcResObserver, times(1)).onCompleted();
+    fun testGetQuerySuggestionsWithValidationFailed() {
+        val grpcReq = getQuerySuggestionsRequest {}
+        every { validator.validateGrpcRequest_GetQuerySuggestions(any()) } throws
+                Status.INVALID_ARGUMENT.asRuntimeException()
+        assertThrows<StatusRuntimeException> {
+            runBlocking { service.getQuerySuggestions(grpcReq) }
+        }
     }
 
     @Test
-    void testGetQuerySuggestionsWithValidationFailed() {
-        GetQuerySuggestionsRequest grpcReq = GetQuerySuggestionsRequest.getDefaultInstance();
-        StreamObserver<GetQuerySuggestionsResponse> grpcResObserver = mock(StreamObserver.class);
-
-        doThrow(new IllegalArgumentException()).when(this.validator)
-                .validateGrpcRequest_GetQuerySuggestions(any(), any());
-
-        Assertions.assertThrows(IllegalArgumentException.class, () ->
-                this.service.getQuerySuggestions(grpcReq, grpcResObserver));
+    fun testGetQuerySuggestionsWithQueryFailed() {
+        val grpcReq = getQuerySuggestionsRequest {}
+        every { validator.validateGrpcRequest_GetQuerySuggestions(any()) } just Runs
+        coEvery { searchRepository.getQuerySuggestionsAsync(any()) } throws Exception()
+        assertThrows<Exception> {
+            runBlocking { service!!.getQuerySuggestions(grpcReq) }
+        }
     }
 
     @Test
-    void testGetQuerySuggestionsWithQueryFailed() {
-        GetQuerySuggestionsRequest grpcReq = GetQuerySuggestionsRequest.getDefaultInstance();
-        StreamObserver<GetQuerySuggestionsResponse> grpcResObserver = mock(StreamObserver.class);
-
-        doNothing().when(this.validator).validateGrpcRequest_GetQuerySuggestions(any(), any());
-
-        GetQuerySuggestionsRequestData requestData = mock(GetQuerySuggestionsRequestData.class);
-        when(this.mapper.parseGetQuerySuggestionsRequestData(any())).thenReturn(requestData);
-
-        when(this.searchRepository.getQuerySuggestionsAsync(any())).thenReturn(
-                CompletableFuture.failedFuture(new Exception())
-        );
-
-        this.service.getQuerySuggestions(grpcReq, grpcResObserver);
-        verify(grpcResObserver, times(1)).onError(any());
-        verify(grpcResObserver, times(0)).onNext(any());
-        verify(grpcResObserver, times(0)).onCompleted();
-    }
-
-    @Test
-    void testGetQuerySuggestions() {
-        GetQuerySuggestionsRequest grpcReq = GetQuerySuggestionsRequest.getDefaultInstance();
-        StreamObserver<GetQuerySuggestionsResponse> grpcResObserver = mock(StreamObserver.class);
-
-        doNothing().when(this.validator).validateGrpcRequest_GetQuerySuggestions(any(), any());
-        Set<String> suggestionSet = Collections.singleton("Test");
-        GetQuerySuggestionsResponse response = GetQuerySuggestionsResponse.getDefaultInstance();
-        when(mapper.buildQuerySuggestionsResponse(any(), any())).thenReturn(response);
-
-        GetQuerySuggestionsRequestData requestData = mock(GetQuerySuggestionsRequestData.class);
-        when(this.mapper.parseGetQuerySuggestionsRequestData(any())).thenReturn(requestData);
-
-        when(this.searchRepository.getQuerySuggestionsAsync(any())).thenReturn(
-                CompletableFuture.completedFuture(suggestionSet)
-        );
-
-        this.service.getQuerySuggestions(grpcReq, grpcResObserver);
-        verify(grpcResObserver, times(0)).onError(any());
-        verify(grpcResObserver, times(1)).onNext(any());
-        verify(grpcResObserver, times(1)).onCompleted();
+    fun testGetQuerySuggestions() {
+        val grpcReq = getQuerySuggestionsRequest {}
+        every { validator.validateGrpcRequest_GetQuerySuggestions(any()) } just Runs
+        val suggestionSet = setOf("Test")
+        val response = getQuerySuggestionsResponse {}
+        every {mapper.buildQuerySuggestionsResponse(any(),any())} returns response
+        coEvery { searchRepository.getQuerySuggestionsAsync(any()) } returns suggestionSet
+        val result = runBlocking { service.getQuerySuggestions(grpcReq) }
+        assertEquals(response, result)
     }
 }

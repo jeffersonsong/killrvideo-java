@@ -1,76 +1,47 @@
-package com.killrvideo.service.search.grpc;
+package com.killrvideo.service.search.grpc
 
-import io.grpc.stub.StreamObserver;
-import killrvideo.search.SearchServiceOuterClass.GetQuerySuggestionsRequest;
-import killrvideo.search.SearchServiceOuterClass.SearchVideosRequest;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import io.grpc.StatusRuntimeException
+import killrvideo.search.SearchServiceOuterClass.GetQuerySuggestionsRequest
+import killrvideo.search.SearchServiceOuterClass.SearchVideosRequest
+import killrvideo.search.getQuerySuggestionsRequest
+import killrvideo.search.searchVideosRequest
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 
-import static org.mockito.Mockito.*;
+internal class SearchServiceGrpcValidatorTest {
+    private val validator = SearchServiceGrpcValidator()
 
-class SearchServiceGrpcValidatorTest {
-    private final SearchServiceGrpcValidator validator = new SearchServiceGrpcValidator();
-    private StreamObserver<?> streamObserver;
-
-    @BeforeEach
-    public void setUp() {
-        this.streamObserver = mock(StreamObserver.class);
+    @Test
+    fun testValidateGrpcRequest_GetQuerySuggestions_Success() {
+        val request = getQuerySuggestionsRequest {
+            query = "Query"
+            pageSize = 2
+        }
+        validator.validateGrpcRequest_GetQuerySuggestions(request)
     }
 
     @Test
-    public void testValidateGrpcRequest_GetQuerySuggestions_Success() {
-        GetQuerySuggestionsRequest request = GetQuerySuggestionsRequest.newBuilder()
-                .setQuery("Query")
-                .setPageSize(2)
-                .build();
-
-        validator.validateGrpcRequest_GetQuerySuggestions(request, streamObserver);
-
-        verifySuccess();
+    fun testValidateGrpcRequest_GetQuerySuggestions_Failure() {
+        val request = GetQuerySuggestionsRequest.getDefaultInstance()
+        assertThrows<StatusRuntimeException> {
+            validator.validateGrpcRequest_GetQuerySuggestions(request)
+        }
     }
 
     @Test
-    public void testValidateGrpcRequest_GetQuerySuggestions_Failure() {
-        GetQuerySuggestionsRequest request = GetQuerySuggestionsRequest.getDefaultInstance();
-
-        Assertions.assertThrows(IllegalArgumentException.class, () ->
-                validator.validateGrpcRequest_GetQuerySuggestions(request, streamObserver)
-        );
-
-        verifyFailure();
+    fun testValidateGrpcRequest_SearchVideos_Success() {
+        val request = searchVideosRequest {
+            query = "Query"
+            pageSize = 2
+        }
+        validator.validateGrpcRequest_SearchVideos(request)
     }
 
     @Test
-    public void testValidateGrpcRequest_SearchVideos_Success() {
-        SearchVideosRequest request = SearchVideosRequest.newBuilder()
-                .setQuery("Query")
-                .setPageSize(2)
-                .build();
-
-        validator.validateGrpcRequest_SearchVideos(request, streamObserver);
-
-        verifySuccess();
-    }
-
-    @Test
-    public void testValidateGrpcRequest_SearchVideos_Failure() {
-        SearchVideosRequest request = SearchVideosRequest.getDefaultInstance();
-
-        Assertions.assertThrows(IllegalArgumentException.class, () ->
-                validator.validateGrpcRequest_SearchVideos(request, streamObserver)
-        );
-
-        verifyFailure();
-    }
-
-    private void verifySuccess() {
-        verify(streamObserver, times(0)).onError(any());
-        verify(streamObserver, times(0)).onCompleted();
-    }
-
-    private void verifyFailure() {
-        verify(streamObserver, times(1)).onError(any());
-        verify(streamObserver, times(1)).onCompleted();
+    fun testValidateGrpcRequest_SearchVideos_Failure() {
+        val request = SearchVideosRequest.getDefaultInstance()
+        assertThrows<StatusRuntimeException> {
+            validator.validateGrpcRequest_SearchVideos(request)
+        }
     }
 }

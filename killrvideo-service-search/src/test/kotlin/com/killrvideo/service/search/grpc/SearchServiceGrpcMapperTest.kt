@@ -1,73 +1,67 @@
-package com.killrvideo.service.search.grpc;
+package com.killrvideo.service.search.grpc
 
-import com.killrvideo.dse.dto.ResultListPage;
-import com.killrvideo.service.search.dto.Video;
-import com.killrvideo.service.search.request.GetQuerySuggestionsRequestData;
-import com.killrvideo.service.search.request.SearchVideosRequestData;
-import killrvideo.search.SearchServiceOuterClass.*;
-import org.junit.jupiter.api.Test;
+import com.killrvideo.dse.dto.ResultListPage
+import com.killrvideo.service.search.dto.Video
+import com.killrvideo.service.search.grpc.SearchServiceGrpcMapper.GetQuerySuggestionsRequestExtensions.parse
+import com.killrvideo.service.search.grpc.SearchServiceGrpcMapper.SearchVideosRequestExtensions.parse
+import killrvideo.search.getQuerySuggestionsRequest
+import killrvideo.search.searchVideosRequest
+import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Test
+import java.time.Instant
+import java.util.*
 
-import java.time.Instant;
-import java.util.*;
-
-import static java.util.Arrays.asList;
-import static java.util.Collections.singletonList;
-import static org.junit.jupiter.api.Assertions.*;
-
-class SearchServiceGrpcMapperTest {
-    private final SearchServiceGrpcMapper mapper = new SearchServiceGrpcMapper();
-
+internal class SearchServiceGrpcMapperTest {
+    private val mapper = SearchServiceGrpcMapper()
     @Test
-    public void testBuildSearchGrpcResponse() {
-        Video v = new Video();
-        v.setUserid(UUID.randomUUID());
-        v.setVideoid(UUID.randomUUID());
-        v.setName("Game");
-        v.setPreviewImageLocation("url");
-        v.setAddedDate(Instant.now());
+    fun testBuildSearchGrpcResponse() {
+        val v = Video(
+            userid = UUID.randomUUID(),
+            videoid = UUID.randomUUID(),
+            name = "Game",
+            previewImageLocation = "url",
+            addedDate = Instant.now()
+        )
 
-        ResultListPage<Video> resultPage = new ResultListPage<>(singletonList(v), Optional.of("paging state"));
-
-        SearchVideosResponse response = mapper.buildSearchGrpcResponse(resultPage, "query");
-        assertEquals("query", response.getQuery());
-        assertTrue(resultPage.getPagingState().isPresent());
-        assertEquals(resultPage.getPagingState().get(), response.getPagingState());
-        assertEquals(1, response.getVideosCount());
+        val resultPage = ResultListPage(listOf(v), Optional.of("paging state"))
+        val response = mapper.buildSearchGrpcResponse(resultPage, "query")
+        assertEquals("query", response.query)
+        assertTrue(resultPage.pagingState.isPresent)
+        assertEquals(resultPage.pagingState.get(), response.pagingState)
+        assertEquals(1, response.videosCount)
     }
 
     @Test
-    public void testParseSearchVideosRequestData() {
-        SearchVideosRequest request = SearchVideosRequest.newBuilder()
-                .setQuery("Linux")
-                .setPageSize(5)
-                .setPagingState("Paging state")
-                .build();
-
-        SearchVideosRequestData pojo = mapper.parseSearchVideosRequestData(request);
-        assertEquals(request.getQuery(), pojo.getQuery());
-        assertEquals(request.getPageSize(), pojo.getPageSize());
-        assertTrue(pojo.getPagingState().isPresent());
-        assertEquals(request.getPagingState(), pojo.getPagingState().get());
+    fun testParseSearchVideosRequestData() {
+        val request = searchVideosRequest {
+            query = "Linux"
+            pageSize = 5
+            pagingState = "Paging state"
+        }
+        val pojo = request.parse()
+        assertEquals(request.query, pojo.query)
+        assertEquals(request.pageSize, pojo.pageSize)
+        assertNotNull(pojo.pagingState)
+        assertEquals(request.pagingState, pojo.pagingState)
     }
 
     @Test
-    public void testBuildQuerySuggestionsResponse() {
-        List<String> suggestions = asList("suggestion1", "suggestion2");
-        String query = "query";
-        GetQuerySuggestionsResponse response = mapper.buildQuerySuggestionsResponse(suggestions, query);
-        assertEquals(query, response.getQuery());
-        assertEquals(2, response.getSuggestionsCount());
+    fun testBuildQuerySuggestionsResponse() {
+        val suggestions = listOf("suggestion1", "suggestion2")
+        val query = "query"
+        val response = mapper.buildQuerySuggestionsResponse(suggestions, query)
+        assertEquals(query, response.query)
+        assertEquals(2, response.suggestionsCount)
     }
 
     @Test
-    public void testParseGetQuerySuggestionsRequestData() {
-        GetQuerySuggestionsRequest request = GetQuerySuggestionsRequest.newBuilder()
-                .setQuery("query")
-                .setPageSize(2)
-                .build();
-
-        GetQuerySuggestionsRequestData pojo = mapper.parseGetQuerySuggestionsRequestData(request);
-        assertEquals("query", pojo.getQuery());
-        assertEquals(2, pojo.getPageSize());
+    fun testParseGetQuerySuggestionsRequestData() {
+        val request = getQuerySuggestionsRequest {
+            query = "query"
+            pageSize = 2
+        }
+        val pojo = request.parse()
+        assertEquals("query", pojo.query)
+        assertEquals(2, pojo.pageSize)
     }
 }

@@ -1,18 +1,17 @@
-package com.killrvideo.service.search.grpc;
+package com.killrvideo.service.search.grpc
 
-import com.killrvideo.dse.dto.ResultListPage;
-import com.killrvideo.service.search.dto.Video;
-import com.killrvideo.service.search.request.GetQuerySuggestionsRequestData;
-import com.killrvideo.service.search.request.SearchVideosRequestData;
-import com.killrvideo.utils.GrpcMappingUtils;
-
-import killrvideo.search.SearchServiceOuterClass.*;
-import killrvideo.search.SearchServiceOuterClass.SearchResultsVideoPreview.Builder;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.stereotype.Component;
-
-import java.util.Optional;
-
+import com.killrvideo.dse.dto.ResultListPage
+import com.killrvideo.service.search.dto.Video
+import com.killrvideo.service.search.request.GetQuerySuggestionsRequestData
+import com.killrvideo.service.search.request.SearchVideosRequestData
+import com.killrvideo.utils.GrpcMappingUtils.instantToTimeStamp
+import com.killrvideo.utils.GrpcMappingUtils.uuidToUuid
+import killrvideo.search.SearchServiceOuterClass.*
+import killrvideo.search.getQuerySuggestionsResponse
+import killrvideo.search.searchResultsVideoPreview
+import killrvideo.search.searchVideosResponse
+import org.apache.commons.lang3.StringUtils.isNotBlank
+import org.springframework.stereotype.Component
 
 /**
  * Helper and mappers for DAO <=> GRPC Communications
@@ -20,57 +19,55 @@ import java.util.Optional;
  * @author DataStax Developer Advocates Team
  */
 @Component
-public class SearchServiceGrpcMapper {
+class SearchServiceGrpcMapper {
 
-    public SearchVideosResponse buildSearchGrpcResponse(ResultListPage<Video> resultPage,
-                                                        String query) {
-        final SearchVideosResponse.Builder builder = SearchVideosResponse.newBuilder();
-        builder.setQuery(query);
-        resultPage.getPagingState().ifPresent(builder::setPagingState);
-        resultPage.getResults().stream()
-                .map(this::maptoResultVideoPreview)
-                .forEach(builder::addVideos);
-        return builder.build();
+    object SearchVideosRequestExtensions {
+        fun SearchVideosRequest.parse(): SearchVideosRequestData =
+            SearchVideosRequestData(
+                query = this.query,
+                pageSize = this.pageSize,
+                pagingState = if (isNotBlank(this.pagingState)) this.pagingState else null
+            )
     }
+
+    object GetQuerySuggestionsRequestExtensions {
+        fun GetQuerySuggestionsRequest.parse(): GetQuerySuggestionsRequestData =
+            GetQuerySuggestionsRequestData(
+                query = this.query,
+                pageSize = this.pageSize
+            )
+    }
+
+    fun buildSearchGrpcResponse(
+        resultPage: ResultListPage<Video?>,
+        _query: String
+    ): SearchVideosResponse =
+        searchVideosResponse {
+            query = _query
+            resultPage.pagingState.ifPresent { pagingState = it }
+            resultPage.results.stream()
+                .filter { it != null }
+                .map { maptoResultVideoPreview(it!!) }
+                .forEach { videos.add(it) }
+        }
 
     /**
      * Mapping to generated GPRC beans (Search result special).
      */
-    private SearchResultsVideoPreview maptoResultVideoPreview(Video v) {
-        Builder builder = SearchResultsVideoPreview.newBuilder();
-        builder.setName(v.getName());
-        builder.setVideoId(GrpcMappingUtils.uuidToUuid(v.getVideoid()));
-        builder.setUserId(GrpcMappingUtils.uuidToUuid(v.getUserid()));
-        if (v.getPreviewImageLocation() != null)  {
-            builder.setPreviewImageLocation(v.getPreviewImageLocation());
+    private fun maptoResultVideoPreview(v: Video): SearchResultsVideoPreview =
+        searchResultsVideoPreview {
+            v.name?.let { name = it }
+            v.videoid?.let { videoId = uuidToUuid(it) }
+            v.userid?.let { userId = uuidToUuid(it) }
+            v.previewImageLocation?.let { previewImageLocation = it }
+            v.addedDate?.let { addedDate = instantToTimeStamp(it) }
         }
-        if (v.getAddedDate() != null)  {
-            builder.setAddedDate(GrpcMappingUtils.instantToTimeStamp(v.getAddedDate()));
+
+    fun buildQuerySuggestionsResponse(
+        _suggestions: Iterable<String>, _query: String
+    ): GetQuerySuggestionsResponse =
+        getQuerySuggestionsResponse {
+            suggestions.addAll(_suggestions)
+            query = _query
         }
-        return builder.build();
-    }
-
-    public SearchVideosRequestData parseSearchVideosRequestData(SearchVideosRequest grpcReq) {
-        String searchQuery = grpcReq.getQuery();
-        int searchPageSize = grpcReq.getPageSize();
-        Optional<String> searchPagingState = Optional.of(grpcReq.getPagingState()).filter(StringUtils::isNotBlank);
-
-        return new SearchVideosRequestData(searchQuery, searchPageSize, searchPagingState);
-    }
-
-    public GetQuerySuggestionsResponse buildQuerySuggestionsResponse(
-            Iterable<String> suggestions, String query
-    ) {
-        return GetQuerySuggestionsResponse.newBuilder()
-                .setQuery(query)
-                .addAllSuggestions(suggestions)
-                .build();
-    }
-
-    public GetQuerySuggestionsRequestData parseGetQuerySuggestionsRequestData(GetQuerySuggestionsRequest grpcReq) {
-        String searchQuery = grpcReq.getQuery();
-        int searchPageSize = grpcReq.getPageSize();
-
-        return new GetQuerySuggestionsRequestData(searchQuery, searchPageSize);
-    }
 }
