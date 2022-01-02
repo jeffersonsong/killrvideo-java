@@ -1,13 +1,14 @@
-package com.killrvideo.service.rating.dao;
+package com.killrvideo.service.rating.dao
 
-import com.datastax.oss.driver.api.core.CqlSession;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+import com.datastax.oss.driver.api.core.CqlSession
+import com.killrvideo.service.rating.dao.VideoRatingMapperBuilder
+import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Configuration
 
 @Configuration
-public class VideoRatingDaoConfig {
+open class VideoRatingDaoConfig {
     @Bean
-    public VideoRatingMapper videoRatingMapper(CqlSession session) {
-        return VideoRatingMapper.build(session).build();
+    open fun videoRatingMapper(session: CqlSession?): VideoRatingMapper? {
+        return VideoRatingMapperBuilder(session).build()
     }
 }

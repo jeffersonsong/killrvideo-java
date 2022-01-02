@@ -1,272 +1,190 @@
-package com.killrvideo.service.rating.grpc;
+package com.killrvideo.service.rating.grpc
 
-import com.killrvideo.messaging.dao.MessagingDao;
-import com.killrvideo.service.rating.dto.VideoRating;
-import com.killrvideo.service.rating.dto.VideoRatingByUser;
-import com.killrvideo.service.rating.repository.RatingRepository;
-import com.killrvideo.service.rating.request.GetUserRatingRequestData;
-import io.grpc.stub.StreamObserver;
-import killrvideo.ratings.RatingsServiceOuterClass.*;
-import killrvideo.ratings.events.RatingsEvents;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import com.killrvideo.messaging.dao.MessagingDao
+import com.killrvideo.service.rating.dto.VideoRating
+import com.killrvideo.service.rating.dto.VideoRatingByUser
+import com.killrvideo.service.rating.repository.RatingRepository
+import com.killrvideo.utils.GrpcMappingUtils.randomUuid
+import com.killrvideo.utils.GrpcMappingUtils.uuidToUuid
+import io.grpc.Status
+import io.grpc.StatusRuntimeException
+import io.mockk.*
+import io.mockk.impl.annotations.InjectMockKs
+import io.mockk.impl.annotations.MockK
+import killrvideo.ratings.*
+import killrvideo.ratings.events.RatingsEvents.UserRatedVideo
+import kotlinx.coroutines.runBlocking
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
+import java.util.*
+import java.util.concurrent.CompletableFuture
 
-import java.util.Optional;
-import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
+internal class RatingsServiceGrpcTest {
+    @InjectMockKs
+    private lateinit var service: RatingsServiceGrpc
 
-import static com.killrvideo.utils.GrpcMappingUtils.uuidToUuid;
-import static org.mockito.Mockito.*;
+    @MockK
+    private lateinit var messagingDao: MessagingDao
 
-@SuppressWarnings("unchecked")
-class RatingsServiceGrpcTest {
-    @InjectMocks private RatingsServiceGrpc service;
-    @Mock
-    private MessagingDao messagingDao;
+    @MockK
+    private lateinit var ratingRepository: RatingRepository
 
-    @Mock
-    private RatingRepository ratingRepository;
+    @MockK
+    private lateinit var validator: RatingsServiceGrpcValidator
 
-    @Mock
-    private RatingsServiceGrpcValidator validator;
-    @Mock
-    private RatingsServiceGrpcMapper mapper;
-
-    private AutoCloseable closeable;
+    @MockK
+    private lateinit var mapper: RatingsServiceGrpcMapper
 
     @BeforeEach
-    public void openMocks() {
-        closeable = MockitoAnnotations.openMocks(this);
-    }
+    fun setUp() = MockKAnnotations.init(this, relaxUnitFun = true)
 
-    @AfterEach
-    public void releaseMocks() throws Exception {
-        closeable.close();
+    @Test
+    fun testRateVideoWithValidationFailed() {
+        val grpcReq = rateVideoRequest {}
+        every { validator.validateGrpcRequest_RateVideo(any())} throws
+                Status.INVALID_ARGUMENT.asRuntimeException()
+        
+        assertThrows<StatusRuntimeException> {
+            runBlocking { service.rateVideo(grpcReq) }
+        }
     }
 
     @Test
-    void testRateVideoWithValidationFailed() {
-        RateVideoRequest grpcReq = RateVideoRequest.getDefaultInstance();
-        StreamObserver<RateVideoResponse> grpcResObserver = mock(StreamObserver.class);
+    fun testRateVideoWithInsertFailed() {
+        val grpcReq = rateVideoRequest {
+            videoId=randomUuid()
+            userId=randomUuid()
+            rating =4
+        }
+        every {validator.validateGrpcRequest_RateVideo(any()) } just Runs
+        coEvery { ratingRepository.rateVideo(any()) } throws Exception()
 
-        doThrow(new IllegalArgumentException()).when(this.validator)
-                .validateGrpcRequest_RateVideo(any(), any());
-
-        Assertions.assertThrows(IllegalArgumentException.class, () ->
-                this.service.rateVideo(grpcReq, grpcResObserver));
+        assertThrows<Exception> {
+            runBlocking { service.rateVideo(grpcReq) }
+        }
     }
 
     @Test
-    void testRateVideoWithInsertFailed() {
-        RateVideoRequest grpcReq = rateVideoRequest(UUID.randomUUID(), UUID.randomUUID(), 4);
-        StreamObserver<RateVideoResponse> grpcResObserver = mock(StreamObserver.class);
+    fun testRateVideo() {
+        val grpcReq = rateVideoRequest {
+            videoId=randomUuid()
+            userId=randomUuid()
+            rating =4
+        }
+        every {validator.validateGrpcRequest_RateVideo(any()) } just Runs
+        val rating = mockk<VideoRatingByUser>()
+        val event = UserRatedVideo.getDefaultInstance()
+        every { mapper.createUserRatedVideoEvent(any()) } returns event
+        coEvery {ratingRepository.rateVideo(any()) } returns rating
+        every {messagingDao.sendEvent(any(), any())} returns
+            CompletableFuture.completedFuture(null)
 
-        doNothing().when(this.validator).validateGrpcRequest_RateVideo(any(), any());
-
-        VideoRatingByUser videoRatingByUser = mock(VideoRatingByUser.class);
-        when(this.mapper.parseRateVideoRequest(any())).thenReturn(videoRatingByUser);
-
-        when(ratingRepository.rateVideo(any())).thenReturn(CompletableFuture.failedFuture(new Exception()));
-
-        this.service.rateVideo(grpcReq, grpcResObserver);
-        verify(grpcResObserver, times(1)).onError(any());
-        verify(grpcResObserver, times(0)).onNext(any());
-        verify(grpcResObserver, times(0)).onCompleted();
+        runBlocking { service.rateVideo(grpcReq) }
     }
 
     @Test
-    void testRateVideo() {
-        RateVideoRequest grpcReq = rateVideoRequest(UUID.randomUUID(), UUID.randomUUID(), 4);
-        StreamObserver<RateVideoResponse> grpcResObserver = mock(StreamObserver.class);
-
-        doNothing().when(this.validator).validateGrpcRequest_RateVideo(any(), any());
-
-        VideoRatingByUser rating = mock(VideoRatingByUser.class);
-        RatingsEvents.UserRatedVideo event = RatingsEvents.UserRatedVideo.getDefaultInstance();
-        when(mapper.createUserRatedVideoEvent(any())).thenReturn(event);
-
-        VideoRatingByUser videoRatingByUser = mock(VideoRatingByUser.class);
-        when(this.mapper.parseRateVideoRequest(any())).thenReturn(videoRatingByUser);
-
-        when(ratingRepository.rateVideo(any())).thenReturn(CompletableFuture.completedFuture(rating));
-        when(this.messagingDao.sendEvent(any(), any())).thenReturn(
-                CompletableFuture.completedFuture(null)
-        );
-
-        this.service.rateVideo(grpcReq, grpcResObserver);
-        verify(grpcResObserver, times(0)).onError(any());
-        verify(grpcResObserver, times(1)).onNext(any());
-        verify(grpcResObserver, times(1)).onCompleted();
+    fun testGetRating() {
+        val grpcReq = getRatingRequest {}
+        every { validator.validateGrpcRequest_GetRating(any()) } throws
+                Status.INVALID_ARGUMENT.asRuntimeException()
+        assertThrows<StatusRuntimeException> {
+            runBlocking { service.getRating(grpcReq) }
+        }
     }
 
     @Test
-    void testGetRating() {
-        GetRatingRequest grpcReq = GetRatingRequest.getDefaultInstance();
-        StreamObserver<GetRatingResponse> grpcResObserver = mock(StreamObserver.class);
-
-        doThrow(new IllegalArgumentException()).when(this.validator)
-                .validateGrpcRequest_GetRating(any(), any());
-
-        Assertions.assertThrows(IllegalArgumentException.class, () ->
-                this.service.getRating(grpcReq, grpcResObserver));
+    fun testGetRatingWithQueryFailed() {
+        val grpcReq = getRatingRequest {videoId= randomUuid() }
+        every {validator.validateGrpcRequest_GetRating(any())} just Runs
+        coEvery { ratingRepository.findRating(any()) } throws Exception()
+        assertThrows<Exception> {
+            runBlocking { service.getRating(grpcReq) }
+        }
     }
 
     @Test
-    void testGetRatingWithQueryFailed() {
-        GetRatingRequest grpcReq = getRatingRequest(UUID.randomUUID());
-        StreamObserver<GetRatingResponse> grpcResObserver = mock(StreamObserver.class);
+    fun testGetRatingWithRatingPresent() {
+        val grpcReq = getRatingRequest {videoId= randomUuid() }
+        every {validator.validateGrpcRequest_GetRating(any())} just Runs
+        val rating = mockk<VideoRating>()
+        val response = getRatingResponse {}
+        every { mapper.mapToRatingResponse(any()) } returns response
+        coEvery { ratingRepository.findRating(any()) } returns rating
 
-        doNothing().when(this.validator).validateGrpcRequest_GetRating(any(), any());
-        when(this.ratingRepository.findRating(any())).thenReturn(CompletableFuture.failedFuture(new Exception()));
-
-        this.service.getRating(grpcReq, grpcResObserver);
-        verify(grpcResObserver, times(1)).onError(any());
-        verify(grpcResObserver, times(0)).onNext(any());
-        verify(grpcResObserver, times(0)).onCompleted();
+        val result = runBlocking { service.getRating(grpcReq) }
+        assertEquals(response, result)
     }
 
     @Test
-    void testGetRatingWithRatingPresent() {
-        GetRatingRequest grpcReq = getRatingRequest(UUID.randomUUID());
-        StreamObserver<GetRatingResponse> grpcResObserver = mock(StreamObserver.class);
+    fun testGetRatingWithRatingAbsent() {
+        val grpcReq = getRatingRequest {videoId= randomUuid() }
+        every {validator.validateGrpcRequest_GetRating(any())} just Runs
+        coEvery { ratingRepository.findRating(any()) } returns null
 
-        doNothing().when(this.validator).validateGrpcRequest_GetRating(any(), any());
-        VideoRating rating = mock(VideoRating.class);
-        GetRatingResponse response = GetRatingResponse.getDefaultInstance();
-        when(mapper.mapToRatingResponse(any())).thenReturn(response);
-        when(this.ratingRepository.findRating(any())).thenReturn(CompletableFuture.completedFuture(
-                Optional.of(rating)
-        ));
-
-        this.service.getRating(grpcReq, grpcResObserver);
-        verify(grpcResObserver, times(0)).onError(any());
-        verify(grpcResObserver, times(1)).onNext(any());
-        verify(grpcResObserver, times(1)).onCompleted();
+        val result = runBlocking { service.getRating(grpcReq) }
+        assertEquals(0L, result.ratingsTotal)
+        assertEquals(0L, result.ratingsCount)
     }
 
     @Test
-    void testGetRatingWithRatingAbsent() {
-        GetRatingRequest grpcReq = getRatingRequest(UUID.randomUUID());
-        StreamObserver<GetRatingResponse> grpcResObserver = mock(StreamObserver.class);
-
-        doNothing().when(this.validator).validateGrpcRequest_GetRating(any(), any());
-        when(this.ratingRepository.findRating(any())).thenReturn(CompletableFuture.completedFuture(
-                Optional.empty()
-        ));
-
-        this.service.getRating(grpcReq, grpcResObserver);
-        verify(grpcResObserver, times(0)).onError(any());
-        verify(grpcResObserver, times(1)).onNext(any());
-        verify(grpcResObserver, times(1)).onCompleted();
+    fun testGetUserRatingWithValidationFailed() {
+        val grpcReq = getUserRatingRequest {}
+        every { validator.validateGrpcRequest_GetUserRating(any()) } throws
+                Status.INVALID_ARGUMENT.asRuntimeException()
+        assertThrows<StatusRuntimeException>{
+            runBlocking { service.getUserRating(grpcReq) }
+        }
     }
 
     @Test
-    void testGetUserRatingWithValidationFailed() {
-        GetUserRatingRequest grpcReq = GetUserRatingRequest.getDefaultInstance();
-        StreamObserver<GetUserRatingResponse> grpcResObserver = mock(StreamObserver.class);
+    fun testGetUserRatingWithQueryFailed() {
+        val grpcReq = getUserRatingRequest {
+            videoId=randomUuid()
+            userId=randomUuid()
+        }
+        every { validator.validateGrpcRequest_GetUserRating(any()) } just Runs
+        coEvery { ratingRepository.findUserRating(any()) } throws Exception()
 
-        doThrow(new IllegalArgumentException()).when(this.validator)
-                .validateGrpcRequest_GetUserRating(any(), any());
-
-        Assertions.assertThrows(IllegalArgumentException.class, () ->
-                this.service.getUserRating(grpcReq, grpcResObserver));
+        assertThrows<Exception> {
+            runBlocking { service.getUserRating(grpcReq) }
+        }
     }
 
     @Test
-    void testGetUserRatingWithQueryFailed() {
-        GetUserRatingRequest grpcReq = getUserRatingRequest(UUID.randomUUID(), UUID.randomUUID());
-        StreamObserver<GetUserRatingResponse> grpcResObserver = mock(StreamObserver.class);
+    fun testGetUserRatingWithUserRatingPresent() {
+        val videoid = UUID.randomUUID()
+        val userid = UUID.randomUUID()
 
-        doNothing().when(this.validator).validateGrpcRequest_GetUserRating(any(), any());
+        val grpcReq = getUserRatingRequest {
+            videoId = uuidToUuid(videoid)
+            userId = uuidToUuid(userid)
+        }
 
-        GetUserRatingRequestData requestData = mock(GetUserRatingRequestData.class);
-        when(this.mapper.parseGetUserRatingRequest(any())).thenReturn(requestData);
+        every {validator.validateGrpcRequest_GetUserRating(any()) } just Runs
 
-        when(ratingRepository.findUserRating(any()))
-                .thenReturn(CompletableFuture.failedFuture(new Exception()));
+        val rating = mockk<VideoRatingByUser>()
+        val response = getUserRatingResponse {}
+        every {mapper.mapToUserRatingResponse(any()) } returns response
 
-        this.service.getUserRating(grpcReq, grpcResObserver);
+        coEvery {ratingRepository.findUserRating(any())} returns rating
 
-        verify(grpcResObserver, times(1)).onError(any());
-        verify(grpcResObserver, times(0)).onNext(any());
-        verify(grpcResObserver, times(0)).onCompleted();
+        val result = runBlocking { service.getUserRating(grpcReq) }
+        assertEquals(response, result)
     }
 
     @Test
-    void testGetUserRatingWithUserRatingPresent() {
-        UUID videoid = UUID.randomUUID();
-        UUID userid = UUID.randomUUID();
-        GetUserRatingRequest grpcReq = getUserRatingRequest(videoid, userid);
-        StreamObserver<GetUserRatingResponse> grpcResObserver = mock(StreamObserver.class);
-
-        doNothing().when(this.validator).validateGrpcRequest_GetUserRating(any(), any());
-        VideoRatingByUser rating = mock(VideoRatingByUser.class);
-        GetUserRatingResponse response = GetUserRatingResponse.getDefaultInstance();
-        when(mapper.mapToUserRatingResponse(any())).thenReturn(response);
-
-        GetUserRatingRequestData requestData = getUserRatingRequestData(videoid, userid);
-        when(this.mapper.parseGetUserRatingRequest(any())).thenReturn(requestData);
-
-        when(ratingRepository.findUserRating(any()))
-                .thenReturn(CompletableFuture.completedFuture(Optional.of(rating)));
-
-        this.service.getUserRating(grpcReq, grpcResObserver);
-
-        verify(grpcResObserver, times(0)).onError(any());
-        verify(grpcResObserver, times(1)).onNext(any());
-        verify(grpcResObserver, times(1)).onCompleted();
-    }
-
-    @Test
-    void testGetUserRatingWithUserRatingAbsent() {
-        UUID videoid = UUID.randomUUID();
-        UUID userid = UUID.randomUUID();
-        GetUserRatingRequest grpcReq = getUserRatingRequest(videoid, userid);
-        StreamObserver<GetUserRatingResponse> grpcResObserver = mock(StreamObserver.class);
-
-        doNothing().when(this.validator).validateGrpcRequest_GetUserRating(any(), any());
-
-        GetUserRatingRequestData requestData = getUserRatingRequestData(videoid, userid);
-        when(this.mapper.parseGetUserRatingRequest(any())).thenReturn(requestData);
-
-        when(ratingRepository.findUserRating(any()))
-                .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
-
-        this.service.getUserRating(grpcReq, grpcResObserver);
-
-        verify(grpcResObserver, times(0)).onError(any());
-        verify(grpcResObserver, times(1)).onNext(any());
-        verify(grpcResObserver, times(1)).onCompleted();
-    }
-
-    @SuppressWarnings("SameParameterValue")
-    private RateVideoRequest rateVideoRequest(UUID videoid, UUID userid, int rating) {
-        return RateVideoRequest.newBuilder()
-                .setVideoId(uuidToUuid(videoid))
-                .setUserId(uuidToUuid(userid))
-                .setRating(rating)
-                .build();
-    }
-
-    private GetRatingRequest getRatingRequest(UUID videoid) {
-        return GetRatingRequest.newBuilder()
-                .setVideoId(uuidToUuid(videoid))
-                .build();
-    }
-
-    private GetUserRatingRequestData getUserRatingRequestData(UUID videoid, UUID userid) {
-        return new GetUserRatingRequestData(videoid, userid);
-    }
-
-    private GetUserRatingRequest getUserRatingRequest(UUID videoid, UUID userid) {
-        return GetUserRatingRequest.newBuilder()
-                .setVideoId(uuidToUuid(videoid))
-                .setUserId(uuidToUuid(userid))
-                .build();
+    fun testGetUserRatingWithUserRatingAbsent() {
+        val videoid = UUID.randomUUID()
+        val userid = UUID.randomUUID()
+        val grpcReq = getUserRatingRequest {
+            videoId = uuidToUuid(videoid)
+            userId = uuidToUuid(userid)
+        }
+        every {validator.validateGrpcRequest_GetUserRating(any()) } just Runs
+        coEvery { ratingRepository!!.findUserRating(any())} returns null
+        val result = runBlocking { service.getUserRating(grpcReq) }
+        assertEquals(0, result.rating)
     }
 }

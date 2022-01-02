@@ -1,100 +1,63 @@
-package com.killrvideo.service.rating.grpc;
+package com.killrvideo.service.rating.grpc
 
-import io.grpc.stub.StreamObserver;
-import killrvideo.ratings.RatingsServiceOuterClass.GetRatingRequest;
-import killrvideo.ratings.RatingsServiceOuterClass.GetUserRatingRequest;
-import killrvideo.ratings.RatingsServiceOuterClass.RateVideoRequest;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import com.killrvideo.utils.GrpcMappingUtils.randomUuid
+import io.grpc.StatusRuntimeException
+import killrvideo.ratings.getRatingRequest
+import killrvideo.ratings.getUserRatingRequest
+import killrvideo.ratings.rateVideoRequest
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 
-import static com.killrvideo.utils.GrpcMappingUtils.randomUuid;
-import static org.mockito.Mockito.*;
+internal class RatingsServiceGrpcValidatorTest {
+    private val validator = RatingsServiceGrpcValidator()
 
-class RatingsServiceGrpcValidatorTest {
-    private final RatingsServiceGrpcValidator validator = new RatingsServiceGrpcValidator();
-    private StreamObserver<?> streamObserver;
-
-    @BeforeEach
-    public void setUp() {
-        this.streamObserver = mock(StreamObserver.class);
+    @Test
+    fun testValidateGrpcRequest_RateVideo_Success() {
+        val request = rateVideoRequest {
+            videoId = randomUuid()
+            userId = randomUuid()
+        }
+        validator.validateGrpcRequest_RateVideo(request)
     }
 
     @Test
-    public void testValidateGrpcRequest_RateVideo_Success() {
-        RateVideoRequest request = RateVideoRequest.newBuilder()
-                .setVideoId(randomUuid())
-                .setUserId(randomUuid())
-                .build();
-
-        validator.validateGrpcRequest_RateVideo(request, streamObserver);
-
-        verifySuccess();
+    fun testValidateGrpcRequest_RateVideo_Failure() {
+        val request = rateVideoRequest {}
+        assertThrows<StatusRuntimeException> {
+            validator.validateGrpcRequest_RateVideo(request)
+        }
     }
 
     @Test
-    public void testValidateGrpcRequest_RateVideo_Failure() {
-        RateVideoRequest request = RateVideoRequest.getDefaultInstance();
-
-        Assertions.assertThrows(IllegalArgumentException.class, () ->
-                validator.validateGrpcRequest_RateVideo(request, streamObserver)
-        );
-
-        verifyFailure();
+    fun testValidateGrpcRequest_GetRating_Success() {
+        val request = getRatingRequest {
+            videoId = randomUuid()
+        }
+        validator.validateGrpcRequest_GetRating(request)
     }
 
     @Test
-    public void testValidateGrpcRequest_GetRating_Success() {
-        GetRatingRequest request = GetRatingRequest.newBuilder()
-                .setVideoId(randomUuid())
-                .build();
-
-        validator.validateGrpcRequest_GetRating(request, streamObserver);
-
-        verifySuccess();
+    fun testValidateGrpcRequest_GetRating_Failure() {
+        val request = getRatingRequest {}
+        assertThrows<StatusRuntimeException> {
+            validator.validateGrpcRequest_GetRating(request)
+        }
     }
 
     @Test
-    public void testValidateGrpcRequest_GetRating_Failure() {
-        GetRatingRequest request = GetRatingRequest.getDefaultInstance();
-
-        Assertions.assertThrows(IllegalArgumentException.class, () ->
-                validator.validateGrpcRequest_GetRating(request, streamObserver)
-        );
-
-        verifyFailure();
+    fun testValidateGrpcRequest_GetUserRating_Success() {
+        val request = getUserRatingRequest {
+            videoId = randomUuid()
+            userId = randomUuid()
+        }
+        validator.validateGrpcRequest_GetUserRating(request)
     }
 
     @Test
-    public void testValidateGrpcRequest_GetUserRating_Success() {
-        GetUserRatingRequest request = GetUserRatingRequest.newBuilder()
-                .setVideoId(randomUuid())
-                .setUserId(randomUuid())
-                .build();
-
-        validator.validateGrpcRequest_GetUserRating(request, streamObserver);
-
-        verifySuccess();
-    }
-
-    @Test
-    public void testValidateGrpcRequest_GetUserRating_Failure() {
-        GetUserRatingRequest request = GetUserRatingRequest.getDefaultInstance();
-
-        Assertions.assertThrows(IllegalArgumentException.class, () ->
-                validator.validateGrpcRequest_GetUserRating(request, streamObserver)
-        );
-
-        verifyFailure();
-    }
-
-    private void verifySuccess() {
-        verify(streamObserver, times(0)).onError(any());
-        verify(streamObserver, times(0)).onCompleted();
-    }
-
-    private void verifyFailure() {
-        verify(streamObserver, times(1)).onError(any());
-        verify(streamObserver, times(1)).onCompleted();
+    fun testValidateGrpcRequest_GetUserRating_Failure() {
+        val request = getUserRatingRequest {}
+        assertThrows<StatusRuntimeException> {
+            validator.validateGrpcRequest_GetUserRating(request)
+        }
     }
 }

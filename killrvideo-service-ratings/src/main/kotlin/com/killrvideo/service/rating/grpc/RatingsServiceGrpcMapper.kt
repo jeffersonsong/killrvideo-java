@@ -1,20 +1,15 @@
-package com.killrvideo.service.rating.grpc;
+package com.killrvideo.service.rating.grpc
 
-import static com.killrvideo.utils.GrpcMappingUtils.fromUuid;
-import static com.killrvideo.utils.GrpcMappingUtils.uuidToUuid;
-
-import java.time.Instant;
-import java.util.Optional;
-import java.util.UUID;
-
-import com.killrvideo.service.rating.dto.VideoRating;
-import com.killrvideo.service.rating.dto.VideoRatingByUser;
-
-import com.killrvideo.service.rating.request.GetUserRatingRequestData;
-import com.killrvideo.utils.GrpcMappingUtils;
-import killrvideo.ratings.RatingsServiceOuterClass.*;
-import killrvideo.ratings.events.RatingsEvents;
-import org.springframework.stereotype.Component;
+import com.killrvideo.service.rating.dto.VideoRating
+import com.killrvideo.service.rating.dto.VideoRatingByUser
+import com.killrvideo.service.rating.request.GetUserRatingRequestData
+import com.killrvideo.utils.GrpcMappingUtils.*
+import killrvideo.ratings.RatingsServiceOuterClass.*
+import killrvideo.ratings.events.RatingsEvents.UserRatedVideo
+import killrvideo.ratings.getRatingResponse
+import killrvideo.ratings.getUserRatingResponse
+import org.springframework.stereotype.Component
+import java.time.Instant
 
 /**
  * Helper and mappers for DAO <=> GRPC Communications
@@ -22,51 +17,53 @@ import org.springframework.stereotype.Component;
  * @author DataStax Developer Advocates Team
  */
 @Component
-public class RatingsServiceGrpcMapper {
-     
-   /**
-     * Mapping to generated GPRC beans.
-     */
-    public GetRatingResponse mapToRatingResponse(VideoRating vr) {
-        return GetRatingResponse.newBuilder()
-                .setVideoId(uuidToUuid(vr.getVideoid()))
-                .setRatingsCount(Optional.ofNullable(vr.getRatingCounter()).orElse(0L))
-                .setRatingsTotal(Optional.ofNullable(vr.getRatingTotal()).orElse(0L))
-                .build();
+class RatingsServiceGrpcMapper {
+    object GetUserRatingRequestExtensions {
+        fun GetUserRatingRequest.parse(): GetUserRatingRequestData =
+            GetUserRatingRequestData(
+                userid = fromUuid(this.userId),
+                videoid = fromUuid(this.videoId)
+            )
     }
-    
+
+    object RateVideoRequestExtensions {
+        fun RateVideoRequest.parse(): VideoRatingByUser =
+            VideoRatingByUser(
+                videoid = fromUuid(this.videoId),
+                userid = fromUuid(this.userId),
+                rating = this.rating
+            )
+    }
+
     /**
      * Mapping to generated GPRC beans.
      */
-    public GetUserRatingResponse mapToUserRatingResponse(VideoRatingByUser vr) {
-        return GetUserRatingResponse.newBuilder()
-                .setVideoId(uuidToUuid(vr.getVideoid()))
-                .setUserId(uuidToUuid(vr.getUserid()))
-                .setRating(vr.getRating())
-                .build();
-    }
+    fun mapToRatingResponse(vr: VideoRating): GetRatingResponse =
+        getRatingResponse {
+            vr.videoid?.let { videoId = uuidToUuid(it) }
+            ratingsCount = vr.ratingCounter
+            ratingsTotal = vr.ratingTotal
+        }
 
-    public GetUserRatingRequestData parseGetUserRatingRequest(GetUserRatingRequest grpcReq) {
-        UUID videoid = fromUuid(grpcReq.getVideoId());
-        UUID userid = fromUuid(grpcReq.getUserId());
+    /**
+     * Mapping to generated GPRC beans.
+     */
+    fun mapToUserRatingResponse(vr: VideoRatingByUser): GetUserRatingResponse =
+        getUserRatingResponse {
+            vr.videoid?.let { videoId = uuidToUuid(it) }
+            vr.userid?.let { userId = uuidToUuid(it) }
+            rating = vr.rating
+        }
 
-        return new GetUserRatingRequestData(videoid, userid);
-    }
 
-    public VideoRatingByUser parseRateVideoRequest(RateVideoRequest grpcReq) {
-        UUID videoid = fromUuid(grpcReq.getVideoId());
-        UUID userid  = fromUuid(grpcReq.getUserId());
-        int rate = grpcReq.getRating();
+    fun createUserRatedVideoEvent(rating: VideoRatingByUser): UserRatedVideo {
+        val builder = UserRatedVideo.newBuilder()
+            .setRating(rating.rating)
+            .setRatingTimestamp(instantToTimeStamp(Instant.now()))
 
-        return new VideoRatingByUser(videoid, userid, rate);
-    }
+        rating.userid?.let { builder.setUserId(uuidToUuid(it)) }
+        rating.videoid?.let { builder.setVideoId(uuidToUuid(it)) }
 
-    public RatingsEvents.UserRatedVideo createUserRatedVideoEvent(VideoRatingByUser rating) {
-        return RatingsEvents.UserRatedVideo.newBuilder()
-                .setRating(rating.getRating())
-                .setRatingTimestamp(GrpcMappingUtils.instantToTimeStamp(Instant.now()))
-                .setUserId(uuidToUuid(rating.getUserid()))
-                .setVideoId(uuidToUuid(rating.getVideoid()))
-                .build();
+        return builder.build()
     }
 }

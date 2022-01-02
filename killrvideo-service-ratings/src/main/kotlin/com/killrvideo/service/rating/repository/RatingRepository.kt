@@ -1,18 +1,15 @@
-package com.killrvideo.service.rating.repository;
+package com.killrvideo.service.rating.repository
 
-import com.killrvideo.service.rating.dao.VideoRatingByUserDao;
-import com.killrvideo.service.rating.dao.VideoRatingDao;
-import com.killrvideo.service.rating.dao.VideoRatingMapper;
-import com.killrvideo.service.rating.dto.VideoRating;
-import com.killrvideo.service.rating.dto.VideoRatingByUser;
-import com.killrvideo.service.rating.request.GetUserRatingRequestData;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Repository;
-
-import java.util.Optional;
-import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
+import com.killrvideo.service.rating.dao.VideoRatingByUserDao
+import com.killrvideo.service.rating.dao.VideoRatingDao
+import com.killrvideo.service.rating.dao.VideoRatingMapper
+import com.killrvideo.service.rating.dto.VideoRating
+import com.killrvideo.service.rating.dto.VideoRatingByUser
+import com.killrvideo.service.rating.request.GetUserRatingRequestData
+import kotlinx.coroutines.future.await
+import org.slf4j.LoggerFactory
+import org.springframework.stereotype.Repository
+import java.util.*
 
 /**
  * Implementations of operation for Videos.
@@ -20,32 +17,30 @@ import java.util.concurrent.CompletableFuture;
  * @author DataStax Developer Advocates team.
  */
 @Repository
-public class RatingRepository {
-    private static final Logger LOGGER = LoggerFactory.getLogger(RatingRepository.class);
-
-    private final VideoRatingDao videoRatingDao;
-    private final VideoRatingByUserDao videoRatingByUserDao;
-
-    public RatingRepository(VideoRatingMapper mapper) {
-        this.videoRatingDao = mapper.getVideoRatingDao();
-        this.videoRatingByUserDao = mapper.getVideoRatingByUserDao();
-    }
+class RatingRepository(mapper: VideoRatingMapper) {
+    private val videoRatingDao: VideoRatingDao = mapper.videoRatingDao
+    private val videoRatingByUserDao: VideoRatingByUserDao = mapper.videoRatingByUserDao
 
     /**
      * Create a rating.
      *
      * @param videoRatingByUser video rating by user.
      */
-    public CompletableFuture<VideoRatingByUser> rateVideo(VideoRatingByUser videoRatingByUser) {
+    suspend fun rateVideo(videoRatingByUser: VideoRatingByUser): VideoRatingByUser? {
+        assertNotNull("rateVideo", "videoId", videoRatingByUser.videoid)
         // Logging at DEBUG
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Rating {} on video {} for user {}", videoRatingByUser.getRating(),
-                    videoRatingByUser.getVideoid(), videoRatingByUser.getUserid());
+        if (LOGGER.isDebugEnabled) {
+            LOGGER.debug(
+                "Rating {} on video {} for user {}", videoRatingByUser.rating,
+                videoRatingByUser.videoid, videoRatingByUser.userid
+            )
         }
-
-        return videoRatingDao.increment(videoRatingByUser.getVideoid(), 1L,
-                        videoRatingByUser.getRating())
-                .thenCompose(rs -> videoRatingByUserDao.insert(videoRatingByUser));
+        return videoRatingDao.increment(
+            videoRatingByUser.videoid!!, 1L,
+            videoRatingByUser.rating.toLong()
+        )
+            .thenCompose { _ -> videoRatingByUserDao.insert(videoRatingByUser) }
+            .await()
     }
 
     /**
@@ -54,11 +49,8 @@ public class RatingRepository {
      * @param videoId unique identifier for video.
      * @return find rating
      */
-    public CompletableFuture<Optional<VideoRating>> findRating(UUID videoId) {
-        assertNotNull("findRating", "videoId", videoId);
-
-        return videoRatingDao.findRating(videoId);
-    }
+    suspend fun findRating(videoId: UUID): VideoRating? =
+        videoRatingDao.findRating(videoId).await()
 
     /**
      * Find rating from videoid and userid.
@@ -66,16 +58,13 @@ public class RatingRepository {
      * @param request request.
      * @return video rating exists.
      */
-    public CompletableFuture<Optional<VideoRatingByUser>> findUserRating(GetUserRatingRequestData request) {
-        assertNotNull("findUserRating", "videoId", request.getVideoid());
-        assertNotNull("findUserRating", "userid", request.getUserid());
+    suspend fun findUserRating(request: GetUserRatingRequestData): VideoRatingByUser? =
+        videoRatingByUserDao.findUserRating(request.videoid, request.userid).await()
 
-        return videoRatingByUserDao.findUserRating(request.getVideoid(), request.getUserid());
-    }
+    private fun assertNotNull(mName: String, pName: String, obj: Any?) =
+        requireNotNull(obj) { "Assertion failed: param $pName is required for method $mName" }
 
-    private void assertNotNull(String mName, String pName, Object obj) {
-        if (obj == null) {
-            throw new IllegalArgumentException("Assertion failed: param " + pName + " is required for method " + mName);
-        }
+    companion object {
+        private val LOGGER = LoggerFactory.getLogger(RatingRepository::class.java)
     }
 }

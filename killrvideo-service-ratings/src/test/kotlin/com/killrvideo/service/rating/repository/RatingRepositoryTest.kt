@@ -1,94 +1,77 @@
-package com.killrvideo.service.rating.repository;
+package com.killrvideo.service.rating.repository
 
-import com.killrvideo.service.rating.dao.VideoRatingByUserDao;
-import com.killrvideo.service.rating.dao.VideoRatingDao;
-import com.killrvideo.service.rating.dao.VideoRatingMapper;
-import com.killrvideo.service.rating.dto.VideoRating;
-import com.killrvideo.service.rating.dto.VideoRatingByUser;
-import com.killrvideo.service.rating.request.GetUserRatingRequestData;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import com.killrvideo.service.rating.dao.VideoRatingByUserDao
+import com.killrvideo.service.rating.dao.VideoRatingDao
+import com.killrvideo.service.rating.dao.VideoRatingMapper
+import com.killrvideo.service.rating.dto.VideoRating
+import com.killrvideo.service.rating.dto.VideoRatingByUser
+import com.killrvideo.service.rating.request.GetUserRatingRequestData
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.verify
+import kotlinx.coroutines.runBlocking
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.mockito.ArgumentMatchers.anyLong
+import java.util.*
+import java.util.concurrent.CompletableFuture
 
-import java.util.Optional;
-import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
-
-class RatingRepositoryTest {
-    private RatingRepository repository;
-    private VideoRatingDao videoRatingDao;
-    private VideoRatingByUserDao videoRatingByUserDao;
+internal class RatingRepositoryTest {
+    private lateinit var repository: RatingRepository
+    private lateinit var videoRatingDao: VideoRatingDao
+    private lateinit var videoRatingByUserDao: VideoRatingByUserDao
 
     @BeforeEach
-    public void setUp() {
-        VideoRatingMapper mapper = mock(VideoRatingMapper.class);
-        videoRatingDao = mock(VideoRatingDao.class);
-        videoRatingByUserDao = mock(VideoRatingByUserDao.class);
-        when(mapper.getVideoRatingDao()).thenReturn(videoRatingDao);
-        when(mapper.getVideoRatingByUserDao()).thenReturn(videoRatingByUserDao);
-
-        repository = new RatingRepository(mapper);
+    fun setUp() {
+        val mapper = mockk<VideoRatingMapper>()
+        videoRatingDao = mockk()
+        videoRatingByUserDao = mockk()
+        every { mapper.videoRatingDao } returns videoRatingDao
+        every { mapper.videoRatingByUserDao } returns videoRatingByUserDao
+        repository = RatingRepository(mapper)
     }
 
     @Test
-    void testRateVideo() {
-        VideoRatingByUser ratingByUser = videoRatingByUser(UUID.randomUUID(), UUID.randomUUID(), 4);
-        when(videoRatingDao.increment(any(), anyLong(), anyLong())).thenReturn(
+    fun testRateVideo() {
+        val ratingByUser = VideoRatingByUser(videoid = UUID.randomUUID(), userid = UUID.randomUUID(), rating = 4)
+        every { videoRatingDao.increment(any(), any(), any()) } returns
                 CompletableFuture.completedFuture(null)
-        );
-        when(videoRatingByUserDao.insert(any())).thenReturn(
+
+        every { videoRatingByUserDao.insert(any()) } returns
                 CompletableFuture.completedFuture(ratingByUser)
-        );
-        repository.rateVideo(ratingByUser).whenComplete((result, error) -> {
-                    assertEquals(ratingByUser, result);
-                    assertNull(error);
-                }
-        );
-        verify(videoRatingDao, times(1)).increment(any(), anyLong(), anyLong());
-        verify(videoRatingByUserDao, times(1)).insert(any());
+
+        val result = runBlocking { repository.rateVideo(ratingByUser) }
+        assertEquals(ratingByUser, result)
+        verify {
+            videoRatingDao.increment(any(), any(), any())
+            videoRatingByUserDao.insert(any())
+        }
     }
 
     @Test
-    void testFindRating() {
-        VideoRating rating = new VideoRating(UUID.randomUUID());
-        when(videoRatingDao.findRating(any())).thenReturn(
-                CompletableFuture.completedFuture(Optional.of(rating))
-        );
-        repository.findRating(rating.getVideoid()).whenComplete((result, error) -> {
-            assertTrue(result.isPresent());
-            assertEquals(rating, result.get());
-            assertNull(error);
-        });
+    fun testFindRating() {
+        val rating = VideoRating(videoid = UUID.randomUUID())
+        every { videoRatingDao.findRating(any()) } returns
+                CompletableFuture.completedFuture(rating)
+
+        val result = runBlocking { repository.findRating(rating.videoid!!) }
+        assertEquals(rating, result)
     }
 
     @Test
-    void testFindUserRating() {
-        VideoRatingByUser ratingByUser = videoRatingByUser(UUID.randomUUID(), UUID.randomUUID(), 4);
+    fun testFindUserRating() {
+        val ratingByUser = VideoRatingByUser(videoid = UUID.randomUUID(), userid = UUID.randomUUID(), rating = 4)
+        every { videoRatingByUserDao.findUserRating(any(), any()) } returns
+                CompletableFuture.completedFuture(ratingByUser)
 
-        when(videoRatingByUserDao.findUserRating(any(), any())).thenReturn(
-            CompletableFuture.completedFuture(Optional.of(ratingByUser))
-        );
-
-        GetUserRatingRequestData request = getUserRatingRequestData(ratingByUser);
-        repository.findUserRating(request).whenComplete((result, error) -> {
-            assertTrue(result.isPresent());
-            assertEquals(ratingByUser, result.get());
-            assertNull(error);
-        });
+        val request = getUserRatingRequestData(ratingByUser)
+        val result = runBlocking { repository.findUserRating(request) }
+        assertEquals(ratingByUser, result)
     }
 
-    @SuppressWarnings("SameParameterValue")
-    private VideoRatingByUser videoRatingByUser(UUID videoid, UUID userid, int rating) {
-        return new VideoRatingByUser(videoid, userid, rating);
-    }
-
-    private GetUserRatingRequestData getUserRatingRequestData(VideoRatingByUser videoRatingByUser) {
-        return new GetUserRatingRequestData(videoRatingByUser.getVideoid(), videoRatingByUser.getUserid());
-    }
-
-    private VideoRating videoRating(UUID videoid){
-        return new VideoRating(videoid);
-    }
+    private fun getUserRatingRequestData(videoRatingByUser: VideoRatingByUser): GetUserRatingRequestData =
+        GetUserRatingRequestData(
+            videoid = videoRatingByUser.videoid!!, userid = videoRatingByUser.userid!!
+        )
 }

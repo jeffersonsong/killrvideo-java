@@ -1,14 +1,9 @@
-package com.killrvideo.service.rating.dto;
+package com.killrvideo.service.rating.dto
 
-import java.io.Serializable;
-import java.util.UUID;
-
-import com.datastax.oss.driver.api.mapper.annotations.CqlName;
-import com.datastax.oss.driver.api.mapper.annotations.Entity;
-import com.datastax.oss.driver.api.mapper.annotations.PartitionKey;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import com.datastax.oss.driver.api.mapper.annotations.CqlName
+import com.datastax.oss.driver.api.mapper.annotations.Entity
+import com.datastax.oss.driver.api.mapper.annotations.PartitionKey
+import java.util.*
 
 /**
  * Pojo representing DTO for table 'video_ratings'.
@@ -17,19 +12,8 @@ import lombok.Setter;
  */
 @Entity
 @CqlName("video_ratings")
-@Getter @Setter
-@NoArgsConstructor
-public class VideoRating implements Serializable {
-    private static final long serialVersionUID = -8874199914791405808L;
-
-    @PartitionKey
-    private UUID videoid;
-    private Long ratingCounter;
-    private Long ratingTotal;
-
-    public VideoRating(UUID videoid) {
-        this.videoid = videoid;
-        this.ratingCounter = 0L;
-        this.ratingTotal = 0L;
-    }
-}
+data class VideoRating(
+    @PartitionKey var videoid: UUID?,
+    var ratingCounter: Long = 0L,
+    var ratingTotal: Long = 0
+)
