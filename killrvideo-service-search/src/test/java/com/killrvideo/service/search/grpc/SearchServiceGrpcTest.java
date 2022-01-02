@@ -1,7 +1,7 @@
 package com.killrvideo.service.search.grpc;
 
 import com.killrvideo.dse.dto.ResultListPage;
-import com.killrvideo.dse.dto.Video;
+import com.killrvideo.service.search.dto.Video;
 import com.killrvideo.service.search.repository.SearchRepository;
 import com.killrvideo.service.search.request.GetQuerySuggestionsRequestData;
 import com.killrvideo.service.search.request.SearchVideosRequestData;

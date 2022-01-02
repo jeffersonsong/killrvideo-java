@@ -6,9 +6,9 @@ import com.datastax.dse.driver.api.core.graph.GraphNode;
 import com.datastax.oss.driver.api.core.ConsistencyLevel;
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.google.common.collect.Sets;
-import com.killrvideo.dse.dao.VideoRowMapper;
+import com.killrvideo.service.suggestedvideo.dao.VideoRowMapper;
 import com.killrvideo.dse.dto.ResultListPage;
-import com.killrvideo.dse.dto.Video;
+import com.killrvideo.service.suggestedvideo.dto.Video;
 import com.killrvideo.dse.graph.KillrVideoTraversal;
 import com.killrvideo.dse.graph.KillrVideoTraversalSource;
 import com.killrvideo.dse.graph.__;
@@ -20,6 +20,7 @@ import com.killrvideo.service.suggestedvideo.request.GetRelatedVideosRequestData
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.Assert;
@@ -76,7 +77,8 @@ public class SuggestedVideosRepository {
     @Value("#{'${killrvideo.search.ignoredWords}'.split(',')}")
     private final Set<String> ignoredWords = new HashSet<>();
 
-    public SuggestedVideosRepository(CqlSession session, PageableQueryFactory pageableQueryFactory, VideoMapper mapper, VideoRowMapper videoRowMapper) {
+    public SuggestedVideosRepository(CqlSession session, PageableQueryFactory pageableQueryFactory, VideoMapper mapper,
+                                     @Qualifier("suggestedVideoRowMapper") VideoRowMapper videoRowMapper) {
         this.session = session;
         this.videoDao = mapper.getVideoDao();
         this.findRelatedVideos = pageableQueryFactory.newPageableQuery(

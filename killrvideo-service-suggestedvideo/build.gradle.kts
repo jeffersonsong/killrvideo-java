@@ -28,14 +28,18 @@ dependencies {
     testImplementation(Deps.Mockito.core)
     compileOnly(Deps.lombok)
 
-    implementation(Deps.Grpc.all) {
-        exclude(group = "io.grpc", module = "grpc-testing");
-        exclude(group = "junit", module = "junit");
-    }
-    implementation(Deps.Datastax.core)
-    implementation(Deps.Datastax.mapperRuntime)
-    implementation(Deps.Apache.Commons.lang3)
     implementation(Deps.Spring.context)
+    implementation(Deps.Datastax.mapperRuntime)
+
+    implementation(Deps.Grpc.all) {
+        exclude(group = "io.grpc", module = "grpc-testing")
+        exclude(group = "junit", module = "junit")
+    }
+
+    implementation(Deps.Datastax.core)
+
+    implementation(Deps.Apache.Commons.lang3)
+    implementation(Deps.Javax.validation)
     implementation(Deps.Javax.annotation)
     implementation(Deps.Javax.inject)
     implementation(Deps.Apache.Kafka.connectApi)
@@ -70,4 +74,12 @@ protobuf {
             }
         }
     }
+}
+
+sourceSets.getByName("main") {
+    java.srcDir("build/generated/source/kaptKotlin/main")
+    java.srcDir("build/generated/source/proto/main/java")
+    java.srcDir("build/generated/source/proto/main/kotlin")
+    java.srcDir("build/generated/source/proto/main/grpc")
+    java.srcDir("build/generated/source/proto/main/grpckt")
 }

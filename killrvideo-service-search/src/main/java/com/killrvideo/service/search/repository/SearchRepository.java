@@ -3,15 +3,16 @@ package com.killrvideo.service.search.repository;
 import com.datastax.oss.driver.api.core.ConsistencyLevel;
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.cql.*;
-import com.killrvideo.dse.dao.VideoRowMapper;
+import com.killrvideo.service.search.dao.VideoRowMapper;
 import com.killrvideo.dse.dto.ResultListPage;
-import com.killrvideo.dse.dto.Video;
+import com.killrvideo.service.search.dto.Video;
 import com.killrvideo.dse.utils.PageableQuery;
 import com.killrvideo.dse.utils.PageableQueryFactory;
 import com.killrvideo.service.search.request.GetQuerySuggestionsRequestData;
 import com.killrvideo.service.search.request.SearchVideosRequestData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 
@@ -66,7 +67,8 @@ public class SearchRepository {
 
     private final CqlSession session;
 
-    public SearchRepository(CqlSession session, PageableQueryFactory pageableQueryFactory, VideoRowMapper videoRowMapper) {
+    public SearchRepository(CqlSession session, PageableQueryFactory pageableQueryFactory,
+                            @Qualifier("searchVideoRowMapper") VideoRowMapper videoRowMapper) {
         this.session = session;
 
         // Statement for tags

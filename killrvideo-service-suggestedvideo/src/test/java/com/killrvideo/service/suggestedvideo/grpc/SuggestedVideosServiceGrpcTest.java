@@ -1,7 +1,7 @@
 package com.killrvideo.service.suggestedvideo.grpc;
 
 import com.killrvideo.dse.dto.ResultListPage;
-import com.killrvideo.dse.dto.Video;
+import com.killrvideo.service.suggestedvideo.dto.Video;
 import com.killrvideo.service.suggestedvideo.request.GetRelatedVideosRequestData;
 import com.killrvideo.service.suggestedvideo.repository.SuggestedVideosRepository;
 import io.grpc.stub.StreamObserver;

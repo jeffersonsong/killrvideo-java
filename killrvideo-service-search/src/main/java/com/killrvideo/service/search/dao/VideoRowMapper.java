@@ -1,12 +1,12 @@
-package com.killrvideo.dse.dao;
+package com.killrvideo.service.search.dao;
 
 import com.datastax.oss.driver.api.core.cql.Row;
-import com.killrvideo.dse.dto.Video;
+import com.killrvideo.service.search.dto.Video;
 import org.springframework.stereotype.Component;
 
-import static com.killrvideo.dse.dto.Video.*;
+import static com.killrvideo.service.search.dto.Video.*;
 
-@Component
+@Component("searchVideoRowMapper")
 public class VideoRowMapper {
     public Video map(Row row) {
         return new Video(

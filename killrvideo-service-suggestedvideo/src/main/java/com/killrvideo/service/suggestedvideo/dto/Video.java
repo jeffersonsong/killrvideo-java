@@ -1,8 +1,9 @@
-package com.killrvideo.dse.dto;
+package com.killrvideo.service.suggestedvideo.dto;
 
 import com.datastax.oss.driver.api.mapper.annotations.CqlName;
 import com.datastax.oss.driver.api.mapper.annotations.Entity;
 import com.datastax.oss.driver.api.mapper.annotations.PartitionKey;
+import com.killrvideo.dse.dto.AbstractVideo;
 import com.killrvideo.dse.utils.EmptyCollectionIfNull;
 import lombok.Getter;
 import lombok.Setter;
