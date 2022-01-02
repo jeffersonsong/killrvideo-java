@@ -52,10 +52,6 @@ dependencies {
 
 description = "+ killrvideo-service-users"
 
-kapt {
-    keepJavacAnnotationProcessors = true
-}
-
 protobuf {
     protoc {
         artifact = Deps.Google.protobuf

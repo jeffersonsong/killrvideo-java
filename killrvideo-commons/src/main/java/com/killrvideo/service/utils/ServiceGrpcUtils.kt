@@ -3,6 +3,7 @@ package com.killrvideo.service.utils
 import mu.KLogger
 import java.time.Duration
 import java.time.Instant
+import java.util.*
 
 object ServiceGrpcUtils {
 
@@ -36,4 +37,8 @@ object ServiceGrpcUtils {
     fun traceError(logger: KLogger, method: String, starts: Instant, t: Throwable) {
         logger.error(t) { "An error occurred in $method after ${Duration.between(starts, Instant.now())}" }
     }
+
+    fun <T> toNullable(optional: Optional<T>): T? =
+        if (optional.isPresent()) optional.get()
+        else null
 }
