@@ -7,6 +7,7 @@ import com.google.protobuf.gradle.protoc
 plugins {
     id("com.datastax.java-conventions")
     id("com.google.protobuf")
+    kotlin("jvm")
 }
 
 repositories {
@@ -15,6 +16,8 @@ repositories {
 }
 
 dependencies {
+    api(kotlin("stdlib"))
+
     runtimeOnly(Deps.Google.protobufJavaUtils)
 
     // Spring, Inversion Of Control
@@ -24,6 +27,7 @@ dependencies {
     // Logging
     implementation(Deps.Logback.core)
     runtimeOnly(Deps.Logback.classic)
+    implementation(Deps.kotlinLogging)
 
     // Service Discovery
     implementation(Deps.etcd4j)
@@ -44,8 +48,8 @@ dependencies {
 
     // GRPC
     implementation(Deps.Grpc.all) {
-        exclude(group = "io.grpc", module = "grpc-testing");
-        exclude(group = "junit", module = "junit");
+        exclude(group = "io.grpc", module = "grpc-testing")
+        exclude(group = "junit", module = "junit")
     }
 
     // Kafka

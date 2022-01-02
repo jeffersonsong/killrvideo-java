@@ -18,8 +18,8 @@ import javax.validation.constraints.Size
 data class User(
     @PartitionKey
     var userid: UUID? = null,
-    var firstname: @Size(min = 1, message = "firstName must not be empty") String? = null,
-    var lastname: @Size(min = 1, message = "lastname must not be empty") String? = null,
+    var createdDate: @NotNull Instant? = null,
     var email: @Size(min = 1, message = "email must not be empty") String? = null,
-    var createdDate: @NotNull Instant? = null
+    var firstname: @Size(min = 1, message = "firstName must not be empty") String? = null,
+    var lastname: @Size(min = 1, message = "lastname must not be empty") String? = null
 )

@@ -1,7 +1,6 @@
 package com.killrvideo.service.user.repository
 
 import com.killrvideo.dse.utils.MappedAsyncPagingIterableExtensions.all
-import com.killrvideo.dse.utils.MappedAsyncPagingIterableUtils
 import com.killrvideo.service.user.dao.UserCredentialsDao
 import com.killrvideo.service.user.dao.UserDao
 import com.killrvideo.service.user.dao.UserMapper
@@ -12,7 +11,6 @@ import kotlinx.coroutines.future.await
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Repository
 import java.util.*
-import java.util.concurrent.CompletionException
 
 /**
  * Handling user.

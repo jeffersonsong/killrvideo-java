@@ -30,8 +30,12 @@ dependencies {
     implementation(Deps.JetBrian.Kotlinx.coroutinesJdk8)
     implementation(Deps.Apache.Commons.collections4)
     implementation(Deps.kotlinLogging)
+
     testImplementation(Deps.Junit.jupiter)
     testImplementation(Deps.mockk)
+
+    implementation(Deps.Spring.context)
+    implementation(Deps.Datastax.mapperRuntime)
 
     implementation(Deps.Google.protobuf)
     implementation(Deps.Grpc.all) {
@@ -39,16 +43,18 @@ dependencies {
         exclude(group = "junit", module = "junit")
     }
 
-    implementation(Deps.Spring.context)
-    implementation(Deps.Datastax.mapperRuntime)
+    implementation(Deps.Apache.Commons.lang3)
     implementation(Deps.Javax.validation)
     implementation(Deps.Javax.annotation)
-    implementation(Deps.Apache.Commons.lang3)
 
     kapt(Deps.Datastax.mapperProcessor)
 }
 
 description = "+ killrvideo-service-users"
+
+kapt {
+    keepJavacAnnotationProcessors = true
+}
 
 protobuf {
     protoc {
@@ -76,24 +82,9 @@ protobuf {
 }
 
 sourceSets.getByName("main") {
-    java.srcDir("src/main/java")
     java.srcDir("build/generated/source/kaptKotlin/main")
     java.srcDir("build/generated/source/proto/main/java")
     java.srcDir("build/generated/source/proto/main/kotlin")
     java.srcDir("build/generated/source/proto/main/grpc")
     java.srcDir("build/generated/source/proto/main/grpckt")
 }
-
-/*
-sourceSets {
-    main {
-        kotlin {
-            srcDirs(
-                'src/main/kotlin',
-                'build/generated/source/kaptKotlin/main',
-                'build/generated/source/proto/main/kotlin',
-                'build/generated/source/proto/main/grpckt'
-            )
-        }
-    }
-}*/

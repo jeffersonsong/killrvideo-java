@@ -25,10 +25,10 @@ object CassandraTestUtilsKt {
         when (queries.size) {
             0 -> {}
             1 -> every {
-                pageableQueryFactory.newPageableQuery(any(), any(), any<Any>() as Function<Row?, T>?)
+                pageableQueryFactory.newPageableQuery(any(), any(), any<Function<Row?, T>>())
             } returns queries[0]
             else -> every {
-                pageableQueryFactory.newPageableQuery(any(), any(), any<Any>() as Function<Row?, T>?)
+                pageableQueryFactory.newPageableQuery(any(), any(), any<Function<Row?, T>>())
             } returnsMany queries.toList()
         }
         return pageableQueryFactory
