@@ -107,23 +107,13 @@ class SuggestedVideosRepository(
      */
     private fun buildSolrQueryToSearchVideos(video: Video): kotlin.String {
         val space = " "
-        val eachWordRegEx = "[^\\w]"
-        val eachWordPattern = Pattern.compile(eachWordRegEx).pattern()
         val termSet = HashSet<kotlin.String>(50)
-        video.name ?.let {
-            it.lowercase(Locale.getDefault()).split(eachWordPattern).forEach {
-                termSet.add(it)
-            }
+        video.name ?.let {sentence ->
+            splitSentence(sentence).forEach { termSet.add(it)}
         }
-        video.description ?.let {
-            it.lowercase(Locale.getDefault()).split(eachWordPattern).forEach {
-                termSet.add(it)
-            }
+        video.description ?.let {sentence ->
+            splitSentence(sentence).forEach { termSet.add(it)}
         }
-        //Collections.addAll(termSet, video.name.lowercase(Locale.getDefault()).split(eachWordPattern))
-        //video.name ?.let {Collections.addAll(termSet, *it.lowercase(Locale.getDefault()).split(eachWordPattern).toTypedArray())}
-        //video.tags ?.let {termSet.addAll(it)}// getTags already returns a set
-        //video.description ?.let {termSet.addAll(it.toLowerCase().split(eachWordPattern))}
         termSet.removeAll(ignoredWords)
         termSet.removeIf { it.isEmpty() }
         val delimitedTermList = termSet.stream().map { obj: kotlin.String -> obj }.collect(Collectors.joining(","))
@@ -135,6 +125,11 @@ class SuggestedVideosRepository(
         solrQuery.append("description:").append(delimitedTermList)
         solrQuery.append(PAGING_DRIVER_END)
         return solrQuery.toString()
+    }
+
+    private fun splitSentence(sentence: String): List<String> {
+        val eachWordPattern = "\\W+".toRegex()
+        return sentence.lowercase(Locale.getDefault()).split(eachWordPattern)
     }
 
     /**
