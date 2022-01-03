@@ -4,7 +4,6 @@ import com.killrvideo.service.user.dto.User
 import com.killrvideo.service.user.grpc.UserManagementServiceGrpcMapper.CreateUserRequestExtensions.parse
 import com.killrvideo.utils.GrpcMappingUtils.uuidToUuid
 import killrvideo.user_management.createUserRequest
-import killrvideo.user_management.getUserProfileRequest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import java.time.Instant

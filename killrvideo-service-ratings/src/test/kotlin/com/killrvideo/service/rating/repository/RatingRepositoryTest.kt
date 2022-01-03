@@ -59,6 +59,16 @@ internal class RatingRepositoryTest {
     }
 
     @Test
+    fun testFindRatingAbsent() {
+        every { videoRatingDao.findRating(any()) } returns
+                CompletableFuture.completedFuture(null)
+
+        val result = runBlocking { repository.findRating(UUID.randomUUID()) }
+        assertEquals(0L, result.ratingCounter)
+        assertEquals(0L, result.ratingTotal)
+    }
+
+    @Test
     fun testFindUserRating() {
         val ratingByUser = VideoRatingByUser(videoid = UUID.randomUUID(), userid = UUID.randomUUID(), rating = 4)
         every { videoRatingByUserDao.findUserRating(any(), any()) } returns
@@ -67,6 +77,16 @@ internal class RatingRepositoryTest {
         val request = getUserRatingRequestData(ratingByUser)
         val result = runBlocking { repository.findUserRating(request) }
         assertEquals(ratingByUser, result)
+    }
+
+    @Test
+    fun testFindUserRatingAbsent() {
+        every { videoRatingByUserDao.findUserRating(any(), any()) } returns
+                CompletableFuture.completedFuture(null)
+
+        val request = GetUserRatingRequestData(videoid = UUID.randomUUID(), userid = UUID.randomUUID())
+        val result = runBlocking { repository.findUserRating(request) }
+        assertEquals(0, result.rating)
     }
 
     private fun getUserRatingRequestData(videoRatingByUser: VideoRatingByUser): GetUserRatingRequestData =

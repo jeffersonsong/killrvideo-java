@@ -7,6 +7,7 @@ import com.killrvideo.utils.GrpcMappingUtils.fromUuid
 import killrvideo.statistics.StatisticsServiceGrpcKt
 import killrvideo.statistics.StatisticsServiceOuterClass.*
 import killrvideo.statistics.getNumberOfPlaysResponse
+import killrvideo.statistics.recordPlaybackStartedResponse
 import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
@@ -27,13 +28,6 @@ class StatisticsServiceGrpc(
 ) : StatisticsServiceGrpcKt.StatisticsServiceCoroutineImplBase() {
     private val logger = KotlinLogging.logger {}
 
-    /**
-     * Getter accessor for attribute 'serviceKey'.
-     *
-     * @return
-     * current value of 'serviceKey'
-     */
-
     /** {@inheritDoc}  */
     override suspend fun recordPlaybackStarted(request: RecordPlaybackStartedRequest): RecordPlaybackStartedResponse {
         // Validate Parameters
@@ -47,9 +41,8 @@ class StatisticsServiceGrpc(
 
         // Invoke DAO Async
         return runCatching { statisticsRepository.recordPlaybackStartedAsync(videoId) }
-            .map {
-                RecordPlaybackStartedResponse.newBuilder().build()
-            }.trace(logger, "recordPlaybackStarted", starts)
+            .map { recordPlaybackStartedResponse {}}
+            .trace(logger, "recordPlaybackStarted", starts)
             .getOrThrow()
     }
 
@@ -70,8 +63,7 @@ class StatisticsServiceGrpc(
         } else {
             // Invoke DAO Async
             runCatching { statisticsRepository.getNumberOfPlaysAsync(listOfVideoId) }
-                .map { videoList ->
-                    mapper.buildGetNumberOfPlayResponse(request, videoList)
+                .map { mapper.buildGetNumberOfPlayResponse(request, it)
                 }.trace(logger, "getNumberOfPlays", starts)
                 .getOrThrow()
         }

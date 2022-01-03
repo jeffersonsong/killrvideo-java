@@ -5,19 +5,15 @@ import com.killrvideo.service.rating.dto.VideoRatingByUser
 import com.killrvideo.service.rating.grpc.RatingsServiceGrpcMapper.GetUserRatingRequestExtensions.parse
 import com.killrvideo.service.rating.grpc.RatingsServiceGrpcMapper.RateVideoRequestExtensions.parse
 import com.killrvideo.service.rating.repository.RatingRepository
-import com.killrvideo.service.rating.request.GetUserRatingRequestData
 import com.killrvideo.service.utils.ServiceGrpcUtils.trace
 import com.killrvideo.utils.GrpcMappingUtils.fromUuid
-import com.killrvideo.utils.GrpcMappingUtils.uuidToUuid
 import killrvideo.ratings.RatingsServiceGrpcKt
 import killrvideo.ratings.RatingsServiceOuterClass.*
-import killrvideo.ratings.getRatingResponse
-import killrvideo.ratings.getUserRatingResponse
+import killrvideo.ratings.rateVideoResponse
 import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import java.time.Instant
-import java.util.*
 
 /**
  * Operations on Ratings with GRPC.
@@ -38,13 +34,6 @@ class RatingsServiceGrpc(
     private val logger = KotlinLogging.logger {}
 
     /**
-     * Getter accessor for attribute 'serviceKey'.
-     *
-     * @return current value of 'serviceKey'
-     */
-
-
-    /**
      * {@inheritDoc}
      */
     override suspend fun rateVideo(request: RateVideoRequest): RateVideoResponse {
@@ -59,12 +48,14 @@ class RatingsServiceGrpc(
 
         // Invoking Dao (Async), publish event if successful
         return runCatching { ratingRepository.rateVideo(videoRatingByUser) }
-            .map {
-                RateVideoResponse.newBuilder().build()
-            }.onSuccess {
-                messagingDao.sendEvent(topicvideoRated, mapper.createUserRatedVideoEvent(videoRatingByUser))
+            .map { rateVideoResponse {}}
+            .onSuccess {
+                notifyUserRatedVideo(videoRatingByUser)
             }.trace(logger, "rateVideo", starts).getOrThrow()
     }
+
+    private fun notifyUserRatedVideo(videoRatingByUser: VideoRatingByUser) =
+        messagingDao.sendEvent(topicvideoRated, mapper.createUserRatedVideoEvent(videoRatingByUser))
 
     /**
      * {@inheritDoc}
@@ -81,18 +72,10 @@ class RatingsServiceGrpc(
 
         // Invoking Dao (Async) and map result back to GRPC (maptoRatingResponse)
         return runCatching { ratingRepository.findRating(videoid) }
-            .map { vr ->
-                vr?.let { mapper.mapToRatingResponse(it) } ?: emptyRatingResponse(videoid)
-            }.trace(logger, "getRating", starts)
+            .map { mapper.mapToRatingResponse(it) }
+            .trace(logger, "getRating", starts)
             .getOrThrow()
     }
-
-    private fun emptyRatingResponse(videoid: UUID): GetRatingResponse =
-        getRatingResponse {
-            videoId = uuidToUuid(videoid)
-            ratingsCount = 0L
-            ratingsTotal = 0L
-        }
 
     /**
      * {@inheritDoc}
@@ -109,16 +92,8 @@ class RatingsServiceGrpc(
 
         // Invoking Dao (Async) and map result back to GRPC (maptoRatingResponse)
         return runCatching { ratingRepository.findUserRating(requestData) }
-            .map { ur ->
-                ur?.let { mapper.mapToUserRatingResponse(it) } ?: emptyUserRatingResponse(requestData)
-            }.trace(logger, "getUserRating", starts)
+            .map { mapper.mapToUserRatingResponse(it) }
+            .trace(logger, "getUserRating", starts)
             .getOrThrow()
     }
-
-    private fun emptyUserRatingResponse(request: GetUserRatingRequestData): GetUserRatingResponse =
-        getUserRatingResponse {
-            userId = uuidToUuid(request.userid)
-            videoId = uuidToUuid(request.videoid)
-            rating = 0
-        }
 }

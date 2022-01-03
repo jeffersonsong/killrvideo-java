@@ -51,13 +51,16 @@ class CommentsServiceGrpc(
         logger.debug {"Insert comment on video ${comment.videoid} for user ${comment.userid} : $comment" }
 
         return runCatching { commentRepository.insertCommentAsync(comment) }
-            .map { rs: Comment ->
-                messagingDao.sendEvent(messageDestination, mapper.createUserCommentedOnVideoEvent(rs)).get()
+            .mapCatching { rs: Comment ->
+                notifyUserCommentedOnVideo(rs)
                 rs
             }.map {
                 commentOnVideoResponse {}
             }.trace(logger, "commentOnVideo", starts).getOrThrow()
     }
+
+    private fun notifyUserCommentedOnVideo(comment: Comment) =
+        messagingDao.sendEvent(messageDestination, mapper.createUserCommentedOnVideoEvent(comment)).get()
 
     /**
      * {@inheritDoc}

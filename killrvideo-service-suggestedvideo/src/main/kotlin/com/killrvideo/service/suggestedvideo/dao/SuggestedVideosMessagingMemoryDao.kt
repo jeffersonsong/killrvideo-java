@@ -26,23 +26,23 @@ class SuggestedVideosMessagingMemoryDao(
      * {@inheritDoc}
      */
     @Subscribe
-    public override fun onYoutubeVideoAddingMessage(youTubeVideoAdded: YouTubeVideoAdded) {
-        super.onYoutubeVideoAddingMessage(youTubeVideoAdded)
+    public override fun onYoutubeVideoAddingMessage(videoAdded: YouTubeVideoAdded) {
+        super.onYoutubeVideoAddingMessage(videoAdded)
     }
 
     /**
      * {@inheritDoc}
      */
     @Subscribe
-    public override fun onUserCreatingMessage(userCreated: UserCreated) {
-        super.onUserCreatingMessage(userCreated)
+    public override fun onUserCreatingMessage(userCreationMessage: UserCreated) {
+        super.onUserCreatingMessage(userCreationMessage)
     }
 
     /**
      * {@inheritDoc}
      */
     @Subscribe
-    public override fun onVideoRatingMessage(userRatedVideo: UserRatedVideo) {
-        super.onVideoRatingMessage(userRatedVideo)
+    public override fun onVideoRatingMessage(userVideoRated: UserRatedVideo) {
+        super.onVideoRatingMessage(userVideoRated)
     }
 }

@@ -7,9 +7,9 @@ import com.killrvideo.service.suggestedvideo.repository.SuggestedVideosRepositor
 import killrvideo.ratings.events.RatingsEvents.UserRatedVideo
 import killrvideo.user_management.events.UserManagementEvents.UserCreated
 import killrvideo.video_catalog.events.VideoCatalogEvents.YouTubeVideoAdded
+import mu.KotlinLogging
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.clients.consumer.KafkaConsumer
-import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Profile
@@ -35,10 +35,11 @@ class SuggestedVideosMessagingKafkaDao(
     @Value("\${killrvideo.messaging.destination.videoRated : topic-kv-videoRating}")
     private val topicVideoRated: String
 ) : SuggestedVideosMessagingDaoSupport(suggestedVideosRepository, mapper) {
+    private val logger = KotlinLogging.logger {  }
 
     @PostConstruct
     fun registerConsumerUserCreated() {
-        LOGGER.info("Start consuming events from topic '{}' ..", topicUserCreated)
+        logger.info("Start consuming events from topic '{}' ..", topicUserCreated)
         consumerUserCreatedProtobuf.subscribe(listOf(topicUserCreated))
         StreamSupport.stream(consumerUserCreatedProtobuf.poll(Duration.ofSeconds(2L)).spliterator(), false)
             .map { obj: ConsumerRecord<String, ByteArray> -> obj.value() }
@@ -49,7 +50,7 @@ class SuggestedVideosMessagingKafkaDao(
         try {
             super.onUserCreatingMessage(UserCreated.parseFrom(payload))
         } catch (e: InvalidProtocolBufferException) {
-            LOGGER.error("Cannot parse message expecting object " + UserCreated::class.java.name, e)
+            logger.error("Cannot parse message expecting object " + UserCreated::class.java.name, e)
         }
     }
 
@@ -63,7 +64,7 @@ class SuggestedVideosMessagingKafkaDao(
     private val consumerVideoCreatedProtobuf: KafkaConsumer<String, ByteArray>? = null
     @PostConstruct
     fun registerConsumerYoutubeVideoAdded() {
-        LOGGER.info("Start consuming events from topic '{}' ..", topicVideoCreated)
+        logger.info("Start consuming events from topic '{}' ..", topicVideoCreated)
         consumerVideoCreatedProtobuf!!.subscribe(listOf(topicVideoCreated))
         StreamSupport.stream(consumerVideoCreatedProtobuf.poll(Duration.ofSeconds(2L)).spliterator(), false)
             .map { obj: ConsumerRecord<String, ByteArray> -> obj.value() }
@@ -75,7 +76,7 @@ class SuggestedVideosMessagingKafkaDao(
             // Marshall binary to Protobuf Stub
             super.onYoutubeVideoAddingMessage(YouTubeVideoAdded.parseFrom(payload))
         } catch (e: InvalidProtocolBufferException) {
-            LOGGER.error("Cannot parse message expecting object " + UserCreated::class.java.name, e)
+            logger.error("Cannot parse message expecting object " + UserCreated::class.java.name, e)
         }
     }
 
@@ -89,7 +90,7 @@ class SuggestedVideosMessagingKafkaDao(
     private val consumerVideoRatingProtobuf: KafkaConsumer<String, ByteArray>? = null
     @PostConstruct
     fun registerConsumerVideoRating() {
-        LOGGER.info("Start consuming events from topic '{}' ..", topicVideoRated)
+        logger.info("Start consuming events from topic '{}' ..", topicVideoRated)
         consumerVideoRatingProtobuf!!.subscribe(listOf(topicVideoRated))
         StreamSupport.stream(consumerVideoRatingProtobuf.poll(Duration.ofSeconds(2L)).spliterator(), false)
             .map { obj: ConsumerRecord<String, ByteArray> -> obj.value() }
@@ -100,11 +101,7 @@ class SuggestedVideosMessagingKafkaDao(
         try {
             super.onVideoRatingMessage(UserRatedVideo.parseFrom(payload))
         } catch (e: InvalidProtocolBufferException) {
-            LOGGER.error("Cannot parse message expecting object " + UserCreated::class.java.name, e)
+            logger.error("Cannot parse message expecting object " + UserCreated::class.java.name, e)
         }
-    }
-
-    companion object {
-        private val LOGGER = LoggerFactory.getLogger(SuggestedVideosMessagingKafkaDao::class.java)
     }
 }

@@ -29,7 +29,7 @@ class StatisticsServiceGrpcMapper {
     }
 
     fun buildGetNumberOfPlayResponse(
-        grpcReq: GetNumberOfPlaysRequest,
+        request: GetNumberOfPlaysRequest,
         videoList: List<VideoPlaybackStats>
     ): GetNumberOfPlaysResponse {
         val result = videoList.stream()
@@ -38,7 +38,7 @@ class StatisticsServiceGrpcMapper {
                 { obj: PlayStats -> obj.videoId }, { x: PlayStats -> x })
             )
         return getNumberOfPlaysResponse {
-            for (requestedVideoId in grpcReq.videoIdsList) {
+            for (requestedVideoId in request.videoIdsList) {
                 val playStats = result.computeIfAbsent(requestedVideoId) {
                     defaultPlayStats(it)
                 }

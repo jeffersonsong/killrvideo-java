@@ -1,6 +1,5 @@
 package com.killrvideo.service.suggestedvideo.grpc
 
-import com.killrvideo.utils.GrpcMappingUtils
 import com.killrvideo.utils.GrpcMappingUtils.randomUuid
 import io.grpc.StatusRuntimeException
 import killrvideo.suggested_videos.SuggestedVideosService.GetRelatedVideosRequest

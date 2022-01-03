@@ -25,29 +25,23 @@ class SearchServiceGrpc(
     val serviceKey: String
 ) : SearchServiceGrpcKt.SearchServiceCoroutineImplBase() {
     private val logger = KotlinLogging.logger {}
-    /**
-     * Getter accessor for attribute 'serviceKey'.
-     *
-     * @return current value of 'serviceKey'
-     */
-
 
     /**
      * {@inheritDoc}
      */
-    override suspend fun searchVideos(grpcReq: SearchVideosRequest):SearchVideosResponse {
+    override suspend fun searchVideos(request: SearchVideosRequest):SearchVideosResponse {
         // Validate Parameters
-        validator.validateGrpcRequest_SearchVideos(grpcReq)
+        validator.validateGrpcRequest_SearchVideos(request)
 
         // Stands as stopwatch for logging and messaging 
         val starts = Instant.now()
 
         // Mapping GRPC => Domain (Dao)
-        val requestData = grpcReq.parse()
+        val requestData = request.parse()
 
         // Map Result back to GRPC
         return kotlin.runCatching { searchRepository.searchVideosAsync(requestData) }
-            .map { mapper.buildSearchGrpcResponse(it, grpcReq.query)}
+            .map { mapper.buildSearchGrpcResponse(it, request.query)}
             .trace(logger, "searchVideos", starts)
             .getOrThrow()
     }
@@ -55,15 +49,15 @@ class SearchServiceGrpc(
     /**
      * {@inheritDoc}
      */
-    override suspend fun getQuerySuggestions(grpcReq: GetQuerySuggestionsRequest): GetQuerySuggestionsResponse {
+    override suspend fun getQuerySuggestions(request: GetQuerySuggestionsRequest): GetQuerySuggestionsResponse {
         // Validate Parameters
-        validator.validateGrpcRequest_GetQuerySuggestions(grpcReq)
+        validator.validateGrpcRequest_GetQuerySuggestions(request)
 
         // Stands as stopwatch for logging and messaging 
         val starts = Instant.now()
 
         // Mapping GRPC => Domain (Dao)
-        val requestData = grpcReq.parse()
+        val requestData = request.parse()
 
         // Invoke Dao (Async)
         return kotlin.runCatching { searchRepository.getQuerySuggestionsAsync(requestData) }

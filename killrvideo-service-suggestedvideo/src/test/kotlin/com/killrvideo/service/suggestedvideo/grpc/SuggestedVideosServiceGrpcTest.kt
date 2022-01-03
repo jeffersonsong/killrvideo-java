@@ -16,7 +16,6 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.springframework.beans.factory.annotation.Value
 import java.util.*
 
 internal class SuggestedVideosServiceGrpcTest {
@@ -46,46 +45,46 @@ internal class SuggestedVideosServiceGrpcTest {
 
     @Test
     fun testGetRelatedVideosWithValidationFailure() {
-        val grpcReq = GetRelatedVideosRequest.getDefaultInstance()
+        val request = GetRelatedVideosRequest.getDefaultInstance()
         every { validator.validateGrpcRequest_getRelatedVideo(any()) } throws
                 Status.INVALID_ARGUMENT.asRuntimeException()
         assertThrows<StatusRuntimeException> {
-            runBlocking { service.getRelatedVideos(grpcReq) }
+            runBlocking { service.getRelatedVideos(request) }
         }
     }
 
     @Test
     fun testGetRelatedVideosWithQueryFailure() {
-        val grpcReq = createGetRelatedVideosRequest(UUID.randomUUID(), 5, "")
+        val request = createGetRelatedVideosRequest(UUID.randomUUID(), 5, "")
         every { validator.validateGrpcRequest_getRelatedVideo(any()) } just Runs
         coEvery {
             suggestedVideosRepository.getRelatedVideos(any())
         } throws Exception()
         assertThrows<Exception> {
-            runBlocking { service.getRelatedVideos(grpcReq) }
+            runBlocking { service.getRelatedVideos(request) }
         }
     }
 
     @Test
     fun testGetRelatedVideos() {
-        val grpcReq = createGetRelatedVideosRequest(UUID.randomUUID(), 5, "")
+        val request = createGetRelatedVideosRequest(UUID.randomUUID(), 5, "")
         every { validator.validateGrpcRequest_getRelatedVideo(any()) } just Runs
         val resultListPage: ResultListPage<Video> = mockk()
         val response = GetRelatedVideosResponse.getDefaultInstance()
         every { mapper.mapToGetRelatedVideosResponse(any(), any()) } returns response
         coEvery { suggestedVideosRepository.getRelatedVideos(any()) } returns resultListPage
 
-        val result = runBlocking { service.getRelatedVideos(grpcReq) }
+        val result = runBlocking { service.getRelatedVideos(request) }
         assertEquals(response, result)
     }
 
     @Test
     fun testGetSuggestedForUserWithValidationFailure() {
-        val grpcReq = GetSuggestedForUserRequest.getDefaultInstance()
+        val request = GetSuggestedForUserRequest.getDefaultInstance()
         every {validator.validateGrpcRequest_getUserSuggestedVideo(any()) } throws
                 Status.INVALID_ARGUMENT.asRuntimeException()
         assertThrows<StatusRuntimeException> {
-            runBlocking { service.getSuggestedForUser(grpcReq) }
+            runBlocking { service.getSuggestedForUser(request) }
         }
     }
 }

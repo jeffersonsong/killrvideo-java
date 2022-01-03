@@ -17,7 +17,6 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.springframework.beans.factory.annotation.Value
 
 internal class SearchServiceGrpcTest {
     @InjectMockKs
@@ -38,27 +37,27 @@ internal class SearchServiceGrpcTest {
 
     @Test
     fun testSearchVideosWithValidationFailed() {
-        val grpcReq = searchVideosRequest { }
+        val request = searchVideosRequest { }
         every { validator.validateGrpcRequest_SearchVideos(any()) } throws
                 Status.INVALID_ARGUMENT.asRuntimeException()
         assertThrows<StatusRuntimeException> {
-            runBlocking { service.searchVideos(grpcReq) }
+            runBlocking { service.searchVideos(request) }
         }
     }
 
     @Test
     fun testSearchVideosWithQueryFailed() {
-        val grpcReq = searchVideosRequest { }
+        val request = searchVideosRequest { }
         every { validator.validateGrpcRequest_SearchVideos(any()) } just Runs
         coEvery { searchRepository.searchVideosAsync(any()) } throws Exception()
         assertThrows<Exception> {
-            runBlocking { service.searchVideos(grpcReq) }
+            runBlocking { service.searchVideos(request) }
         }
     }
 
     @Test
     fun testSearchVideos() {
-        val grpcReq = searchVideosRequest { }
+        val request = searchVideosRequest { }
         every { validator.validateGrpcRequest_SearchVideos(any()) } just Runs
         val resultPage: ResultListPage<Video> = mockk()
         val response = searchVideosResponse {}
@@ -66,39 +65,39 @@ internal class SearchServiceGrpcTest {
         coEvery {
             searchRepository.searchVideosAsync(any())
         } returns resultPage
-        val result = runBlocking { service.searchVideos(grpcReq) }
+        val result = runBlocking { service.searchVideos(request) }
         assertEquals(response, result)
     }
 
     @Test
     fun testGetQuerySuggestionsWithValidationFailed() {
-        val grpcReq = getQuerySuggestionsRequest {}
+        val request = getQuerySuggestionsRequest {}
         every { validator.validateGrpcRequest_GetQuerySuggestions(any()) } throws
                 Status.INVALID_ARGUMENT.asRuntimeException()
         assertThrows<StatusRuntimeException> {
-            runBlocking { service.getQuerySuggestions(grpcReq) }
+            runBlocking { service.getQuerySuggestions(request) }
         }
     }
 
     @Test
     fun testGetQuerySuggestionsWithQueryFailed() {
-        val grpcReq = getQuerySuggestionsRequest {}
+        val request = getQuerySuggestionsRequest {}
         every { validator.validateGrpcRequest_GetQuerySuggestions(any()) } just Runs
         coEvery { searchRepository.getQuerySuggestionsAsync(any()) } throws Exception()
         assertThrows<Exception> {
-            runBlocking { service.getQuerySuggestions(grpcReq) }
+            runBlocking { service.getQuerySuggestions(request) }
         }
     }
 
     @Test
     fun testGetQuerySuggestions() {
-        val grpcReq = getQuerySuggestionsRequest {}
+        val request = getQuerySuggestionsRequest {}
         every { validator.validateGrpcRequest_GetQuerySuggestions(any()) } just Runs
         val suggestionSet = setOf("Test")
         val response = getQuerySuggestionsResponse {}
         every {mapper.buildQuerySuggestionsResponse(any(),any())} returns response
         coEvery { searchRepository.getQuerySuggestionsAsync(any()) } returns suggestionSet
-        val result = runBlocking { service.getQuerySuggestions(grpcReq) }
+        val result = runBlocking { service.getQuerySuggestions(request) }
         assertEquals(response, result)
     }
 }

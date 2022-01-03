@@ -1,14 +1,11 @@
 package com.killrvideo.service.comment.grpc
 
-import com.killrvideo.utils.GrpcMappingUtils
 import com.killrvideo.utils.GrpcMappingUtils.randomTimeUuid
 import com.killrvideo.utils.GrpcMappingUtils.randomUuid
 import io.grpc.StatusRuntimeException
-import killrvideo.comments.CommentsServiceOuterClass.*
 import killrvideo.comments.commentOnVideoRequest
 import killrvideo.comments.getUserCommentsRequest
 import killrvideo.comments.getVideoCommentsRequest
-import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 

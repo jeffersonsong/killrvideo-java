@@ -6,9 +6,7 @@ import com.killrvideo.service.suggestedvideo.grpc.SuggestedVideosServiceGrpcMapp
 import com.killrvideo.utils.GrpcMappingUtils
 import com.killrvideo.utils.GrpcMappingUtils.instantToTimeStamp
 import com.killrvideo.utils.GrpcMappingUtils.uuidToUuid
-import killrvideo.suggested_videos.SuggestedVideosService.GetRelatedVideosRequest
 import killrvideo.suggested_videos.getRelatedVideosRequest
-import killrvideo.video_catalog.events.VideoCatalogEvents.YouTubeVideoAdded
 import killrvideo.video_catalog.events.youTubeVideoAdded
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull

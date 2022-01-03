@@ -33,7 +33,6 @@ dependencies {
     implementation(Deps.Spring.context)
     implementation(Deps.Datastax.mapperRuntime)
 
-    implementation(Deps.Google.protobuf)
     implementation(Deps.Grpc.all) {
         exclude(group = "io.grpc", module = "grpc-testing")
         exclude(group = "junit", module = "junit")

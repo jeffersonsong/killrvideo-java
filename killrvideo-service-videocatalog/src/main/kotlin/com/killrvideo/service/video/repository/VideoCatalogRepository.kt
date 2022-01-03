@@ -39,16 +39,16 @@ class VideoCatalogRepository(
     /**
      * Prepare Statements 'getUserVideo'.
      */
-    private val findUserVideoPreview_startingPoint: PageableQuery<UserVideo>
-    private val findUserVideoPreview_noStartingPoint: PageableQuery<UserVideo>
+    private val findUserVideoPreviewStartingPoint: PageableQuery<UserVideo>
+    private val findUserVideoPreviewNoStartingPoint: PageableQuery<UserVideo>
 
     init {
-        findUserVideoPreview_startingPoint = pageableQueryFactory.newPageableQuery(
+        findUserVideoPreviewStartingPoint = pageableQueryFactory.newPageableQuery(
             QUERY_USER_VIDEO_PREVIEW_STARTING_POINT,
             ConsistencyLevel.LOCAL_QUORUM
         ) { row: Row -> userVideoRowMapper.map(row) }
 
-        findUserVideoPreview_noStartingPoint = pageableQueryFactory.newPageableQuery(
+        findUserVideoPreviewNoStartingPoint = pageableQueryFactory.newPageableQuery(
             QUERY_USER_VIDEO_PREVIEW_NO_STARTING_POINT,
             ConsistencyLevel.LOCAL_QUORUM
         ) { row: Row -> userVideoRowMapper.map(row) }
@@ -80,25 +80,22 @@ class VideoCatalogRepository(
      * @param request request.
      * @return requested video (page)
      */
-    suspend fun getUserVideosPreview(request: GetUserVideoPreviewsRequestData): ResultListPage<UserVideo> {
-        val future = if (request.startingVideoId != null && request.startingAddedDate != null) {
-            findUserVideoPreview_startingPoint.queryNext(
+    suspend fun getUserVideosPreview(request: GetUserVideoPreviewsRequestData): ResultListPage<UserVideo> =
+        if (request.startingVideoId != null && request.startingAddedDate != null) {
+            findUserVideoPreviewStartingPoint.queryNext(
                 request.pagingSize,
                 request.pagingState,
                 request.userId,
                 request.startingAddedDate,
                 request.startingVideoId
-            )
+            ).await()
         } else {
-            findUserVideoPreview_noStartingPoint.queryNext(
+            findUserVideoPreviewNoStartingPoint.queryNext(
                 request.pagingSize,
                 request.pagingState,
                 request.userId
-            )
+            ).await()
         }
-
-        return future.await()
-    }
 
     fun getLatestVideoPreviewsAsync(
         request: GetLatestVideoPreviewsRequestData
@@ -106,12 +103,15 @@ class VideoCatalogRepository(
         latestVideoPreviewsRequestRepository.getLatestVideoPreviewsAsync(request)
 
     companion object {
-        private const val QUERY_USER_VIDEO_PREVIEW_STARTING_POINT = "SELECT * " +
-                "FROM killrvideo.user_videos " +
-                "WHERE userid = :uid " +
-                "AND (added_date, videoid) <= (:ad, :vid)"
-        private const val QUERY_USER_VIDEO_PREVIEW_NO_STARTING_POINT = "SELECT * " +
-                "FROM killrvideo.user_videos " +
-                "WHERE userid = :uid "
+        private val QUERY_USER_VIDEO_PREVIEW_STARTING_POINT =
+            """
+            SELECT * FROM killrvideo.user_videos 
+            WHERE userid = :uid AND (added_date, videoid) <= (:ad, :vid) 
+            """.trimIndent()
+        private val QUERY_USER_VIDEO_PREVIEW_NO_STARTING_POINT =
+            """
+            SELECT * FROM killrvideo.user_videos 
+            WHERE userid = :uid
+            """.trimIndent()
     }
 }

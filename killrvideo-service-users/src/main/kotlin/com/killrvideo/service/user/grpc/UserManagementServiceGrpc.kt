@@ -1,6 +1,7 @@
 package com.killrvideo.service.user.grpc
 
 import com.killrvideo.messaging.dao.MessagingDao
+import com.killrvideo.service.user.dto.User
 import com.killrvideo.service.user.grpc.UserManagementServiceGrpcMapper.CreateUserRequestExtensions.parse
 import com.killrvideo.service.user.grpc.UserManagementServiceGrpcMapper.GetUserProfileRequestExtensions.parse
 import com.killrvideo.service.utils.ServiceGrpcUtils.trace
@@ -30,13 +31,6 @@ class UserManagementServiceGrpc(
 ) : UserManagementServiceGrpcKt.UserManagementServiceCoroutineImplBase() {
     private val logger = KotlinLogging.logger {}
 
-    /**
-     * Getter accessor for attribute 'serviceKey'.
-     *
-     * @return current value of 'serviceKey'
-     */
-
-
     override suspend fun createUser(request: CreateUserRequest): CreateUserResponse {
         // Validate Parameters
         validator.validateGrpcRequest_createUser(request)
@@ -52,9 +46,12 @@ class UserManagementServiceGrpc(
             .map { createUserResponse {} }
 
         return result
-            .onSuccess { messagingDao.sendEvent(topicUserCreated, mapper.createUserCreatedEvent(user))}
+            .onSuccess { notifyUserCreated(user) }
             .trace(logger, "createUser", starts).getOrThrow()
     }
+
+    private fun notifyUserCreated(user: User) =
+        messagingDao.sendEvent(topicUserCreated, mapper.createUserCreatedEvent(user))
 
     override suspend fun verifyCredentials(request: VerifyCredentialsRequest): VerifyCredentialsResponse {
         // Validate Parameters

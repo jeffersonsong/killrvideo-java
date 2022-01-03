@@ -74,7 +74,7 @@ internal class VideoCatalogServiceGrpcValidatorTest {
     fun testValidateGrpcRequest_getVideoPreviews_Failure() {
         val request = getVideoPreviewsRequest {
             IntStream.range(0, 21)
-                .mapToObj { _: Int -> randomUuid() }
+                .mapToObj { randomUuid() }
                 .forEach {videoIds.add(it) }
         }
         assertThrows<StatusRuntimeException> {

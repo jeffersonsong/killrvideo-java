@@ -36,7 +36,7 @@ internal class RatingsServiceGrpcTest {
 
     @MockK
     private lateinit var mapper: RatingsServiceGrpcMapper
-    private val serviceKey = "RatingsService";
+    private val serviceKey = "RatingsService"
     private val topicvideoRated = "topic-kv-videoRating"
 
     @BeforeEach
@@ -44,18 +44,18 @@ internal class RatingsServiceGrpcTest {
 
     @Test
     fun testRateVideoWithValidationFailed() {
-        val grpcReq = rateVideoRequest {}
+        val request = rateVideoRequest {}
         every { validator.validateGrpcRequest_RateVideo(any())} throws
                 Status.INVALID_ARGUMENT.asRuntimeException()
         
         assertThrows<StatusRuntimeException> {
-            runBlocking { service.rateVideo(grpcReq) }
+            runBlocking { service.rateVideo(request) }
         }
     }
 
     @Test
     fun testRateVideoWithInsertFailed() {
-        val grpcReq = rateVideoRequest {
+        val request = rateVideoRequest {
             videoId=randomUuid()
             userId=randomUuid()
             rating =4
@@ -64,13 +64,13 @@ internal class RatingsServiceGrpcTest {
         coEvery { ratingRepository.rateVideo(any()) } throws Exception()
 
         assertThrows<Exception> {
-            runBlocking { service.rateVideo(grpcReq) }
+            runBlocking { service.rateVideo(request) }
         }
     }
 
     @Test
     fun testRateVideo() {
-        val grpcReq = rateVideoRequest {
+        val request = rateVideoRequest {
             videoId=randomUuid()
             userId=randomUuid()
             rating =4
@@ -83,66 +83,55 @@ internal class RatingsServiceGrpcTest {
         every {messagingDao.sendEvent(any(), any())} returns
             CompletableFuture.completedFuture(null)
 
-        runBlocking { service.rateVideo(grpcReq) }
+        runBlocking { service.rateVideo(request) }
     }
 
     @Test
     fun testGetRating() {
-        val grpcReq = getRatingRequest {}
+        val request = getRatingRequest {}
         every { validator.validateGrpcRequest_GetRating(any()) } throws
                 Status.INVALID_ARGUMENT.asRuntimeException()
         assertThrows<StatusRuntimeException> {
-            runBlocking { service.getRating(grpcReq) }
+            runBlocking { service.getRating(request) }
         }
     }
 
     @Test
     fun testGetRatingWithQueryFailed() {
-        val grpcReq = getRatingRequest {videoId= randomUuid() }
+        val request = getRatingRequest {videoId= randomUuid() }
         every {validator.validateGrpcRequest_GetRating(any())} just Runs
         coEvery { ratingRepository.findRating(any()) } throws Exception()
         assertThrows<Exception> {
-            runBlocking { service.getRating(grpcReq) }
+            runBlocking { service.getRating(request) }
         }
     }
 
     @Test
     fun testGetRatingWithRatingPresent() {
-        val grpcReq = getRatingRequest {videoId= randomUuid() }
+        val request = getRatingRequest {videoId= randomUuid() }
         every {validator.validateGrpcRequest_GetRating(any())} just Runs
         val rating = mockk<VideoRating>()
         val response = getRatingResponse {}
         every { mapper.mapToRatingResponse(any()) } returns response
         coEvery { ratingRepository.findRating(any()) } returns rating
 
-        val result = runBlocking { service.getRating(grpcReq) }
+        val result = runBlocking { service.getRating(request) }
         assertEquals(response, result)
     }
 
     @Test
-    fun testGetRatingWithRatingAbsent() {
-        val grpcReq = getRatingRequest {videoId= randomUuid() }
-        every {validator.validateGrpcRequest_GetRating(any())} just Runs
-        coEvery { ratingRepository.findRating(any()) } returns null
-
-        val result = runBlocking { service.getRating(grpcReq) }
-        assertEquals(0L, result.ratingsTotal)
-        assertEquals(0L, result.ratingsCount)
-    }
-
-    @Test
     fun testGetUserRatingWithValidationFailed() {
-        val grpcReq = getUserRatingRequest {}
+        val request = getUserRatingRequest {}
         every { validator.validateGrpcRequest_GetUserRating(any()) } throws
                 Status.INVALID_ARGUMENT.asRuntimeException()
         assertThrows<StatusRuntimeException>{
-            runBlocking { service.getUserRating(grpcReq) }
+            runBlocking { service.getUserRating(request) }
         }
     }
 
     @Test
     fun testGetUserRatingWithQueryFailed() {
-        val grpcReq = getUserRatingRequest {
+        val request = getUserRatingRequest {
             videoId=randomUuid()
             userId=randomUuid()
         }
@@ -150,7 +139,7 @@ internal class RatingsServiceGrpcTest {
         coEvery { ratingRepository.findUserRating(any()) } throws Exception()
 
         assertThrows<Exception> {
-            runBlocking { service.getUserRating(grpcReq) }
+            runBlocking { service.getUserRating(request) }
         }
     }
 
@@ -159,7 +148,7 @@ internal class RatingsServiceGrpcTest {
         val videoid = UUID.randomUUID()
         val userid = UUID.randomUUID()
 
-        val grpcReq = getUserRatingRequest {
+        val request = getUserRatingRequest {
             videoId = uuidToUuid(videoid)
             userId = uuidToUuid(userid)
         }
@@ -172,21 +161,7 @@ internal class RatingsServiceGrpcTest {
 
         coEvery {ratingRepository.findUserRating(any())} returns rating
 
-        val result = runBlocking { service.getUserRating(grpcReq) }
+        val result = runBlocking { service.getUserRating(request) }
         assertEquals(response, result)
-    }
-
-    @Test
-    fun testGetUserRatingWithUserRatingAbsent() {
-        val videoid = UUID.randomUUID()
-        val userid = UUID.randomUUID()
-        val grpcReq = getUserRatingRequest {
-            videoId = uuidToUuid(videoid)
-            userId = uuidToUuid(userid)
-        }
-        every {validator.validateGrpcRequest_GetUserRating(any()) } just Runs
-        coEvery { ratingRepository.findUserRating(any())} returns null
-        val result = runBlocking { service.getUserRating(grpcReq) }
-        assertEquals(0, result.rating)
     }
 }

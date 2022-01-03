@@ -16,21 +16,14 @@ class UserManagementService(
         runCatching { userRepository.createUserAsync(user, hashedPassword) }
 
     suspend fun verifyCredentials(email: String, password: String): Result<UserCredentials> {
-        val result = runCatching {
+        return runCatching {
             userRepository.getUserCredentialAsync(email)
-        }
-
-        return if (result.isSuccess) {
-            val credential = result.getOrNull()
-            if (credential == null || credential.password == null || !HashUtils.isPasswordValid(password, credential.password!!)) {
-                val error = Status.INVALID_ARGUMENT
+        }.mapCatching { credential ->
+            if (credential?.password == null || !HashUtils.isPasswordValid(password, credential.password!!)) {
+                throw Status.INVALID_ARGUMENT
                     .withDescription("Email address or password are not correct").asRuntimeException()
-                Result.failure(error)
-            } else {
-                Result.success(credential)
             }
-        } else {
-            Result.failure(result.exceptionOrNull()!!)
+            credential
         }
     }
 

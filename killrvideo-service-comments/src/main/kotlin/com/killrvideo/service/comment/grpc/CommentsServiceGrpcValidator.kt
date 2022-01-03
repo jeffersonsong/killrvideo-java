@@ -2,8 +2,8 @@ package com.killrvideo.service.comment.grpc
 
 import com.killrvideo.utils.FluentValidator
 import killrvideo.comments.CommentsServiceOuterClass.*
+import mu.KotlinLogging
 import org.apache.commons.lang3.StringUtils
-import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 
 /**
@@ -14,14 +14,14 @@ import org.springframework.stereotype.Component
  */
 @Component
 class CommentsServiceGrpcValidator {
+    private val logger = KotlinLogging.logger {  }
     /**
      * Validate comment On video comment query.
      *
      * @param request        current GRPC Request
-     * @param streamObserver response async
      */
     fun validateGrpcRequestCommentOnVideo(request: CommentOnVideoRequest) {
-        FluentValidator.of("commentOnVideo", request, LOGGER)
+        FluentValidator.of("commentOnVideo", request, logger)
             .notEmpty("userId", !request.hasUserId() || StringUtils.isBlank(request.userId.value))
             .notEmpty("videoId", !request.hasVideoId() || StringUtils.isBlank(request.videoId.value))
             .notEmpty("commentId", !request.hasCommentId() || StringUtils.isBlank(request.commentId.value))
@@ -33,10 +33,9 @@ class CommentsServiceGrpcValidator {
      * Validate get video comment query.
      *
      * @param request        current GRPC Request
-     * @param streamObserver response async
      */
     fun validateGrpcRequestGetVideoComment(request: GetVideoCommentsRequest) {
-        FluentValidator.of("getVideoComments", request, LOGGER)
+        FluentValidator.of("getVideoComments", request, logger)
             .notEmpty(
                 "video id",
                 !request.hasVideoId() || StringUtils.isBlank(request.videoId.value)
@@ -49,16 +48,11 @@ class CommentsServiceGrpcValidator {
      * Validate get user comment query.
      *
      * @param request        current GRPC Request
-     * @param streamObserver response async
      */
     fun validateGrpcRequest_GetUserComments(request: GetUserCommentsRequest) {
-        FluentValidator.of("getUserComments", request, LOGGER)
+        FluentValidator.of("getUserComments", request, logger)
             .notEmpty("userId", !request.hasUserId() || StringUtils.isBlank(request.userId.value))
             .positive("page size", request.pageSize <= 0)
             .validate()
-    }
-
-    companion object {
-        private val LOGGER = LoggerFactory.getLogger(CommentsServiceGrpcValidator::class.java)
     }
 }

@@ -11,7 +11,6 @@ import com.killrvideo.service.comment.dao.CommentRowMapper
 import com.killrvideo.service.comment.dto.*
 import kotlinx.coroutines.future.await
 import org.springframework.stereotype.Repository
-import java.util.*
 import java.util.concurrent.CompletableFuture
 
 /**
@@ -52,57 +51,53 @@ class CommentRepository(
         CompletableFuture.allOf(
             commentByUserDao.insert(CommentByUser.from(comment)),
             commentByVideoDao.insert(CommentByVideo.from(comment))
-        ).thenApply { _ -> comment }.await()
+        ).thenApply { comment }.await()
 
     /**
      * Search comment_by_video Asynchronously with Pagination.
      */
-    suspend fun findCommentsByVideosIdAsync(query: QueryCommentByVideo): ResultListPage<Comment> {
-        val future =
-            if (query.commentId != null) {
-                commentByVideoDao.find(query.videoId, query.commentId)
-                    .thenApply { it?.toComment() }
-                    .thenApply { ResultListPage.fromNullable(it) }
-            } else {
-                findCommentsByVideo.queryNext(
-                    query.pageSize,
-                    query.pageState,
-                    query.videoId
-                )
-            }
-
-        return future.await()
-    }
+    suspend fun findCommentsByVideosIdAsync(query: QueryCommentByVideo): ResultListPage<Comment> =
+        if (query.commentId != null) {
+            commentByVideoDao.find(query.videoId, query.commentId)
+                .thenApply { it?.toComment() }
+                .thenApply { ResultListPage.fromNullable(it) }.await()
+        } else {
+            findCommentsByVideo.queryNext(
+                query.pageSize,
+                query.pageState,
+                query.videoId
+            ).await()
+        }
 
     /**
      * Execute a query against the 'comment_by_user' table (ASYNC).
      */
-    suspend fun findCommentsByUserIdAsync(query: QueryCommentByUser): ResultListPage<Comment> {
-        val future =
-            if (query.commentId != null) {
-                commentByUserDao.find(query.userId, query.commentId)
-                    .thenApply { it?.toComment() }
-                    .thenApply { ResultListPage.fromNullable(it) }
-            } else {
-                findCommentsByUser.queryNext(
-                    query.pageSize,
-                    query.pageState,
-                    query.userId
-                )
-            }
-
-        return future.await()
-    }
-
+    suspend fun findCommentsByUserIdAsync(query: QueryCommentByUser): ResultListPage<Comment> =
+        if (query.commentId != null) {
+            commentByUserDao.find(query.userId, query.commentId)
+                .thenApply { it?.toComment() }
+                .thenApply { ResultListPage.fromNullable(it) }.await()
+        } else {
+            findCommentsByUser.queryNext(
+                query.pageSize,
+                query.pageState,
+                query.userId
+            ).await()
+        }
 
     companion object {
-        private const val QUERY_COMMENTS_BY_USERID =
-            "SELECT userid, commentid, videoid, comment, toTimestamp(commentid) as comment_timestamp " +
-                    "FROM killrvideo.comments_by_user " +
-                    "WHERE userid = :userid"
-        const val QUERY_COMMENTS_BY_VIDEOID =
-            "SELECT videoid, commentid, userid, comment, toTimestamp(commentid) as comment_timestamp " +
-                    "FROM killrvideo.comments_by_video " +
-                    "WHERE videoid = :videoid"
+        private val QUERY_COMMENTS_BY_USERID =
+            """
+            SELECT userid, commentid, videoid, comment, toTimestamp(commentid) as comment_timestamp 
+            FROM killrvideo.comments_by_user 
+            WHERE userid = :userid
+            """.trimIndent()
+
+        private val QUERY_COMMENTS_BY_VIDEOID =
+            """
+            SELECT videoid, commentid, userid, comment, toTimestamp(commentid) as comment_timestamp 
+            FROM killrvideo.comments_by_video 
+            WHERE videoid = :videoid
+            """.trimIndent()
     }
 }

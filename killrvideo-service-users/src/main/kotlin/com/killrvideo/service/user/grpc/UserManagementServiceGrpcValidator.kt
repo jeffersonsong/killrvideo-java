@@ -2,8 +2,8 @@ package com.killrvideo.service.user.grpc
 
 import com.killrvideo.utils.FluentValidator
 import killrvideo.user_management.UserManagementServiceOuterClass.*
+import mu.KotlinLogging
 import org.apache.commons.lang3.StringUtils.isBlank
-import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 
 /**
@@ -13,15 +13,14 @@ import org.springframework.stereotype.Component
  */
 @Component
 open class UserManagementServiceGrpcValidator {
-    // TODO - migrate to Kotlin logging.
+    private val logger = KotlinLogging.logger { }
     /**
      * Validate create user.
      *
      * @param request        request.
-     * @param streamObserver response.
      */
     fun validateGrpcRequest_createUser(request: CreateUserRequest) {
-        FluentValidator.of("createUser", request, LOGGER)
+        FluentValidator.of("createUser", request, logger)
             .notEmpty("user id", isBlank(request.userId.value))
             .notEmpty("password", isBlank(request.password))
             .notEmpty("email", isBlank(request.email))
@@ -29,14 +28,14 @@ open class UserManagementServiceGrpcValidator {
     }
 
     fun validateGrpcRequest_VerifyCredentials(request: VerifyCredentialsRequest) {
-        FluentValidator.of("verifyCredentials", request, LOGGER)
+        FluentValidator.of("verifyCredentials", request, logger)
             .notEmpty("email", isBlank(request.email))
             .notEmpty("password", isBlank(request.password))
             .validate()
     }
 
     fun validateGrpcRequest_getUserProfile(request: GetUserProfileRequest) {
-        val validator: FluentValidator = FluentValidator.of("verifyCredentials", request, LOGGER)
+        val validator: FluentValidator = FluentValidator.of("verifyCredentials", request, logger)
             .error(
                 "cannot get more than 20 user profiles at once for get user profile request",
                 request.userIdsCount > 20
@@ -48,9 +47,5 @@ open class UserManagementServiceGrpcValidator {
             )
         }
         validator.validate()
-    }
-
-    companion object {
-        private val LOGGER = LoggerFactory.getLogger(UserManagementServiceGrpcValidator::class.java)
     }
 }

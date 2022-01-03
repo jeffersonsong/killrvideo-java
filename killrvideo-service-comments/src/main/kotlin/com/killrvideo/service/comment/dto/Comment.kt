@@ -17,19 +17,6 @@ data class Comment(
     var comment: @Size(min = 1, message = "The comment must not be empty") String?,
     var dateOfComment: @NotNull Instant?
 ) {
-    /**
-     * Copy constructor.
-     *
-     * @param other comment.
-     */
-    constructor(other: Comment) : this(
-        userid = other.userid,
-        videoid = other.videoid,
-        commentid = other.commentid,
-        comment = other.comment,
-        dateOfComment = other.dateOfComment
-    )
-
     companion object {
         /**
          * Column names in the DB.

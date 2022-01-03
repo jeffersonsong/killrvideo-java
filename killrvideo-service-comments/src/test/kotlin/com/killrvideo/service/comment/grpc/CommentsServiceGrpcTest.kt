@@ -46,7 +46,7 @@ class CommentsServiceGrpcTest {
 
     @Test
     fun testCommentOnVideoWithValidationFailed() {
-        val grpcReq = commentOnVideoRequest {}
+        val request = commentOnVideoRequest {}
 
         every {
             validator.validateGrpcRequestCommentOnVideo(any())
@@ -54,14 +54,14 @@ class CommentsServiceGrpcTest {
 
         assertThrows<StatusRuntimeException> {
             runBlocking {
-                service.commentOnVideo(grpcReq)
+                service.commentOnVideo(request)
             }
         }
     }
 
     @Test
     fun testCommentOnVideoAllWithInsertFailed() {
-        val grpcReq = commentOnVideoRequest {}
+        val request = commentOnVideoRequest {}
         every {
             validator.validateGrpcRequestCommentOnVideo(any())
         } just Runs
@@ -71,7 +71,7 @@ class CommentsServiceGrpcTest {
         coEvery { commentRepository.insertCommentAsync(any()) } throws Exception()
 
         assertThrows<Exception> {
-            runBlocking { service.commentOnVideo(grpcReq) }
+            runBlocking { service.commentOnVideo(request) }
         }
 
         verify(exactly = 0) { messagingDao.sendEvent(any(), any()) }
@@ -79,7 +79,7 @@ class CommentsServiceGrpcTest {
 
     @Test
     fun testCommentOnVideoAllWithSendFailed() {
-        val grpcReq = commentOnVideoRequest {}
+        val request = commentOnVideoRequest {}
         every {
             validator.validateGrpcRequestCommentOnVideo(any())
         } just Runs
@@ -92,13 +92,13 @@ class CommentsServiceGrpcTest {
         every {messagingDao.sendEvent(any(), any()) } returns future
 
         assertThrows<Exception> {
-            runBlocking { service.commentOnVideo(grpcReq) }
+            runBlocking { service.commentOnVideo(request) }
         }
     }
 
     @Test
     fun testCommentOnVideo() {
-        val grpcReq = commentOnVideoRequest {}
+        val request = commentOnVideoRequest {}
         every {
             validator.validateGrpcRequestCommentOnVideo(any())
         } just Runs
@@ -109,23 +109,23 @@ class CommentsServiceGrpcTest {
         coEvery { commentRepository.insertCommentAsync(any()) } returns comment
         every {messagingDao.sendEvent(any(), any()) } returns
                 CompletableFuture.completedFuture(null)
-        runBlocking { service.commentOnVideo(grpcReq) }
+        runBlocking { service.commentOnVideo(request) }
     }
 
     @Test
     fun testGetUserCommentsWithValidationFailed() {
-        val grpcReq = getUserCommentsRequest {}
+        val request = getUserCommentsRequest {}
         every {
             validator.validateGrpcRequestCommentOnVideo(any())
         } throws IllegalArgumentException()
         assertThrows<IllegalArgumentException> {
-            runBlocking { service.getUserComments(grpcReq) }
+            runBlocking { service.getUserComments(request) }
         }
     }
 
     @Test
     fun testGetUserCommentsWithQueryFailed() {
-        val grpcReq = getUserCommentsRequest {}
+        val request = getUserCommentsRequest {}
         every {
             validator.validateGrpcRequestCommentOnVideo(any())
         } just Runs
@@ -134,13 +134,13 @@ class CommentsServiceGrpcTest {
             commentRepository.findCommentsByUserIdAsync(any())
         } throws Exception()
         assertThrows<Exception> {
-            runBlocking { service.getUserComments(grpcReq) }
+            runBlocking { service.getUserComments(request) }
         }
     }
 
     @Test
     fun testGetUserComments() {
-        val grpcReq = getUserCommentsRequest {
+        val request = getUserCommentsRequest {
             userId = randomUuid()
             pageSize = 2
         }
@@ -155,24 +155,24 @@ class CommentsServiceGrpcTest {
         val response = mockk<GetUserCommentsResponse>()
         every { mapper.mapFromDseUserCommentToGrpcResponse(any()) } returns response
 
-        val result = runBlocking { service.getUserComments(grpcReq) }
+        val result = runBlocking { service.getUserComments(request) }
         assertEquals(response, result)
     }
 
     @Test
     fun testGetVideoCommentsWithValidationFailed() {
-        val grpcReq = getVideoCommentsRequest {}
+        val request = getVideoCommentsRequest {}
         every {
             validator.validateGrpcRequestCommentOnVideo(any())
         } throws IllegalArgumentException()
         assertThrows<IllegalArgumentException> {
-            runBlocking { service.getVideoComments(grpcReq) }
+            runBlocking { service.getVideoComments(request) }
         }
     }
 
     @Test
     fun testGetVideoCommentsWithQueryFailed() {
-        val grpcReq = getVideoCommentsRequest {}
+        val request = getVideoCommentsRequest {}
         every { validator.validateGrpcRequestGetVideoComment(any()) } just Runs
         coEvery {
             commentRepository.findCommentsByVideosIdAsync(any())
@@ -180,14 +180,14 @@ class CommentsServiceGrpcTest {
 
         assertThrows<Exception> {
             runBlocking {
-                service.getVideoComments(grpcReq)
+                service.getVideoComments(request)
             }
         }
     }
 
     @Test
     fun testGetVideoComments() {
-        val grpcReq = getVideoCommentsRequest {
+        val request = getVideoCommentsRequest {
             videoId = randomUuid()
             pageSize = 2
         }
@@ -201,7 +201,7 @@ class CommentsServiceGrpcTest {
         val response = mockk<GetVideoCommentsResponse>()
         every { mapper.mapFromDseVideoCommentToGrpcResponse(any()) } returns response
         val result = runBlocking {
-            service.getVideoComments(grpcReq)
+            service.getVideoComments(request)
         }
 
         assertEquals(response, result)

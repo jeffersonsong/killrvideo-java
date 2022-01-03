@@ -146,13 +146,13 @@ internal class CommentsServiceGrpcMapperTest {
         }
 
     private fun createCommentOnVideoRequest(
-        vidoid: UUID,
+        videoid: UUID,
         userid: UUID,
         commentid: UUID,
         commentText: String
     ): CommentOnVideoRequest =
         commentOnVideoRequest {
-            videoId = uuidToUuid(vidoid)
+            videoId = uuidToUuid(videoid)
             commentId = uuidToTimeUuid(commentid)
             userId = uuidToUuid(userid)
             comment = commentText

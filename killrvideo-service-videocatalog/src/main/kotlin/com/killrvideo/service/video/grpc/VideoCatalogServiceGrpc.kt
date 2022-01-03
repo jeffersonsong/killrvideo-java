@@ -5,6 +5,7 @@ import com.killrvideo.messaging.dao.MessagingDao
 import com.killrvideo.service.utils.ServiceGrpcUtils.trace
 import com.killrvideo.service.utils.ServiceGrpcUtils.traceError
 import com.killrvideo.service.utils.ServiceGrpcUtils.traceSuccess
+import com.killrvideo.service.video.dto.Video
 import com.killrvideo.service.video.grpc.VideoCatalogServiceGrpcMapper.GetLatestVideoPreviewsRequestExtensions.parse
 import com.killrvideo.service.video.grpc.VideoCatalogServiceGrpcMapper.GetUserVideoPreviewsRequestExtensions.parse
 import com.killrvideo.service.video.grpc.VideoCatalogServiceGrpcMapper.SubmitYouTubeVideoRequestExtensions.parse
@@ -14,6 +15,7 @@ import io.grpc.Status
 import killrvideo.video_catalog.VideoCatalogServiceGrpcKt
 import killrvideo.video_catalog.VideoCatalogServiceOuterClass.*
 import killrvideo.video_catalog.getVideoPreviewsResponse
+import killrvideo.video_catalog.submitYouTubeVideoResponse
 import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
@@ -39,17 +41,6 @@ class VideoCatalogServiceGrpc(
     private val logger = KotlinLogging.logger {}
 
     /**
-     * Send new videos.
-     */
-
-    /**
-     * Getter accessor for attribute 'serviceKey'.
-     *
-     * @return current value of 'serviceKey'
-     */
-
-
-    /**
      * {@inheritDoc}
      */
     override suspend fun submitYouTubeVideo(request: SubmitYouTubeVideoRequest): SubmitYouTubeVideoResponse {
@@ -66,15 +57,17 @@ class VideoCatalogServiceGrpc(
 
         // Execute query (ASYNC)
         return kotlin.runCatching { videoCatalogRepository.insertVideoAsync(video) }
-            .map { rs ->
-                messagingDao.sendEvent(topicVideoCreated, mapper.createYouTubeVideoAddedEvent(video)).get()
+            .mapCatching { rs ->
+                notifyYoutubeVideoAdded(video)
                 rs
             }
-            .map {
-                SubmitYouTubeVideoResponse.newBuilder().build()
-            }.trace(logger, "submitYouTubeVideo", starts)
+            .map { submitYouTubeVideoResponse {}}
+            .trace(logger, "submitYouTubeVideo", starts)
             .getOrThrow()
     }
+
+    private fun notifyYoutubeVideoAdded(video: Video) =
+        messagingDao.sendEvent(topicVideoCreated, mapper.createYouTubeVideoAddedEvent(video)).get()
 
     /**
      * Get the latest video (Home Page)
@@ -117,9 +110,8 @@ class VideoCatalogServiceGrpc(
         // GRPC Parameters Mappings
         val requestData = request.parse { CustomPagingState.buildFirstCustomPagingState() }
         return runCatching { videoCatalogRepository.getLatestVideoPreviewsAsync(requestData) }
-            .map { returnedPage ->
-                mapper.mapLatestVideoToGrpcResponse(returnedPage)
-            }.trace(logger, "getLatestVideoPreviews", starts)
+            .map { mapper.mapLatestVideoToGrpcResponse(it)}
+            .trace(logger, "getLatestVideoPreviews", starts)
             .getOrThrow()
     }
 
@@ -138,13 +130,9 @@ class VideoCatalogServiceGrpc(
 
         // Invoke Async
         return runCatching { videoCatalogRepository.getVideoById(videoId) }
-            .map { video ->
-                if (video == null) {
-                    val error =
-                        Status.NOT_FOUND.withDescription("Video with id $videoId was not found").asRuntimeException()
-                    traceError(logger, "getVideo", starts, error)
-                    throw error
-                }
+            .mapCatching { video ->
+                video ?: throw Status.NOT_FOUND.withDescription("Video with id $videoId was not found")
+                        .asRuntimeException()
                 video
             }.map { mapper.mapFromVideotoVideoResponse(it) }
             .trace(logger, "getVideo", starts)

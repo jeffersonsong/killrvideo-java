@@ -25,24 +25,17 @@ class SuggestedVideosServiceGrpc(
     val serviceKey: String
 ) : SuggestedVideoServiceGrpcKt.SuggestedVideoServiceCoroutineImplBase() {
     private val logger = KotlinLogging.logger { }
-    /**
-     * Getter accessor for attribute 'serviceKey'.
-     *
-     * @return
-     * current value of 'serviceKey'
-     */
-
 
     /** {@inheritDoc}  */
-    override suspend fun getRelatedVideos(grpcReq: GetRelatedVideosRequest): GetRelatedVideosResponse {
+    override suspend fun getRelatedVideos(request: GetRelatedVideosRequest): GetRelatedVideosResponse {
         // Validate Parameters
-        validator.validateGrpcRequest_getRelatedVideo(grpcReq)
+        validator.validateGrpcRequest_getRelatedVideo(request)
 
         // Stands as stopwatch for logging and messaging 
         val starts = Instant.now()
 
         // Mapping GRPC => Domain (Dao)
-        val requestData = grpcReq.parse()
+        val requestData = request.parse()
 
         // Invoke DAO Async
         return runCatching { suggestedVideosRepository.getRelatedVideos(requestData) }
@@ -52,15 +45,15 @@ class SuggestedVideosServiceGrpc(
     }
 
     /** {@inheritDoc}  */
-    override suspend fun getSuggestedForUser(grpcReq: GetSuggestedForUserRequest): GetSuggestedForUserResponse {
+    override suspend fun getSuggestedForUser(request: GetSuggestedForUserRequest): GetSuggestedForUserResponse {
         // Validate Parameters
-        validator.validateGrpcRequest_getUserSuggestedVideo(grpcReq)
+        validator.validateGrpcRequest_getUserSuggestedVideo(request)
 
         // Stands as stopwatch for logging and messaging 
         val starts = Instant.now()
 
         // Mapping GRPC => Domain (Dao)
-        val userid = GrpcMappingUtils.fromUuid(grpcReq.userId)
+        val userid = GrpcMappingUtils.fromUuid(request.userId)
 
         // Invoke DAO Async
         return kotlin.runCatching { suggestedVideosRepository.getSuggestedVideosForUser(userid) }

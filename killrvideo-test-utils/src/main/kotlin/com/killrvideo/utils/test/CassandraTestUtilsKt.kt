@@ -12,7 +12,7 @@ import java.util.function.Function
 object CassandraTestUtilsKt {
     @JvmStatic
     fun <T> mockMappedAsyncPagingIterable(list: List<T>): MappedAsyncPagingIterable<T> {
-        val iter: MappedAsyncPagingIterable<T> = mockk<MappedAsyncPagingIterable<T>>()
+        val iter: MappedAsyncPagingIterable<T> = mockk()
         every {iter.hasMorePages()} returns false
         every { iter.currentPage() } returns list
         return iter

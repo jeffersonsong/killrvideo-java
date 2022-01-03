@@ -6,16 +6,14 @@ import com.killrvideo.dse.dto.CustomPagingState
 import com.killrvideo.dse.dto.ResultListPage
 import com.killrvideo.dse.utils.PageableQuery
 import com.killrvideo.dse.utils.PageableQueryFactory
-import com.killrvideo.service.utils.ServiceGrpcUtils.toNullable
 import com.killrvideo.service.video.dao.LatestVideoRowMapper
 import com.killrvideo.service.video.dto.LatestVideo
 import com.killrvideo.service.video.dto.LatestVideosPage
-import com.killrvideo.service.video.repository.VideoCatalogRepository
 import com.killrvideo.service.video.request.GetLatestVideoPreviewsForGivenDateRequestData
 import com.killrvideo.service.video.request.GetLatestVideoPreviewsRequestData
 import io.grpc.Status
-import org.apache.commons.lang3.StringUtils
-import org.slf4j.LoggerFactory
+import mu.KotlinLogging
+import org.apache.commons.lang3.StringUtils.isNotBlank
 import org.springframework.stereotype.Component
 import java.time.Instant
 import java.util.*
@@ -27,15 +25,16 @@ class LatestVideoPreviewsRepository(
     pageableQueryFactory: PageableQueryFactory,
     latestVideoRowMapper: LatestVideoRowMapper
 ) {
-    private val findLatestVideoPreview_startingPoint: PageableQuery<LatestVideo>
-    private val findLatestVideoPreview_noStartingPoint: PageableQuery<LatestVideo>
+    private val logger = KotlinLogging.logger {  }
+    private val findLatestVideoPreviewStartingPoint: PageableQuery<LatestVideo>
+    private val findLatestVideoPreviewNoStartingPoint: PageableQuery<LatestVideo>
 
     init {
-        findLatestVideoPreview_startingPoint = pageableQueryFactory.newPageableQuery(
+        findLatestVideoPreviewStartingPoint = pageableQueryFactory.newPageableQuery(
             QUERY_LATEST_VIDEO_PREVIEW_STARTING_POINT,
             ConsistencyLevel.LOCAL_ONE
         ) { row: Row -> latestVideoRowMapper.map(row) }
-        findLatestVideoPreview_noStartingPoint = pageableQueryFactory.newPageableQuery(
+        findLatestVideoPreviewNoStartingPoint = pageableQueryFactory.newPageableQuery(
             QUERY_LATEST_VIDEO_PREVIEW_NO_STARTING_POINT,
             ConsistencyLevel.LOCAL_ONE
         ) { row: Row -> latestVideoRowMapper.map(row) }
@@ -54,7 +53,7 @@ class LatestVideoPreviewsRepository(
         } catch (ex: Exception) {
             throw Status.INTERNAL.withCause(ex).asRuntimeException()
         } finally {
-            LOGGER.debug("End getting latest video preview")
+            logger.debug {"End getting latest video preview"}
         }
     }
 
@@ -82,15 +81,15 @@ class LatestVideoPreviewsRepository(
         startVid: UUID?
     ): LatestVideosPage {
         val returnedPage = LatestVideosPage()
-        LOGGER.debug("Looking for {} latest video(s)", pageSize)
+        logger.debug {"Looking for $pageSize latest video(s)" }
         var currState = cpState
         do {
             // (1) - Paging state (custom or cassandra)
-            val pagingState = Optional.ofNullable(currState.cassandraPagingState) // Only if present .get()
-                .filter { cs: String? -> StringUtils.isNotBlank(cs) } // ..and not empty
+            val pagingState = if (isNotBlank(currState.cassandraPagingState)) currState.cassandraPagingState
+                else null
             val query = GetLatestVideoPreviewsForGivenDateRequestData(
                 currState.currentBucketValue,
-                toNullable(pagingState),
+                pagingState,
                 pageSize - returnedPage.resultSize,
                 startDate,
                 startVid
@@ -99,15 +98,11 @@ class LatestVideoPreviewsRepository(
 
             currentPage.results.filter { Objects.nonNull(it) }.forEach { returnedPage.listOfPreview.add(it) }
 
-            if (LOGGER.isDebugEnabled) {
-                LOGGER.debug(
-                    " + bucket:{}/{} with results:{}/{} and pagingState:{}",
-                    currState.currentBucket,
-                    currState.listOfBucketsSize,
-                    returnedPage.resultSize,
-                    pageSize,
-                    returnedPage.cassandraPagingState
-                )
+            if (logger.isDebugEnabled) {
+                logger.debug {
+                    " + bucket:${currState.currentBucket}/${currState.listOfBucketsSize} with results:" +
+                    "${returnedPage.resultSize}/${pageSize} and pagingState:${returnedPage.cassandraPagingState}"
+                }
             }
             currState = nextState(
                 currState,
@@ -130,9 +125,9 @@ class LatestVideoPreviewsRepository(
      */
     private fun loadCurrentPage(
         request: GetLatestVideoPreviewsForGivenDateRequestData
-    ): CompletableFuture<ResultListPage<LatestVideo>> {
-        return if (request.startDate != null && request.startVideoId != null) {
-            findLatestVideoPreview_startingPoint.queryNext(
+    ): CompletableFuture<ResultListPage<LatestVideo>> =
+        if (request.startDate != null && request.startVideoId != null) {
+            findLatestVideoPreviewStartingPoint.queryNext(
                 request.pageSize,
                 request.pagingState,
                 request.yyyymmdd,
@@ -140,31 +135,27 @@ class LatestVideoPreviewsRepository(
                 request.startVideoId
             )
         } else {
-            findLatestVideoPreview_noStartingPoint.queryNext(
+            findLatestVideoPreviewNoStartingPoint.queryNext(
                 request.pageSize,
                 request.pagingState,
                 request.yyyymmdd
             )
         }
-    }
 
-    private fun gotEnough(returnedPage: LatestVideosPage, pageSize: Int): Boolean {
-        return returnedPage.resultSize == pageSize
-    }
+    private fun gotEnough(returnedPage: LatestVideosPage, pageSize: Int): Boolean =
+        returnedPage.resultSize == pageSize
 
     private fun nextState(
         cpState: CustomPagingState,
         pagingState: String?,
         gotEnough: Boolean
-    ): CustomPagingState {
-        return if (gotEnough)
+    ): CustomPagingState =
+        if (gotEnough)
             cpState.changeCassandraPagingState(pagingState ?: "")
         else
             cpState.incCurrentBucketIndex()
-    }
 
     companion object {
-        private val LOGGER = LoggerFactory.getLogger(VideoCatalogRepository::class.java)
         private const val QUERY_LATEST_VIDEO_PREVIEW_STARTING_POINT = "SELECT * " +
                 "FROM killrvideo.latest_videos " +
                 "WHERE yyyymmdd = ? " +

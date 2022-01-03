@@ -11,12 +11,13 @@ import com.killrvideo.service.video.request.GetLatestVideoPreviewsRequestData
 import com.killrvideo.service.video.request.GetUserVideoPreviewsRequestData
 import com.killrvideo.utils.test.CassandraTestUtilsKt.mockMappedAsyncPagingIterable
 import com.killrvideo.utils.test.CassandraTestUtilsKt.mockPageableQueryFactory
-import io.mockk.*
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.verify
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import java.time.Instant
 import java.time.temporal.ChronoUnit

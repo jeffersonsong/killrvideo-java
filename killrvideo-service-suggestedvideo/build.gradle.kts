@@ -38,8 +38,6 @@ dependencies {
         exclude(group = "junit", module = "junit")
     }
 
-    // implementation(Deps.Datastax.core)
-
     implementation(Deps.Apache.Commons.lang3)
     implementation(Deps.Javax.validation)
     implementation(Deps.Javax.annotation)

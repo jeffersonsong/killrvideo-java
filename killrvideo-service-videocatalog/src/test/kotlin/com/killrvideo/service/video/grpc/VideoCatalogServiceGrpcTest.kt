@@ -22,7 +22,6 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.springframework.beans.factory.annotation.Value
 import java.util.*
 import java.util.concurrent.CompletableFuture
 
@@ -50,23 +49,23 @@ internal class VideoCatalogServiceGrpcTest {
 
     @Test
     fun testSubmitYouTubeVideoWithValidationFailure() {
-        val grpcReq = createSubmitYouTubeVideoRequest()
+        val request = createSubmitYouTubeVideoRequest()
         every { validator.validateGrpcRequest_submitYoutubeVideo(any()) } throws
                 Status.INVALID_ARGUMENT.asRuntimeException()
         assertThrows<StatusRuntimeException> {
-            runBlocking { service.submitYouTubeVideo(grpcReq) }
+            runBlocking { service.submitYouTubeVideo(request) }
         }
     }
 
     @Test
     fun testSubmitYouTubeVideoWithInsertFailure() {
-        val grpcReq = createSubmitYouTubeVideoRequest()
+        val request = createSubmitYouTubeVideoRequest()
         every { validator.validateGrpcRequest_submitYoutubeVideo(any()) } just Runs
 
         coEvery { videoCatalogRepository.insertVideoAsync(any()) } throws Status.INTERNAL.asRuntimeException()
 
         assertThrows<StatusRuntimeException> {
-            runBlocking { service.submitYouTubeVideo(grpcReq) }
+            runBlocking { service.submitYouTubeVideo(request) }
         }
     }
 
@@ -77,7 +76,7 @@ internal class VideoCatalogServiceGrpcTest {
 
     @Test
     fun testSubmitYouTubeVideoWithSendFailure() {
-        val grpcReq = createSubmitYouTubeVideoRequest()
+        val request = createSubmitYouTubeVideoRequest()
         every { validator.validateGrpcRequest_submitYoutubeVideo(any()) } just Runs
         coJustRun { videoCatalogRepository.insertVideoAsync(any()) }
         val event = YouTubeVideoAdded.getDefaultInstance()
@@ -86,13 +85,13 @@ internal class VideoCatalogServiceGrpcTest {
         every { messagingDao.sendEvent(any(), any()) } returns future
 
         assertThrows<Exception> {
-            runBlocking { service.submitYouTubeVideo(grpcReq) }
+            runBlocking { service.submitYouTubeVideo(request) }
         }
     }
 
     @Test
     fun testSubmitYouTubeVideo() {
-        val grpcReq = createSubmitYouTubeVideoRequest()
+        val request = createSubmitYouTubeVideoRequest()
         every { validator.validateGrpcRequest_submitYoutubeVideo(any()) } just Runs
         coJustRun { videoCatalogRepository.insertVideoAsync(any()) }
         val event = YouTubeVideoAdded.getDefaultInstance()
@@ -100,7 +99,7 @@ internal class VideoCatalogServiceGrpcTest {
         every { messagingDao.sendEvent(any(), any()) } returns
                 CompletableFuture.completedFuture(null)
 
-        runBlocking { service.submitYouTubeVideo(grpcReq) }
+        runBlocking { service.submitYouTubeVideo(request) }
         coVerify {
             videoCatalogRepository.insertVideoAsync(any())
         }
@@ -112,149 +111,149 @@ internal class VideoCatalogServiceGrpcTest {
 
     @Test
     fun testGetLatestVideoPreviewsWithValidationFailure() {
-        val grpcReq = getLatestVideoPreviewsRequest {}
+        val request = getLatestVideoPreviewsRequest {}
         every { validator.validateGrpcRequest_getLatestPreviews(any()) } throws
                 Status.INVALID_ARGUMENT.asRuntimeException()
         assertThrows<StatusRuntimeException> {
-            runBlocking { service.getLatestVideoPreviews(grpcReq) }
+            runBlocking { service.getLatestVideoPreviews(request) }
         }
     }
 
     @Test
     fun testGetLatestVideoPreviewsWithQueryFailure() {
-        val grpcReq = getLatestVideoPreviewsRequest {}
+        val request = getLatestVideoPreviewsRequest {}
         every { validator.validateGrpcRequest_getLatestPreviews(any()) } just Runs
         coEvery { videoCatalogRepository.getLatestVideoPreviewsAsync(any()) } throws
                 Status.INTERNAL.asRuntimeException()
         assertThrows<StatusRuntimeException> {
-            runBlocking { service.getLatestVideoPreviews(grpcReq) }
+            runBlocking { service.getLatestVideoPreviews(request) }
         }
     }
 
     @Test
     fun testGetLatestVideoPreviews() {
-        val grpcReq = getLatestVideoPreviewsRequest {}
+        val request = getLatestVideoPreviewsRequest {}
         every { validator.validateGrpcRequest_getLatestPreviews(any()) } just Runs
         val returnedPage = mockk<LatestVideosPage>()
         coEvery { videoCatalogRepository.getLatestVideoPreviewsAsync(any()) } returns returnedPage
         val response = getLatestVideoPreviewsResponse {}
         every { mapper.mapLatestVideoToGrpcResponse(any()) } returns response
-        runBlocking { service.getLatestVideoPreviews(grpcReq) }
+        runBlocking { service.getLatestVideoPreviews(request) }
     }
 
     @Test
     fun testGetVideoWithValidationFailure() {
-        val grpcReq = getVideoRequest {}
+        val request = getVideoRequest {}
         every { validator.validateGrpcRequest_getVideo(any()) } throws
                 Status.INVALID_ARGUMENT.asRuntimeException()
         assertThrows<StatusRuntimeException> {
-            runBlocking { service.getVideo(grpcReq) }
+            runBlocking { service.getVideo(request) }
         }
     }
 
     @Test
     fun testGetVideoWithQueryFailure() {
-        val grpcReq = createGetVideoRequest(UUID.randomUUID())
+        val request = createGetVideoRequest(UUID.randomUUID())
         every { validator.validateGrpcRequest_getVideo(any()) } just Runs
         coEvery { videoCatalogRepository.getVideoById(any()) } throws Exception()
 
         assertThrows<Exception> {
-            runBlocking { service.getVideo(grpcReq) }
+            runBlocking { service.getVideo(request) }
         }
     }
 
     @Test
     fun testGetVideoWithNoVideoFound() {
-        val grpcReq = createGetVideoRequest(UUID.randomUUID())
+        val request = createGetVideoRequest(UUID.randomUUID())
         every { validator.validateGrpcRequest_getVideo(any()) } just Runs
         coEvery { videoCatalogRepository.getVideoById(any()) } returns null
         assertThrows<StatusRuntimeException> {
-            runBlocking { service.getVideo(grpcReq) }
+            runBlocking { service.getVideo(request) }
         }
     }
 
     @Test
     fun testGetVideo() {
-        val grpcReq = createGetVideoRequest(UUID.randomUUID())
+        val request = createGetVideoRequest(UUID.randomUUID())
         every { validator.validateGrpcRequest_getVideo(any()) } just Runs
         val video = mockk<Video>()
         coEvery { videoCatalogRepository.getVideoById(any()) } returns video
 
         val response = GetVideoResponse.getDefaultInstance()
         every { mapper.mapFromVideotoVideoResponse(any()) } returns response
-        val result = runBlocking { service.getVideo(grpcReq) }
+        val result = runBlocking { service.getVideo(request) }
         assertEquals(response, result)
     }
 
     @Test
     fun testGetVideoPreviewsWithValidationFailure() {
-        val grpcReq = GetVideoPreviewsRequest.getDefaultInstance()
+        val request = GetVideoPreviewsRequest.getDefaultInstance()
         every { validator.validateGrpcRequest_getVideoPreviews(any()) } throws
                 Status.INVALID_ARGUMENT.asRuntimeException()
         assertThrows<StatusRuntimeException> {
-            runBlocking { service.getVideoPreviews(grpcReq) }
+            runBlocking { service.getVideoPreviews(request) }
         }
     }
 
     @Test
     fun testGetVideoPreviewsWithoutVideioId() {
-        val grpcReq = createGetVideoPreviewsRequest()
+        val request = createGetVideoPreviewsRequest()
         every { validator.validateGrpcRequest_getVideoPreviews(any()) } just Runs
-        val result = runBlocking { service.getVideoPreviews(grpcReq) }
+        val result = runBlocking { service.getVideoPreviews(request) }
         assertEquals(0, result.videoPreviewsCount)
     }
 
     @Test
     fun testGetVideoPreviewsWithQueryFailure() {
         val videoid = UUID.randomUUID()
-        val grpcReq = createGetVideoPreviewsRequest(videoid)
+        val request = createGetVideoPreviewsRequest(videoid)
         every { validator.validateGrpcRequest_getVideoPreviews(any()) } just Runs
         coEvery { videoCatalogRepository.getVideoPreview(any()) } throws Exception()
 
         assertThrows<Exception> {
-            runBlocking { service.getVideoPreviews(grpcReq) }
+            runBlocking { service.getVideoPreviews(request) }
         }
     }
 
     @Test
     fun testGetVideoPreviews() {
         val videoid = UUID.randomUUID()
-        val grpcReq = createGetVideoPreviewsRequest(videoid)
+        val request = createGetVideoPreviewsRequest(videoid)
         every { validator.validateGrpcRequest_getVideoPreviews(any()) } just Runs
         val video = mockk<Video>()
         val videos = listOf(video)
         coEvery { videoCatalogRepository.getVideoPreview(any()) } returns videos
         val response = GetVideoPreviewsResponse.getDefaultInstance()
         every { mapper.mapToGetVideoPreviewsResponse(any()) } returns response
-        val result = runBlocking { service.getVideoPreviews(grpcReq) }
+        val result = runBlocking { service.getVideoPreviews(request) }
         assertEquals(response, result)
     }
 
     @Test
     fun testGetUserVideoPreviewsWithValidationFailure() {
-        val grpcReq = GetUserVideoPreviewsRequest.getDefaultInstance()
+        val request = GetUserVideoPreviewsRequest.getDefaultInstance()
         every { validator.validateGrpcRequest_getUserVideoPreviews(any()) } throws
                 Status.INVALID_ARGUMENT.asRuntimeException()
         assertThrows<StatusRuntimeException> {
-            runBlocking { service.getUserVideoPreviews(grpcReq) }
+            runBlocking { service.getUserVideoPreviews(request) }
         }
     }
 
     @Test
     fun testGetUserVideoPreviewsWithQueryFailure() {
         val userid = UUID.randomUUID()
-        val grpcReq = createGetUserVideoPreviewsRequest(userid)
+        val request = createGetUserVideoPreviewsRequest(userid)
         every { validator.validateGrpcRequest_getUserVideoPreviews(any()) } just Runs
         coEvery { videoCatalogRepository.getUserVideosPreview(any()) } throws Exception()
         assertThrows<Exception> {
-            runBlocking { service.getUserVideoPreviews(grpcReq) }
+            runBlocking { service.getUserVideoPreviews(request) }
         }
     }
 
     @Test
     fun testGetUserVideoPreviews() {
         val userid = UUID.randomUUID()
-        val grpcReq = createGetUserVideoPreviewsRequest(userid)
+        val request = createGetUserVideoPreviewsRequest(userid)
         every { validator.validateGrpcRequest_getUserVideoPreviews(any()) } just Runs
         val resultListPage: ResultListPage<UserVideo> = mockk()
         coEvery { videoCatalogRepository.getUserVideosPreview(any()) } returns resultListPage
@@ -262,7 +261,7 @@ internal class VideoCatalogServiceGrpcTest {
         every {
             mapper.mapToGetUserVideoPreviewsResponse(any(), any())
         } returns response
-        val result = runBlocking { service.getUserVideoPreviews(grpcReq) }
+        val result = runBlocking { service.getUserVideoPreviews(request) }
         assertEquals(response, result)
     }
 

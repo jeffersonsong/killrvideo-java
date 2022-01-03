@@ -8,7 +8,7 @@ import com.killrvideo.service.user.dto.User
 import com.killrvideo.service.user.dto.UserCredentials
 import io.grpc.Status
 import kotlinx.coroutines.future.await
-import org.slf4j.LoggerFactory
+import mu.KotlinLogging
 import org.springframework.stereotype.Repository
 import java.util.*
 
@@ -19,6 +19,7 @@ import java.util.*
  */
 @Repository
 open class UserRepository(mapper: UserMapper) {
+    private val logger = KotlinLogging.logger {  }
     private val userDao: UserDao = mapper.userDao
     private val userCredentialsDao: UserCredentialsDao = mapper.userCredentialsDao
 
@@ -43,10 +44,8 @@ open class UserRepository(mapper: UserMapper) {
     private fun duplicateCheck(userCredentials: UserCredentials, duplicate: Boolean) {
         if (duplicate) {
             val errMsg = "Exception creating user because it already exists with email ${userCredentials.email}"
-            LOGGER.error(errMsg)
-            throw Status.ALREADY_EXISTS.withDescription(
-                errMsg
-            ).asRuntimeException()
+            logger.error(errMsg)
+            throw Status.ALREADY_EXISTS.withDescription(errMsg).asRuntimeException()
         }
     }
 
@@ -56,9 +55,8 @@ open class UserRepository(mapper: UserMapper) {
      * @param email
      * @return
      */
-    suspend fun getUserCredentialAsync(email: String): UserCredentials? {
-        return userCredentialsDao.getUserCredential(email).await()
-    }
+    suspend fun getUserCredentialAsync(email: String): UserCredentials? =
+        userCredentialsDao.getUserCredential(email).await()
 
     /**
      * Retrieve user profiles.
@@ -66,13 +64,7 @@ open class UserRepository(mapper: UserMapper) {
      * @param userids
      * @return
      */
-    suspend fun getUserProfilesAsync(userids: List<UUID>): List<User> {
-        return userDao.getUserProfiles(userids)
+    suspend fun getUserProfilesAsync(userids: List<UUID>): List<User> =
+        userDao.getUserProfiles(userids)
             .thenApply { it.all() }.await()
-    }
-
-    companion object {
-        // TODO - convert to kt logger?
-        private val LOGGER = LoggerFactory.getLogger(UserRepository::class.java)
-    }
 }

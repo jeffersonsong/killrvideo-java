@@ -10,7 +10,6 @@ import com.google.common.collect.Sets
 import com.killrvideo.dse.dto.ResultListPage
 import com.killrvideo.dse.graph.KillrVideoTraversalConstants
 import com.killrvideo.dse.graph.KillrVideoTraversalSource
-import com.killrvideo.dse.graph.`__` as underscore
 import com.killrvideo.dse.utils.PageableQuery
 import com.killrvideo.dse.utils.PageableQueryFactory
 import com.killrvideo.service.suggestedvideo.dao.*
@@ -18,8 +17,8 @@ import com.killrvideo.service.suggestedvideo.dto.Video
 import com.killrvideo.service.suggestedvideo.request.GetRelatedVideosRequestData
 import io.grpc.Status
 import kotlinx.coroutines.future.await
+import mu.KotlinLogging
 import org.apache.tinkerpop.gremlin.structure.Vertex
-import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Repository
@@ -28,10 +27,10 @@ import java.time.Instant
 import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.CompletionException
-import java.util.regex.Pattern
 import java.util.stream.Collectors
 import java.util.stream.StreamSupport
 import javax.inject.Inject
+import com.killrvideo.dse.graph.`__` as underscore
 
 /**
  * Implementations of operation for Videos.
@@ -45,6 +44,8 @@ class SuggestedVideosRepository(
     @Inject
     private val traversalSource: KillrVideoTraversalSource,
 ) {
+    private val logger = KotlinLogging.logger { }
+
     private val videoDao: VideoDao = mapper.videoDao
 
     /**
@@ -59,7 +60,7 @@ class SuggestedVideosRepository(
      * https://github.com/spring-projects/spring-boot/issues/501
      */
     @Value("#{'\${killrvideo.search.ignoredWords}'.split(',')}")
-    private var ignoredWords: Set<kotlin.String> = HashSet()
+    private var ignoredWords: Set<String> = HashSet()
 
     init {
         findRelatedVideos = pageableQueryFactory.newPageableQuery(
@@ -105,9 +106,9 @@ class SuggestedVideosRepository(
      * We can then use the end result termSet to query across the name, tags, and
      * description columns to find similar videos.
      */
-    private fun buildSolrQueryToSearchVideos(video: Video): kotlin.String {
+    private fun buildSolrQueryToSearchVideos(video: Video): String {
         val space = " "
-        val termSet = HashSet<kotlin.String>(50)
+        val termSet = HashSet<String>(50)
         video.name ?.let {sentence ->
             splitSentence(sentence).forEach { termSet.add(it)}
         }
@@ -116,8 +117,8 @@ class SuggestedVideosRepository(
         }
         termSet.removeAll(ignoredWords)
         termSet.removeIf { it.isEmpty() }
-        val delimitedTermList = termSet.stream().map { obj: kotlin.String -> obj }.collect(Collectors.joining(","))
-        LOGGER.debug("delimitedTermList is : $delimitedTermList")
+        val delimitedTermList = termSet.stream().map { obj: String -> obj }.collect(Collectors.joining(","))
+        logger.debug("delimitedTermList is : $delimitedTermList")
         val solrQuery = StringBuilder()
         solrQuery.append(PAGING_DRIVER_START)
         solrQuery.append("name:(").append(delimitedTermList).append(")^2").append(space)
@@ -258,10 +259,10 @@ class SuggestedVideosRepository(
         //LOGGER.info("Traversal for 'updateGraphNewVideo' : {}", DseUtils.displayGraphTranserval(traversal));
         session.executeAsync(gStatement).whenComplete { graphResultSet: AsyncGraphResultSet?, ex: Throwable ->
             if (graphResultSet != null) {
-                LOGGER.debug("Added video vertex, uploaded, and taggedWith edges: " + graphResultSet.one())
+                logger.debug("Added video vertex, uploaded, and taggedWith edges: " + graphResultSet.one())
             } else {
                 //TODO: Potentially add some robustness code here
-                LOGGER.warn("Error handling YouTubeVideoAdded for graph: $ex")
+                logger.warn("Error handling YouTubeVideoAdded for graph: $ex")
             }
         }
     }
@@ -277,15 +278,15 @@ class SuggestedVideosRepository(
      * @param email        email.
      * @param userCreation user creation date.
      */
-    fun updateGraphNewUser(userId: UUID, email: kotlin.String, userCreation: Date) {
+    fun updateGraphNewUser(userId: UUID, email: String, userCreation: Date) {
         val traversal = traversalSource.user(userId, email, userCreation)
         val gStatement = FluentGraphStatement.newInstance(traversal)
         //LOGGER.info("Executed transversal for 'updateGraphNewUser' : {}", DseUtils.displayGraphTranserval(traversal));
         session.executeAsync(gStatement).whenComplete { graphResultSet: AsyncGraphResultSet?, ex: Throwable ->
             if (graphResultSet != null) {
-                LOGGER.debug("Added user vertex: " + graphResultSet.one())
+                logger.debug("Added user vertex: " + graphResultSet.one())
             } else {
-                LOGGER.warn("Error creating user vertex: $ex")
+                logger.warn("Error creating user vertex: $ex")
             }
         }
     }
@@ -306,19 +307,20 @@ class SuggestedVideosRepository(
         //LOGGER.info("Executed transversal for 'updateGraphNewUserRating' : {}", DseUtils.displayGraphTranserval(traversal));
         session.executeAsync(gStatement).whenComplete { graphResultSet: AsyncGraphResultSet?, ex: Throwable ->
             if (graphResultSet != null) {
-                LOGGER.debug("Added rating between user and video: " + graphResultSet.one())
+                logger.debug("Added rating between user and video: " + graphResultSet.one())
             } else {
                 //TODO: Potentially add some robustness code here
-                LOGGER.warn("Error Adding rating between user and video: $ex")
+                logger.warn("Error Adding rating between user and video: $ex")
             }
         }
     }
 
     companion object {
-        private val LOGGER = LoggerFactory.getLogger(SuggestedVideosRepository::class.java)
-        private const val QUERY_RELATED_VIDEOS = "SELECT * " +
-                "FROM killrvideo.videos " +
-                "WHERE solr_query = ?"
+        private val QUERY_RELATED_VIDEOS =
+            """
+            SELECT * FROM killrvideo.videos 
+            WHERE solr_query = ?
+            """.trimIndent()
 
         /**
          * Wrap search queries with "paging":"driver" to dynamically enable

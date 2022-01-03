@@ -11,11 +11,10 @@ import com.killrvideo.dse.utils.PageableQuery
 import com.killrvideo.dse.utils.PageableQueryFactory
 import com.killrvideo.service.search.dao.VideoRowMapper
 import com.killrvideo.service.search.dto.Video
-import com.killrvideo.service.search.repository.SearchRepository
 import com.killrvideo.service.search.request.GetQuerySuggestionsRequestData
 import com.killrvideo.service.search.request.SearchVideosRequestData
 import kotlinx.coroutines.future.await
-import org.slf4j.LoggerFactory
+import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Repository
@@ -33,11 +32,16 @@ class SearchRepository(
     private val session: CqlSession, pageableQueryFactory: PageableQueryFactory,
     @Qualifier("searchVideoRowMapper") videoRowMapper: VideoRowMapper
 ) {
+    private val logger = KotlinLogging.logger {  }
     /**
      * Precompile statements to speed up queries.
      */
-    private val findSuggestedTags: PreparedStatement
-    private val findVideosByTags: PageableQuery<Video>
+    private val findSuggestedTags: PreparedStatement = session.prepare(QUERY_SUGGESTED_TAGS)
+    private val findVideosByTags: PageableQuery<Video> =
+        pageableQueryFactory.newPageableQuery(
+            QUERY_VIDEO_BY_TAGS,
+            ConsistencyLevel.LOCAL_ONE
+        ) { row: Row -> videoRowMapper.map(row) }
 
     /**
      * Create a set of sentence conjunctions and other "undesirable"
@@ -47,17 +51,6 @@ class SearchRepository(
      */
     @Value("#{'\${killrvideo.search.ignoredWords}'.split(',')}")
     private var ignoredWords: Set<String> = HashSet()
-
-    init {
-        // Statement for tags
-        findSuggestedTags = session.prepare(QUERY_SUGGESTED_TAGS)
-
-        // Statement for videos
-        findVideosByTags = pageableQueryFactory.newPageableQuery(
-            QUERY_VIDEO_BY_TAGS,
-            ConsistencyLevel.LOCAL_ONE
-        ) { row: Row -> videoRowMapper.map(row) }
-    }
 
     /**
      * Do a Solr query against DSE search to find videos using Solr's ExtendedDisMax query parser. Query the
@@ -90,7 +83,7 @@ class SearchRepository(
      * if there are no tags for a given video as it is more likely to give us results.
      */
     private fun buildSolrQueryToSearchVideos(query: String): String {
-        LOGGER.debug("Start searching videos by name, tag, and description")
+        logger.debug("Start searching videos by name, tag, and description")
         // Escaping special characters for query
         val replaceFind = " "
         val replaceWith = " AND "
@@ -154,12 +147,12 @@ class SearchRepository(
             .append("tags:(").append(query).append("*) OR ")
             .append("description:(").append(query).append("*)")
             .append(PAGING_DRIVER_END)
-        LOGGER.debug("getQuerySuggestions() solr_query is : {}", solrQuery)
+        logger.debug("getQuerySuggestions() solr_query is : {}", solrQuery)
         val stmt = findSuggestedTags.boundStatementBuilder(solrQuery.toString())
             .setPageSize(fetchSize)
             .setConsistencyLevel(ConsistencyLevel.LOCAL_ONE)
             .build()
-        LOGGER.debug("getQuerySuggestions: {} with solr_query: {}", stmt.preparedStatement.query, solrQuery)
+        logger.debug("getQuerySuggestions: {} with solr_query: {}", stmt.preparedStatement.query, solrQuery)
         return stmt
     }
 
@@ -192,19 +185,22 @@ class SearchRepository(
             }
             suggestionSet.removeAll(ignoredWords)
         }
-        LOGGER.debug("TagSet returned are {}", suggestionSet)
+        logger.debug("TagSet returned are {}", suggestionSet)
         return suggestionSet
     }
 
     companion object {
-        private val LOGGER = LoggerFactory.getLogger(SearchRepository::class.java)
-        private const val QUERY_SUGGESTED_TAGS = "SELECT name, tags, description " +
-                "FROM killrvideo.videos " +
-                "WHERE solr_query = ?"
-        private const val QUERY_VIDEO_BY_TAGS = "SELECT * " +
-                "FROM killrvideo.videos " +
-                "WHERE solr_query = ?"
-
+        private val QUERY_SUGGESTED_TAGS =
+            """
+            SELECT name, tags, description  
+            FROM killrvideo.videos 
+            WHERE solr_query = ?
+            """.trimIndent()
+        private val QUERY_VIDEO_BY_TAGS =
+            """
+            SELECT * FROM killrvideo.videos 
+            WHERE solr_query = ?
+            """.trimIndent()
         /**
          * Wrap search queries with "paging":"driver" to dynamically enable
          * paging to ensure we pull back all available results in the application.

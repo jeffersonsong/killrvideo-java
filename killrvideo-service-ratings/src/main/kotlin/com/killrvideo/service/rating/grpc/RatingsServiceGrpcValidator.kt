@@ -2,48 +2,43 @@ package com.killrvideo.service.rating.grpc
 
 import com.killrvideo.utils.FluentValidator
 import killrvideo.ratings.RatingsServiceOuterClass.*
+import mu.KotlinLogging
 import org.apache.commons.lang3.StringUtils
-import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 
 @Component
 class RatingsServiceGrpcValidator {
-    fun validateGrpcRequest_RateVideo(request: RateVideoRequest) {
-        FluentValidator.of("rateVideo", request, LOGGER)
+    private val logger = KotlinLogging.logger {  }
+
+    fun validateGrpcRequest_RateVideo(request: RateVideoRequest) =
+        FluentValidator.of("rateVideo", request, logger)
             .notEmpty(
                 "video id",
-                !request.hasVideoId() || StringUtils.isBlank(request.getVideoId().getValue())
+                !request.hasVideoId() || StringUtils.isBlank(request.videoId.value)
             )
             .notEmpty(
                 "user id",
-                !request.hasUserId() || StringUtils.isBlank(request.getUserId().getValue())
+                !request.hasUserId() || StringUtils.isBlank(request.userId.value)
             )
             .validate()
-    }
 
-    fun validateGrpcRequest_GetRating(request: GetRatingRequest) {
-        FluentValidator.of("getRating", request, LOGGER)
+    fun validateGrpcRequest_GetRating(request: GetRatingRequest) =
+        FluentValidator.of("getRating", request, logger)
             .notEmpty(
                 "video id",
-                !request.hasVideoId() || StringUtils.isBlank(request.getVideoId().getValue())
+                !request.hasVideoId() || StringUtils.isBlank(request.videoId.value)
             )
             .validate()
-    }
 
-    fun validateGrpcRequest_GetUserRating(request: GetUserRatingRequest) {
-        FluentValidator.of("getUserRating", request, LOGGER)
+    fun validateGrpcRequest_GetUserRating(request: GetUserRatingRequest) =
+        FluentValidator.of("getUserRating", request, logger)
             .notEmpty(
                 "video id",
-                !request.hasVideoId() || StringUtils.isBlank(request.getVideoId().getValue())
+                !request.hasVideoId() || StringUtils.isBlank(request.videoId.value)
             )
             .notEmpty(
                 "user id",
-                !request.hasUserId() || StringUtils.isBlank(request.getUserId().getValue())
+                !request.hasUserId() || StringUtils.isBlank(request.userId.value)
             )
             .validate()
-    }
-
-    companion object {
-        private val LOGGER = LoggerFactory.getLogger(RatingsServiceGrpcValidator::class.java)
-    }
 }

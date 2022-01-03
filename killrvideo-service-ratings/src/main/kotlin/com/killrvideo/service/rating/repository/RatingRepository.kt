@@ -7,7 +7,7 @@ import com.killrvideo.service.rating.dto.VideoRating
 import com.killrvideo.service.rating.dto.VideoRatingByUser
 import com.killrvideo.service.rating.request.GetUserRatingRequestData
 import kotlinx.coroutines.future.await
-import org.slf4j.LoggerFactory
+import mu.KotlinLogging
 import org.springframework.stereotype.Repository
 import java.util.*
 
@@ -18,6 +18,7 @@ import java.util.*
  */
 @Repository
 class RatingRepository(mapper: VideoRatingMapper) {
+    private val logger = KotlinLogging.logger { }
     private val videoRatingDao: VideoRatingDao = mapper.videoRatingDao
     private val videoRatingByUserDao: VideoRatingByUserDao = mapper.videoRatingByUserDao
 
@@ -29,17 +30,15 @@ class RatingRepository(mapper: VideoRatingMapper) {
     suspend fun rateVideo(videoRatingByUser: VideoRatingByUser): VideoRatingByUser? {
         assertNotNull("rateVideo", "videoId", videoRatingByUser.videoid)
         // Logging at DEBUG
-        if (LOGGER.isDebugEnabled) {
-            LOGGER.debug(
-                "Rating {} on video {} for user {}", videoRatingByUser.rating,
-                videoRatingByUser.videoid, videoRatingByUser.userid
-            )
+        logger.debug {
+            "Rating ${videoRatingByUser.rating} on video ${videoRatingByUser.videoid} " +
+                    "for user ${videoRatingByUser.userid}"
         }
         return videoRatingDao.increment(
             videoRatingByUser.videoid!!, 1L,
             videoRatingByUser.rating.toLong()
         )
-            .thenCompose { _ -> videoRatingByUserDao.insert(videoRatingByUser) }
+            .thenCompose { videoRatingByUserDao.insert(videoRatingByUser) }
             .await()
     }
 
@@ -49,8 +48,14 @@ class RatingRepository(mapper: VideoRatingMapper) {
      * @param videoId unique identifier for video.
      * @return find rating
      */
-    suspend fun findRating(videoId: UUID): VideoRating? =
-        videoRatingDao.findRating(videoId).await()
+    suspend fun findRating(videoId: UUID): VideoRating =
+        videoRatingDao.findRating(videoId).await() ?: defaultVideoRating(videoId)
+
+    private fun defaultVideoRating(videoId: UUID) = VideoRating(
+        videoid = videoId,
+        ratingCounter = 0L,
+        ratingTotal = 0L
+    )
 
     /**
      * Find rating from videoid and userid.
@@ -58,13 +63,17 @@ class RatingRepository(mapper: VideoRatingMapper) {
      * @param request request.
      * @return video rating exists.
      */
-    suspend fun findUserRating(request: GetUserRatingRequestData): VideoRatingByUser? =
+    suspend fun findUserRating(request: GetUserRatingRequestData): VideoRatingByUser =
         videoRatingByUserDao.findUserRating(request.videoid, request.userid).await()
+            ?: defaultVideoRatingByUser(request.videoid, request.userid)
+
+    private fun defaultVideoRatingByUser(videioId: UUID, userId: UUID) =
+        VideoRatingByUser(
+            videoid = videioId,
+            userid = userId,
+            rating = 0
+        )
 
     private fun assertNotNull(mName: String, pName: String, obj: Any?) =
         requireNotNull(obj) { "Assertion failed: param $pName is required for method $mName" }
-
-    companion object {
-        private val LOGGER = LoggerFactory.getLogger(RatingRepository::class.java)
-    }
 }

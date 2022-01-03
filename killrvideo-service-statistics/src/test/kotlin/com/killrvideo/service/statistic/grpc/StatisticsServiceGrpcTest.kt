@@ -14,11 +14,9 @@ import killrvideo.statistics.getNumberOfPlaysRequest
 import killrvideo.statistics.recordPlaybackStartedRequest
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.springframework.beans.factory.annotation.Value
 import java.util.*
 
 internal class StatisticsServiceGrpcTest {
@@ -41,70 +39,70 @@ internal class StatisticsServiceGrpcTest {
 
     @Test
     fun testRecordPlaybackStartedWithValidationFailure() {
-        val grpcReq = recordPlaybackStartedRequest {}
+        val request = recordPlaybackStartedRequest {}
         every { validator.validateGrpcRequest_RecordPlayback(any()) } throws
                 Status.INVALID_ARGUMENT.asRuntimeException()
         assertThrows<StatusRuntimeException> {
-            runBlocking { service.recordPlaybackStarted(grpcReq) }
+            runBlocking { service.recordPlaybackStarted(request) }
         }
     }
 
     @Test
     fun testRecordPlaybackStartedWithQueryFailure() {
-        val grpcReq = recordPlaybackStartedRequest { videoId = randomUuid() }
+        val request = recordPlaybackStartedRequest { videoId = randomUuid() }
         every { validator.validateGrpcRequest_RecordPlayback(any()) } just Runs
         coEvery { statisticsRepository.recordPlaybackStartedAsync(any()) } throws Exception()
 
         assertThrows<Exception> {
-            runBlocking { service.recordPlaybackStarted(grpcReq) }
+            runBlocking { service.recordPlaybackStarted(request) }
         }
     }
 
     @Test
     fun testRecordPlayback() {
-        val grpcReq = recordPlaybackStartedRequest { videoId = randomUuid() }
+        val request = recordPlaybackStartedRequest { videoId = randomUuid() }
         every { validator.validateGrpcRequest_RecordPlayback(any()) } just Runs
         coEvery { statisticsRepository.recordPlaybackStartedAsync(any()) } returns 1
-        runBlocking { service.recordPlaybackStarted(grpcReq) }
+        runBlocking { service.recordPlaybackStarted(request) }
     }
 
     @Test
     fun testGetNumberOfPlaysWithValidationFailure() {
-        val grpcReq = getNumberOfPlaysRequest {}
+        val request = getNumberOfPlaysRequest {}
         every { validator.validateGrpcRequest_GetNumberPlays(any()) } throws
                 Status.INVALID_ARGUMENT.asRuntimeException()
         assertThrows<StatusRuntimeException> {
-            runBlocking { service.getNumberOfPlays(grpcReq) }
+            runBlocking { service.getNumberOfPlays(request) }
         }
     }
 
     @Test
     fun testGetNumberOfPlaysWithQueryFailure() {
         val videoid = UUID.randomUUID()
-        val grpcReq = getNumberOfPlaysRequest {
+        val request = getNumberOfPlaysRequest {
             videoIds.add(uuidToUuid(videoid))
         }
         every { validator.validateGrpcRequest_GetNumberPlays(any()) } just Runs
         coEvery { statisticsRepository.getNumberOfPlaysAsync(any()) } throws Exception()
 
         assertThrows<Exception> {
-            runBlocking { service.getNumberOfPlays(grpcReq) }
+            runBlocking { service.getNumberOfPlays(request) }
         }
     }
 
     @Test
     fun testGetNumberOfPlaysWithEmptyVideIdsList() {
-        val grpcReq = getNumberOfPlaysRequest {}
+        val request = getNumberOfPlaysRequest {}
         every { validator.validateGrpcRequest_GetNumberPlays(any()) } just Runs
 
-        val result = runBlocking { service.getNumberOfPlays(grpcReq) }
+        val result = runBlocking { service.getNumberOfPlays(request) }
         assertEquals(0, result.statsCount)
     }
 
     @Test
     fun testGetNumberOfPlays() {
         val videoid = UUID.randomUUID()
-        val grpcReq = getNumberOfPlaysRequest {
+        val request = getNumberOfPlaysRequest {
             videoIds.add(uuidToUuid(videoid))
         }
         every { validator.validateGrpcRequest_GetNumberPlays(any()) } just Runs
@@ -114,7 +112,7 @@ internal class StatisticsServiceGrpcTest {
         val response = GetNumberOfPlaysResponse.getDefaultInstance()
         every { mapper.buildGetNumberOfPlayResponse(any(), any()) } returns response
 
-        val result = runBlocking { service.getNumberOfPlays(grpcReq) }
+        val result = runBlocking { service.getNumberOfPlays(request) }
         assertEquals(response, result)
     }
 }

@@ -5,7 +5,6 @@ import com.killrvideo.service.user.dto.UserCredentials
 import com.killrvideo.service.user.repository.UserRepository
 import com.killrvideo.utils.HashUtils
 import io.grpc.Status
-import io.grpc.StatusRuntimeException
 import io.mockk.MockKAnnotations
 import io.mockk.coEvery
 import io.mockk.every
@@ -13,11 +12,10 @@ import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-
-import org.junit.jupiter.api.Assertions.*
-import org.junit.jupiter.api.assertThrows
 import java.util.*
 
 class UserManagementServiceTest {
@@ -31,7 +29,7 @@ class UserManagementServiceTest {
 
     @Test
     fun testCreateUserWithCreateFailure() {
-        val user = mockk<User>();
+        val user = mockk<User>()
         coEvery { userRepository.createUserAsync(any(), any()) } throws Status.INTERNAL.asRuntimeException()
         val result = runBlocking {
                 service.createUser(user, "passwd")
@@ -41,7 +39,7 @@ class UserManagementServiceTest {
 
     @Test
     fun testCreateUser() {
-        val user = mockk<User>();
+        val user = mockk<User>()
         coEvery { userRepository.createUserAsync(any(), any()) } returns true
         val result = runBlocking {
             service.createUser(user, "passwd")

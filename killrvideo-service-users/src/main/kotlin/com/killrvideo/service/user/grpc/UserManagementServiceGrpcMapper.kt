@@ -5,8 +5,8 @@ import com.killrvideo.service.user.dto.User
 import com.killrvideo.utils.GrpcMappingUtils.fromUuid
 import com.killrvideo.utils.GrpcMappingUtils.uuidToUuid
 import com.killrvideo.utils.HashUtils
-import killrvideo.user_management.UserManagementServiceOuterClass.*
-import killrvideo.user_management.events.UserManagementEvents.*
+import killrvideo.user_management.UserManagementServiceOuterClass.CreateUserRequest
+import killrvideo.user_management.UserManagementServiceOuterClass.GetUserProfileRequest
 import killrvideo.user_management.events.userCreated
 import killrvideo.user_management.getUserProfileResponse
 import killrvideo.user_management.userProfile
@@ -33,7 +33,7 @@ open class UserManagementServiceGrpcMapper {
                     lastname = this.lastName,
                     createdDate = Instant.now()
                 ),
-                HashUtils.hashPassword(this.getPassword().trim())
+                HashUtils.hashPassword(this.password.trim())
             )
     }
 

@@ -25,7 +25,7 @@ class StatisticsRepository(mapper: VideoPlaybackStatsMapper) {
      */
     suspend fun recordPlaybackStartedAsync(videoId: UUID): Int =
         videoPlaybackStatsDao.increment(videoId, 1L)
-            .thenApply { _ -> 1 }
+            .thenApply { 1 }
             .await()
 
     /**

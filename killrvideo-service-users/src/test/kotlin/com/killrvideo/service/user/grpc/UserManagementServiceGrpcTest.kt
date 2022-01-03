@@ -3,8 +3,6 @@ package com.killrvideo.service.user.grpc
 import com.killrvideo.messaging.dao.MessagingDao
 import com.killrvideo.service.user.dto.User
 import com.killrvideo.service.user.dto.UserCredentials
-import com.killrvideo.service.user.repository.UserRepository
-import killrvideo.user_management.UserManagementServiceOuterClass.UserProfile
 import com.killrvideo.utils.GrpcMappingUtils.uuidToUuid
 import com.killrvideo.utils.HashUtils
 import io.grpc.Status
@@ -13,13 +11,13 @@ import io.mockk.*
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
 import killrvideo.user_management.*
+import killrvideo.user_management.UserManagementServiceOuterClass.UserProfile
 import killrvideo.user_management.events.UserManagementEvents.UserCreated
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.springframework.beans.factory.annotation.Value
 import java.util.*
 import java.util.concurrent.CompletableFuture
 
@@ -47,7 +45,7 @@ internal class UserManagementServiceGrpcTest {
 
     @Test
     fun testCreateUserWithValidationFailure() {
-        val grpcReq = createUserRequest {}
+        val request = createUserRequest {}
 
         every {
             validator.validateGrpcRequest_createUser(any())
@@ -55,7 +53,7 @@ internal class UserManagementServiceGrpcTest {
 
         assertThrows<StatusRuntimeException> {
             runBlocking {
-                service.createUser(grpcReq)
+                service.createUser(request)
             }
         }
     }
@@ -63,14 +61,14 @@ internal class UserManagementServiceGrpcTest {
     @Test
     fun testCreateUserWithCreateFailure() {
         val userid = UUID.randomUUID()
-        val grpcReq = createUserRequest { password = "passwd"; email = "joe@gmail.com"; userId=uuidToUuid(userid) }
+        val request = createUserRequest { password = "passwd"; email = "joe@gmail.com"; userId=uuidToUuid(userid) }
         every { validator.validateGrpcRequest_createUser(any()) } just Runs
 
         coEvery { userService.createUser(any(), any()) } returns Result.failure(Status.INTERNAL.asRuntimeException())
 
         assertThrows<StatusRuntimeException> {
             runBlocking {
-                service.createUser(grpcReq)
+                service.createUser(request)
             }
         }
     }
@@ -78,7 +76,7 @@ internal class UserManagementServiceGrpcTest {
     @Test
     fun testCreateUser() {
         val userid = UUID.randomUUID()
-        val grpcReq = createUserRequest { password = "passwd"; email = "joe@gmail.com"; userId=uuidToUuid(userid) }
+        val request = createUserRequest { password = "passwd"; email = "joe@gmail.com"; userId=uuidToUuid(userid) }
         val user = mockk<User>()
         every { validator.validateGrpcRequest_createUser(any()) } just Runs
 
@@ -89,7 +87,7 @@ internal class UserManagementServiceGrpcTest {
         every { messagingDao.sendEvent(any(), any()) } returns CompletableFuture.completedFuture(null)
 
         runBlocking {
-            service.createUser(grpcReq)
+            service.createUser(request)
         }
 
         coVerify {
@@ -103,32 +101,32 @@ internal class UserManagementServiceGrpcTest {
 
     @Test
     fun testVerifyCredentialsWithValidationFailure() {
-        val grpcReq = verifyCredentialsRequest {}
+        val request = verifyCredentialsRequest {}
         every { validator.validateGrpcRequest_VerifyCredentials(any()) } throws Status.INVALID_ARGUMENT.asRuntimeException()
 
         assertThrows<StatusRuntimeException> {
             runBlocking {
-                service.verifyCredentials(grpcReq)
+                service.verifyCredentials(request)
             }
         }
     }
 
     @Test
     fun testVerifyCredentialsWithQueryFailure() {
-        val grpcReq = verifyCredentialsRequest { email = "joe@gmail.com"; password = "passwd" }
+        val request = verifyCredentialsRequest { email = "joe@gmail.com"; password = "passwd" }
         every { validator.validateGrpcRequest_VerifyCredentials(any()) } just Runs
         coEvery { userService.verifyCredentials(any(), any()) } returns Result.failure(Status.INTERNAL.asRuntimeException())
 
         assertThrows<StatusRuntimeException> {
             runBlocking {
-                service.verifyCredentials(grpcReq)
+                service.verifyCredentials(request)
             }
         }
     }
 
     @Test
     fun testVerifyCredentials() {
-        val grpcReq = verifyCredentialsRequest { email = "joe@gmail.com"; password = "passwd" }
+        val request = verifyCredentialsRequest { email = "joe@gmail.com"; password = "passwd" }
         every { validator.validateGrpcRequest_VerifyCredentials(any()) } just Runs
 
         val userid = UUID.randomUUID()
@@ -140,7 +138,7 @@ internal class UserManagementServiceGrpcTest {
         every { mapper.mapResponseVerifyCredentials(any()) } returns response
 
         val result = runBlocking {
-            service.verifyCredentials(grpcReq)
+            service.verifyCredentials(request)
         }
 
         assertEquals(userid.toString(), result.userId.value)
@@ -148,11 +146,11 @@ internal class UserManagementServiceGrpcTest {
 
     @Test
     fun testGetUserProfileWithValidationFailure() {
-        val grpcReq = getUserProfileRequest {}
+        val request = getUserProfileRequest {}
         every { validator.validateGrpcRequest_getUserProfile(any()) } throws Status.INVALID_ARGUMENT.asRuntimeException()
         assertThrows<StatusRuntimeException> {
             runBlocking {
-                service.getUserProfile(grpcReq)
+                service.getUserProfile(request)
             }
         }
     }
@@ -160,7 +158,7 @@ internal class UserManagementServiceGrpcTest {
     @Test
     fun testGetUserProfileWithQueryFailure() {
         val userId = UUID.randomUUID()
-        val grpcReq = getUserProfileRequest {
+        val request = getUserProfileRequest {
             userIds.add(uuidToUuid(userId))
         }
         every { validator.validateGrpcRequest_getUserProfile(any()) } just Runs
@@ -170,7 +168,7 @@ internal class UserManagementServiceGrpcTest {
 
         assertThrows<StatusRuntimeException> {
             runBlocking {
-                service.getUserProfile(grpcReq)
+                service.getUserProfile(request)
             }
         }
     }
@@ -178,7 +176,7 @@ internal class UserManagementServiceGrpcTest {
     @Test
     fun testGetUserProfile() {
         val userid = UUID.randomUUID()
-        val grpcReq = getUserProfileRequest {
+        val request = getUserProfileRequest {
             userIds.add(uuidToUuid(userid))
         }
 
@@ -194,7 +192,7 @@ internal class UserManagementServiceGrpcTest {
             userService.getUserProfile(any())
         } returns Result.success(users)
         val result = runBlocking {
-            service.getUserProfile(grpcReq)
+            service.getUserProfile(request)
         }
         assertEquals(1, result.profilesCount)
     }
