@@ -10,7 +10,10 @@ import com.killrvideo.service.video.dto.UserVideo
 import com.killrvideo.service.video.dto.Video
 import com.killrvideo.service.video.request.GetLatestVideoPreviewsRequestData
 import com.killrvideo.service.video.request.GetUserVideoPreviewsRequestData
-import com.killrvideo.utils.GrpcMappingUtils.*
+import com.killrvideo.utils.GrpcMappingUtils.fromUuid
+import com.killrvideo.utils.GrpcMappingUtils.instantToTimeStamp
+import com.killrvideo.utils.GrpcMappingUtils.timestampToInstant
+import com.killrvideo.utils.GrpcMappingUtils.uuidToUuid
 import killrvideo.video_catalog.*
 import killrvideo.video_catalog.VideoCatalogServiceOuterClass.*
 import killrvideo.video_catalog.events.VideoCatalogEvents.YouTubeVideoAdded

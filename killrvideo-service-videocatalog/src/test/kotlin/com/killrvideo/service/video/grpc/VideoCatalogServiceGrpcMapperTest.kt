@@ -29,8 +29,8 @@ internal class VideoCatalogServiceGrpcMapperTest {
     fun testMapSubmitYouTubeVideoRequestAsVideo() {
         val v = video()
         val request = submitYouTubeVideoRequest {
-            videoId = uuidToUuid(v.videoid)
-            userId = uuidToUuid(v.userid)
+            videoId = uuidToUuid(v.videoid!!)
+            userId = uuidToUuid(v.userid!!)
             name = v.name!!
             description = v.description!!
             youTubeVideoId = v.location!!

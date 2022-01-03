@@ -269,7 +269,7 @@ internal class VideoCatalogServiceGrpcTest {
 
     private fun createGetVideoPreviewsRequest(vararg videoids: UUID): GetVideoPreviewsRequest =
         getVideoPreviewsRequest {
-            Arrays.stream(videoids).map { uuid: UUID? -> uuidToUuid(uuid) }
+            Arrays.stream(videoids).map { uuid: UUID -> uuidToUuid(uuid) }
                 .forEach { videoIds.add(it) }
         }
 

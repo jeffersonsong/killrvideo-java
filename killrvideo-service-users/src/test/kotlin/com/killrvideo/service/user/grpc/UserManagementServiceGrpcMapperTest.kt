@@ -19,7 +19,7 @@ internal class UserManagementServiceGrpcMapperTest {
             email = u.email!!
             firstName = u.firstname!!
             lastName = u.lastname!!
-            userId = uuidToUuid(u.userid)
+            userId = uuidToUuid(u.userid!!)
         }
         val (user, _) = request.parse()
         assertEquals(u.email, user.email)

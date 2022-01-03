@@ -53,7 +53,7 @@ open class UserManagementServiceGrpcMapper {
             .setEmail(user.email)
             .setFirstName(user.firstname)
             .setLastName(user.lastname)
-            .setUserId(uuidToUuid(user.userid))
+            .setUserId(uuidToUuid(user.userid!!))
             .setTimestamp(Timestamp.newBuilder().build())
             .build()
 

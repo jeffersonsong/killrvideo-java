@@ -4,7 +4,11 @@ import com.killrvideo.dse.dto.ResultListPage
 import com.killrvideo.service.comment.dto.Comment
 import com.killrvideo.service.comment.dto.QueryCommentByUser
 import com.killrvideo.service.comment.dto.QueryCommentByVideo
-import com.killrvideo.utils.GrpcMappingUtils.*
+import com.killrvideo.utils.GrpcMappingUtils.fromTimeUuid
+import com.killrvideo.utils.GrpcMappingUtils.fromUuid
+import com.killrvideo.utils.GrpcMappingUtils.instantToTimeStamp
+import com.killrvideo.utils.GrpcMappingUtils.uuidToTimeUuid
+import com.killrvideo.utils.GrpcMappingUtils.uuidToUuid
 import killrvideo.comments.CommentsServiceOuterClass.*
 import killrvideo.comments.events.CommentsEvents.UserCommentedOnVideo
 import killrvideo.comments.events.userCommentedOnVideo

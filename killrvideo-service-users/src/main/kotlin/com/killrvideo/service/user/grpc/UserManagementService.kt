@@ -22,7 +22,7 @@ class UserManagementService(
 
         return if (result.isSuccess) {
             val credential = result.getOrNull()
-            if (credential == null || !HashUtils.isPasswordValid(password, credential.password)) {
+            if (credential == null || credential.password == null || !HashUtils.isPasswordValid(password, credential.password!!)) {
                 val error = Status.INVALID_ARGUMENT
                     .withDescription("Email address or password are not correct").asRuntimeException()
                 Result.failure(error)

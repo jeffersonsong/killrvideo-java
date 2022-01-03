@@ -59,7 +59,7 @@ class StatisticsServiceGrpcMapper {
      */
     private fun mapVideoPlayBacktoPlayStats(v: VideoPlaybackStats): PlayStats =
         playStats {
-            videoId = uuidToUuid(v.videoid)
+            videoId = uuidToUuid(v.videoid!!)
             views = v.views ?: 0L
         }
 }

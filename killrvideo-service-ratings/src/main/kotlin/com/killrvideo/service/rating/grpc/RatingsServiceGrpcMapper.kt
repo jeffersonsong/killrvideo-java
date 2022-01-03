@@ -3,7 +3,9 @@ package com.killrvideo.service.rating.grpc
 import com.killrvideo.service.rating.dto.VideoRating
 import com.killrvideo.service.rating.dto.VideoRatingByUser
 import com.killrvideo.service.rating.request.GetUserRatingRequestData
-import com.killrvideo.utils.GrpcMappingUtils.*
+import com.killrvideo.utils.GrpcMappingUtils.fromUuid
+import com.killrvideo.utils.GrpcMappingUtils.instantToTimeStamp
+import com.killrvideo.utils.GrpcMappingUtils.uuidToUuid
 import killrvideo.ratings.RatingsServiceOuterClass.*
 import killrvideo.ratings.events.RatingsEvents.UserRatedVideo
 import killrvideo.ratings.getRatingResponse

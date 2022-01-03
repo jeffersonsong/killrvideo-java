@@ -18,9 +18,9 @@ internal class SuggestedVideosServiceGrpcMapperTest {
     fun testMapVideoAddedtoVideoDTO() {
         val v = video()
         val videoAdded = YouTubeVideoAdded.newBuilder()
-            .setVideoId(GrpcMappingUtils.uuidToUuid(v.videoid))
-            .setAddedDate(GrpcMappingUtils.instantToTimeStamp(v.addedDate))
-            .setUserId(GrpcMappingUtils.uuidToUuid(v.userid))
+            .setVideoId(GrpcMappingUtils.uuidToUuid(v.videoid!!))
+            .setAddedDate(GrpcMappingUtils.instantToTimeStamp(v.addedDate!!))
+            .setUserId(GrpcMappingUtils.uuidToUuid(v.userid!!))
             .setName(v.name)
             .addAllTags(v.tags)
             .setPreviewImageLocation(v.previewImageLocation)

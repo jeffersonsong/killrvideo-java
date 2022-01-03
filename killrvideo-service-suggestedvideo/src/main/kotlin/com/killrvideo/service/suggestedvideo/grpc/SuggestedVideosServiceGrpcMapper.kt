@@ -3,7 +3,10 @@ package com.killrvideo.service.suggestedvideo.grpc
 import com.killrvideo.dse.dto.ResultListPage
 import com.killrvideo.service.suggestedvideo.dto.Video
 import com.killrvideo.service.suggestedvideo.request.GetRelatedVideosRequestData
-import com.killrvideo.utils.GrpcMappingUtils.*
+import com.killrvideo.utils.GrpcMappingUtils.fromUuid
+import com.killrvideo.utils.GrpcMappingUtils.instantToTimeStamp
+import com.killrvideo.utils.GrpcMappingUtils.timestampToInstant
+import com.killrvideo.utils.GrpcMappingUtils.uuidToUuid
 import killrvideo.suggested_videos.SuggestedVideosService.*
 import killrvideo.suggested_videos.getRelatedVideosResponse
 import killrvideo.suggested_videos.getSuggestedForUserResponse
