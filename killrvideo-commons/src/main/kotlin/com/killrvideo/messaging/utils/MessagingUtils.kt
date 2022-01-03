@@ -2,6 +2,7 @@ package com.killrvideo.messaging.utils
 
 import com.google.protobuf.Timestamp
 import killrvideo.common.CommonEvents.ErrorEvent
+import killrvideo.common.errorEvent
 import java.util.*
 
 /**
@@ -19,20 +20,20 @@ object MessagingUtils {
      */
     @JvmStatic
     fun mapError(t: Throwable): ErrorEvent =
-        ErrorEvent.newBuilder()
-            .setErrorMessage(t.message)
-            .setErrorClassname(t.javaClass.name)
-            .setErrorStack(mergeStackTrace(t))
-            .setErrorTimestamp(Timestamp.newBuilder())
-            .build()
+        errorEvent {
+            t.message ?.let {errorMessage = it}
+            errorClassname = t.javaClass.name
+            errorStack = mergeStackTrace(t)
+            errorTimestamp = Timestamp.newBuilder().build()
+        }
 
     @JvmStatic
     fun mapCustomError(customError: String): ErrorEvent =
-        ErrorEvent.newBuilder()
-            .setErrorMessage(customError)
-            .setErrorClassname(Exception::class.java.name)
-            .setErrorTimestamp(Timestamp.newBuilder())
-            .build()
+        errorEvent {
+            errorMessage = customError
+            errorClassname = Exception::class.java.name
+            errorTimestamp = Timestamp.newBuilder().build()
+        }
 
     /**
      * Dump a stacktrace in a String,

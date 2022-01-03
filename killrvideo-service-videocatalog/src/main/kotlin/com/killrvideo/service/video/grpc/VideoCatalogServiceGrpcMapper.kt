@@ -17,6 +17,7 @@ import com.killrvideo.utils.GrpcMappingUtils.uuidToUuid
 import killrvideo.video_catalog.*
 import killrvideo.video_catalog.VideoCatalogServiceOuterClass.*
 import killrvideo.video_catalog.events.VideoCatalogEvents.YouTubeVideoAdded
+import killrvideo.video_catalog.events.youTubeVideoAdded
 import org.apache.commons.lang3.StringUtils.isNotBlank
 import org.springframework.stereotype.Component
 import java.util.*
@@ -125,19 +126,16 @@ class VideoCatalogServiceGrpcMapper {
             v.tags?.let { tags.addAll(it) }
         }
 
-    fun createYouTubeVideoAddedEvent(video: Video): YouTubeVideoAdded {
-        val builder = YouTubeVideoAdded.newBuilder()
-            .setAddedDate(Timestamp.newBuilder().build())
-
-        video.description?.let { builder.setDescription(it) }
-        video.location?.let { builder.setLocation(it) }
-        video.name?.let { builder.setName(it) }
-        video.previewImageLocation?.let { builder.setPreviewImageLocation(it) }
-        video.userid?.let { builder.setUserId(uuidToUuid(it)) }
-        video.videoid?.let { builder.setVideoId(uuidToUuid(it)) }
-
-        return builder.build()
-    }
+    fun createYouTubeVideoAddedEvent(video: Video): YouTubeVideoAdded =
+        youTubeVideoAdded {
+            addedDate = Timestamp.newBuilder().build()
+            video.description?.let { description = it }
+            video.location?.let { location = it }
+            video.name?.let { name = it }
+            video.previewImageLocation?.let { previewImageLocation = it }
+            video.userid?.let { userId = uuidToUuid(it) }
+            video.videoid?.let { videoId = uuidToUuid(it) }
+        }
 
     fun mapToGetVideoPreviewsResponse(videos: List<Video>): GetVideoPreviewsResponse =
         getVideoPreviewsResponse {

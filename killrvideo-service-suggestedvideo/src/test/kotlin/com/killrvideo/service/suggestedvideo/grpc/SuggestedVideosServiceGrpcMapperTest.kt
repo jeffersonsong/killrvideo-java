@@ -4,8 +4,12 @@ import com.killrvideo.dse.dto.ResultListPage
 import com.killrvideo.service.suggestedvideo.dto.Video
 import com.killrvideo.service.suggestedvideo.grpc.SuggestedVideosServiceGrpcMapper.GetRelatedVideosRequestExtensions.parse
 import com.killrvideo.utils.GrpcMappingUtils
+import com.killrvideo.utils.GrpcMappingUtils.instantToTimeStamp
+import com.killrvideo.utils.GrpcMappingUtils.uuidToUuid
 import killrvideo.suggested_videos.SuggestedVideosService.GetRelatedVideosRequest
+import killrvideo.suggested_videos.getRelatedVideosRequest
 import killrvideo.video_catalog.events.VideoCatalogEvents.YouTubeVideoAdded
+import killrvideo.video_catalog.events.youTubeVideoAdded
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
@@ -17,15 +21,15 @@ internal class SuggestedVideosServiceGrpcMapperTest {
     @Test
     fun testMapVideoAddedtoVideoDTO() {
         val v = video()
-        val videoAdded = YouTubeVideoAdded.newBuilder()
-            .setVideoId(GrpcMappingUtils.uuidToUuid(v.videoid!!))
-            .setAddedDate(GrpcMappingUtils.instantToTimeStamp(v.addedDate!!))
-            .setUserId(GrpcMappingUtils.uuidToUuid(v.userid!!))
-            .setName(v.name)
-            .addAllTags(v.tags)
-            .setPreviewImageLocation(v.previewImageLocation)
-            .setLocation(v.location)
-            .build()
+        val videoAdded = youTubeVideoAdded {
+            videoId = uuidToUuid(v.videoid!!)
+            addedDate = instantToTimeStamp(v.addedDate!!)
+            userId = uuidToUuid(v.userid!!)
+            name = v.name!!
+            tags.addAll(v.tags!!)
+            previewImageLocation = v.previewImageLocation!!
+            location = v.location!!
+        }
         val video = mapper.mapVideoAddedtoVideoDTO(videoAdded)
         assertEquals(v.videoid, video.videoid)
         assertEquals(v.userid, video.userid)
@@ -50,11 +54,11 @@ internal class SuggestedVideosServiceGrpcMapperTest {
     @Test
     fun testParseGetRelatedVideosRequestData() {
         val videoid = UUID.randomUUID()
-        val request = GetRelatedVideosRequest.newBuilder()
-            .setVideoId(GrpcMappingUtils.uuidToUuid(videoid))
-            .setPageSize(2)
-            .setPagingState("Paging state")
-            .build()
+        val request = getRelatedVideosRequest {
+            videoId = uuidToUuid(videoid)
+            pageSize = 2
+            pagingState = "Paging state"
+        }
         val pojo = request.parse()
         assertEquals(videoid, pojo.videoid)
         assertEquals(2, pojo.pageSize)

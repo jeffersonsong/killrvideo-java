@@ -1,9 +1,12 @@
 package com.killrvideo.service.suggestedvideo.grpc
 
 import com.killrvideo.utils.GrpcMappingUtils
+import com.killrvideo.utils.GrpcMappingUtils.randomUuid
 import io.grpc.StatusRuntimeException
 import killrvideo.suggested_videos.SuggestedVideosService.GetRelatedVideosRequest
 import killrvideo.suggested_videos.SuggestedVideosService.GetSuggestedForUserRequest
+import killrvideo.suggested_videos.getRelatedVideosRequest
+import killrvideo.suggested_videos.getSuggestedForUserRequest
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
@@ -12,9 +15,9 @@ internal class SuggestedVideosServiceGrpcValidatorTest {
 
     @Test
     fun testValidateGrpcRequest_getRelatedVideo_Success() {
-        val request = GetRelatedVideosRequest.newBuilder()
-            .setVideoId(GrpcMappingUtils.randomUuid())
-            .build()
+        val request = getRelatedVideosRequest {
+            videoId = randomUuid()
+        }
         validator.validateGrpcRequest_getRelatedVideo(request)
     }
 
@@ -28,9 +31,9 @@ internal class SuggestedVideosServiceGrpcValidatorTest {
 
     @Test
     fun testValidateGrpcRequest_getUserSuggestedVideo_Success() {
-        val request = GetSuggestedForUserRequest.newBuilder()
-            .setUserId(GrpcMappingUtils.randomUuid())
-            .build()
+        val request = getSuggestedForUserRequest {
+            userId = randomUuid()
+        }
         validator.validateGrpcRequest_getUserSuggestedVideo(request)
     }
 

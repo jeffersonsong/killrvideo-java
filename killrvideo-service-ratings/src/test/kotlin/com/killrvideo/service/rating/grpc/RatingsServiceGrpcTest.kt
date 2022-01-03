@@ -12,13 +12,12 @@ import io.mockk.*
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
 import killrvideo.ratings.*
-import killrvideo.ratings.events.RatingsEvents.UserRatedVideo
+import killrvideo.ratings.events.userRatedVideo
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.springframework.beans.factory.annotation.Value
 import java.util.*
 import java.util.concurrent.CompletableFuture
 
@@ -78,7 +77,7 @@ internal class RatingsServiceGrpcTest {
         }
         every {validator.validateGrpcRequest_RateVideo(any()) } just Runs
         val rating = mockk<VideoRatingByUser>()
-        val event = UserRatedVideo.getDefaultInstance()
+        val event = userRatedVideo {}
         every { mapper.createUserRatedVideoEvent(any()) } returns event
         coEvery {ratingRepository.rateVideo(any()) } returns rating
         every {messagingDao.sendEvent(any(), any())} returns

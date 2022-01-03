@@ -2,8 +2,10 @@ package com.killrvideo.utils
 
 import com.datastax.oss.driver.api.core.uuid.Uuids
 import com.google.protobuf.Timestamp
+import com.google.protobuf.timestamp
 import killrvideo.common.CommonTypes
 import killrvideo.common.CommonTypes.TimeUuid
+import killrvideo.common.timeUuid
 import java.time.Instant
 import java.util.*
 
@@ -17,13 +19,17 @@ object GrpcMappingUtils {
      * Conversions.
      */
     fun uuidToTimeUuid(uuid: UUID): TimeUuid =
-        TimeUuid.newBuilder().setValue(uuid.toString()).build()
+        timeUuid {
+            value = uuid.toString()
+        }
 
     fun fromTimeUuid(timeUuid: TimeUuid): UUID =
         UUID.fromString(timeUuid.value)
 
     fun uuidToUuid(uuid: UUID): CommonTypes.Uuid =
-        CommonTypes.Uuid.newBuilder().setValue(uuid.toString()).build()
+        killrvideo.common.uuid {
+            value = uuid.toString()
+        }
 
     fun fromUuid(uuid: CommonTypes.Uuid): UUID =
         UUID.fromString(uuid.value)
@@ -50,5 +56,8 @@ object GrpcMappingUtils {
 
     @JvmStatic
     fun instantToTimeStamp(instant: Instant): Timestamp =
-        Timestamp.newBuilder().setSeconds(instant.epochSecond).setNanos(instant.nano).build()
+        timestamp {
+            seconds = instant.epochSecond
+            nanos = instant.nano
+        }
 }

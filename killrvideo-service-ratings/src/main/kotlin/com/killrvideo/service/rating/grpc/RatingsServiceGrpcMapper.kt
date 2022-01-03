@@ -8,6 +8,7 @@ import com.killrvideo.utils.GrpcMappingUtils.instantToTimeStamp
 import com.killrvideo.utils.GrpcMappingUtils.uuidToUuid
 import killrvideo.ratings.RatingsServiceOuterClass.*
 import killrvideo.ratings.events.RatingsEvents.UserRatedVideo
+import killrvideo.ratings.events.userRatedVideo
 import killrvideo.ratings.getRatingResponse
 import killrvideo.ratings.getUserRatingResponse
 import org.springframework.stereotype.Component
@@ -58,14 +59,12 @@ class RatingsServiceGrpcMapper {
         }
 
 
-    fun createUserRatedVideoEvent(rating: VideoRatingByUser): UserRatedVideo {
-        val builder = UserRatedVideo.newBuilder()
-            .setRating(rating.rating)
-            .setRatingTimestamp(instantToTimeStamp(Instant.now()))
+    fun createUserRatedVideoEvent(_rating: VideoRatingByUser): UserRatedVideo =
+        userRatedVideo {
+            rating = _rating.rating
+            ratingTimestamp = instantToTimeStamp(Instant.now())
 
-        rating.userid?.let { builder.setUserId(uuidToUuid(it)) }
-        rating.videoid?.let { builder.setVideoId(uuidToUuid(it)) }
-
-        return builder.build()
-    }
+            _rating.userid?.let { userId = uuidToUuid(it) }
+            _rating.videoid?.let { videoId = uuidToUuid(it) }
+        }
 }

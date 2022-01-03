@@ -7,6 +7,7 @@ import com.killrvideo.utils.GrpcMappingUtils.uuidToUuid
 import com.killrvideo.utils.HashUtils
 import killrvideo.user_management.UserManagementServiceOuterClass.*
 import killrvideo.user_management.events.UserManagementEvents.*
+import killrvideo.user_management.events.userCreated
 import killrvideo.user_management.getUserProfileResponse
 import killrvideo.user_management.userProfile
 import killrvideo.user_management.verifyCredentialsResponse
@@ -49,13 +50,13 @@ open class UserManagementServiceGrpcMapper {
         }
 
     fun createUserCreatedEvent(user: User) =
-        UserCreated.newBuilder()
-            .setEmail(user.email)
-            .setFirstName(user.firstname)
-            .setLastName(user.lastname)
-            .setUserId(uuidToUuid(user.userid!!))
-            .setTimestamp(Timestamp.newBuilder().build())
-            .build()
+        userCreated {
+            user.email?.let {email = it}
+            user.firstname?.let {firstName = it}
+            user.lastname?.let {lastName = it}
+            user.userid?.let {userId = uuidToUuid(it)}
+            timestamp = Timestamp.newBuilder().build()
+        }
 
     fun buildGetUserProfileResponse(users: List<User>) =
         getUserProfileResponse {
