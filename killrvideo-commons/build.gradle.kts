@@ -76,9 +76,6 @@ dependencies {
     testImplementation(Deps.Mockito.core)
 
     // Annotation processors
-    //annotationProcessor(Deps.lombok)
-    //annotationProcessor(Deps.Datastax.mapperProcessor)
-    //annotationProcessor(Deps.Apache.Tinkerpop.tinkergraph)
     kapt(Deps.Apache.Tinkerpop.tinkergraph)
 }
 
