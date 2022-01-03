@@ -1,6 +1,5 @@
 package com.killrvideo.dse.dto
 
-import lombok.Getter
 import org.apache.commons.lang3.StringUtils.isNotBlank
 import java.time.Instant
 import java.time.ZoneId

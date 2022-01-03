@@ -58,8 +58,6 @@ object Deps {
         val kotlinStub = "io.grpc:grpc-kotlin-stub:$grpcKotlinVersion"
     }
 
-    const val lombok = "org.projectlombok:lombok:1.18.20"
-
     const val etcd4j = "com.xqbase:etcd4j:1.2"
     const val retry4j = "com.evanlennick:retry4j:0.14.0"
 

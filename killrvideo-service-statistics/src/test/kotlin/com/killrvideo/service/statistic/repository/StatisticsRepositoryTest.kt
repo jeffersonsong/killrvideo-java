@@ -4,7 +4,7 @@ import com.datastax.oss.driver.api.core.MappedAsyncPagingIterable
 import com.killrvideo.service.statistic.dao.VideoPlaybackStatsDao
 import com.killrvideo.service.statistic.dao.VideoPlaybackStatsMapper
 import com.killrvideo.service.statistic.dto.VideoPlaybackStats
-import com.killrvideo.utils.test.CassandraTestUtils.mockMappedAsyncPagingIterable
+import com.killrvideo.utils.test.CassandraTestUtilsKt.mockMappedAsyncPagingIterable
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify

@@ -68,9 +68,6 @@ dependencies {
     // Transport Guava Bus (In Memory)
     implementation(Deps.Google.guava)
 
-    // Java Bean
-    compileOnly(Deps.lombok)
-
     // Junit5 + Spring
     testImplementation(Deps.Junit.jupiter)
     testImplementation(Deps.Mockito.core)
