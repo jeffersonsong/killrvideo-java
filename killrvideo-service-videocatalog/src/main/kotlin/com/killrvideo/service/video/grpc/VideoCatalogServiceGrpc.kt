@@ -30,23 +30,24 @@ class VideoCatalogServiceGrpc(
     private val videoCatalogRepository: VideoCatalogRepository,
     private val messagingDao: MessagingDao,
     private val validator: VideoCatalogServiceGrpcValidator,
-    private val mapper: VideoCatalogServiceGrpcMapper
+    private val mapper: VideoCatalogServiceGrpcMapper,
+    @Value("\${killrvideo.discovery.services.videoCatalog : VideoCatalogService}")
+    val serviceKey: String,
+    @Value("\${killrvideo.messaging.destinations.youTubeVideoAdded : topic-kv-videoCreation}")
+    private val topicVideoCreated: String
 ) : VideoCatalogServiceGrpcKt.VideoCatalogServiceCoroutineImplBase() {
     private val logger = KotlinLogging.logger {}
 
     /**
      * Send new videos.
      */
-    @Value("\${killrvideo.messaging.destinations.youTubeVideoAdded : topic-kv-videoCreation}")
-    private val topicVideoCreated: String? = null
 
     /**
      * Getter accessor for attribute 'serviceKey'.
      *
      * @return current value of 'serviceKey'
      */
-    @Value("\${killrvideo.discovery.services.videoCatalog : VideoCatalogService}")
-    val serviceKey: String? = null
+
 
     /**
      * {@inheritDoc}

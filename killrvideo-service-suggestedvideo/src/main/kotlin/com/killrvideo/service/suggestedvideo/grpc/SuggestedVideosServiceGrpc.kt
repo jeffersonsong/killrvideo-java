@@ -20,7 +20,9 @@ import java.time.Instant
 class SuggestedVideosServiceGrpc(
     private val suggestedVideosRepository: SuggestedVideosRepository,
     private val validator: SuggestedVideosServiceGrpcValidator,
-    private val mapper: SuggestedVideosServiceGrpcMapper
+    private val mapper: SuggestedVideosServiceGrpcMapper,
+    @Value("\${killrvideo.discovery.services.suggestedVideo : SuggestedVideoService}")
+    val serviceKey: String
 ) : SuggestedVideoServiceGrpcKt.SuggestedVideoServiceCoroutineImplBase() {
     private val logger = KotlinLogging.logger { }
     /**
@@ -29,8 +31,7 @@ class SuggestedVideosServiceGrpc(
      * @return
      * current value of 'serviceKey'
      */
-    @Value("\${killrvideo.discovery.services.suggestedVideo : SuggestedVideoService}")
-    val serviceKey: String? = null
+
 
     /** {@inheritDoc}  */
     override suspend fun getRelatedVideos(grpcReq: GetRelatedVideosRequest): GetRelatedVideosResponse {

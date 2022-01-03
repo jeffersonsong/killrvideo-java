@@ -38,6 +38,8 @@ class CommentsServiceGrpcTest {
 
     @MockK
     private lateinit var mapper: CommentsServiceGrpcMapper
+    private val serviceKey = "CommentsService"
+    private val messageDestination = "topic-kv-commentCreation"
 
     @BeforeEach
     fun setUp() = MockKAnnotations.init(this, relaxUnitFun = true)

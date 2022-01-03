@@ -17,6 +17,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.springframework.beans.factory.annotation.Value
 
 internal class SearchServiceGrpcTest {
     @InjectMockKs
@@ -30,6 +31,7 @@ internal class SearchServiceGrpcTest {
 
     @MockK
     private lateinit var mapper: SearchServiceGrpcMapper
+    private val serviceKey = "SearchService"
 
     @BeforeEach
     fun setUp() = MockKAnnotations.init(this, relaxUnitFun = true)

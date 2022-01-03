@@ -19,7 +19,9 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.springframework.beans.factory.annotation.Value
 import java.util.*
+import java.util.concurrent.CompletableFuture
 
 internal class UserManagementServiceGrpcTest {
     @InjectMockKs
@@ -36,6 +38,9 @@ internal class UserManagementServiceGrpcTest {
 
     @MockK
     private lateinit var mapper: UserManagementServiceGrpcMapper
+
+    private val topicUserCreated = "topic-kv-userCreation"
+    val serviceKey = "UserManagementService"
 
     @BeforeEach
     fun setUp() = MockKAnnotations.init(this, relaxUnitFun = true)
@@ -81,7 +86,7 @@ internal class UserManagementServiceGrpcTest {
         every { mapper.createUserCreatedEvent(any()) } returns event
 
         coEvery { userService.createUser(any(), any()) } returns Result.success(true)
-        every { messagingDao.sendEvent(any(), any()) } returns null
+        every { messagingDao.sendEvent(any(), any()) } returns CompletableFuture.completedFuture(null)
 
         runBlocking {
             service.createUser(grpcReq)

@@ -18,6 +18,7 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.springframework.beans.factory.annotation.Value
 import java.util.*
 
 internal class StatisticsServiceGrpcTest {
@@ -32,6 +33,8 @@ internal class StatisticsServiceGrpcTest {
 
     @MockK
     private lateinit var mapper: StatisticsServiceGrpcMapper
+
+    val serviceKey = "StatisticsService"
 
     @BeforeEach
     fun setUp() = MockKAnnotations.init(this, relaxUnitFun = true)

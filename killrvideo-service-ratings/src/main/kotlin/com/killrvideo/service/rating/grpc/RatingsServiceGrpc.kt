@@ -29,7 +29,11 @@ class RatingsServiceGrpc(
     private val ratingRepository: RatingRepository,
     private val messagingDao: MessagingDao,
     private val validator: RatingsServiceGrpcValidator,
-    private val mapper: RatingsServiceGrpcMapper
+    private val mapper: RatingsServiceGrpcMapper,
+    @Value("\${killrvideo.discovery.services.rating : RatingsService}")
+    val serviceKey: String,
+    @Value("\${killrvideo.messaging.kafka.topics.videoRated : topic-kv-videoRating}")
+    private val topicvideoRated: String
 ) : RatingsServiceGrpcKt.RatingsServiceCoroutineImplBase() {
     private val logger = KotlinLogging.logger {}
 
@@ -38,11 +42,7 @@ class RatingsServiceGrpc(
      *
      * @return current value of 'serviceKey'
      */
-    @Value("\${killrvideo.discovery.services.rating : RatingsService}")
-    val serviceKey: String? = null
 
-    @Value("\${killrvideo.messaging.kafka.topics.videoRated : topic-kv-videoRating}")
-    private val topicvideoRated: String? = null
 
     /**
      * {@inheritDoc}

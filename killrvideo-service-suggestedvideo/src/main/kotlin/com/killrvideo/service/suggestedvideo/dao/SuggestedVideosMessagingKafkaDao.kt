@@ -27,10 +27,15 @@ class SuggestedVideosMessagingKafkaDao(
     // --------------------------------------------------------------------------
     // -------------------------- User Creation ---------------------------------
     // --------------------------------------------------------------------------
-    @Qualifier("kafka.consumer.userCreating") private val consumerUserCreatedProtobuf: KafkaConsumer<String, ByteArray>
-) : SuggestedVideosMessagingDaoSupport(suggestedVideosRepository, mapper) {
+    @Qualifier("kafka.consumer.userCreating") private val consumerUserCreatedProtobuf: KafkaConsumer<String, ByteArray>,
     @Value("\${killrvideo.messaging.destination.userCreated : topic-kv-userCreation}")
-    private val topicUserCreated: String? = null
+    private val topicUserCreated: String,
+    @Value("\${killrvideo.messaging.destination.youTubeVideoAdded : topic-kv-videoCreation}")
+    private val topicVideoCreated: String,
+    @Value("\${killrvideo.messaging.destination.videoRated : topic-kv-videoRating}")
+    private val topicVideoRated: String
+) : SuggestedVideosMessagingDaoSupport(suggestedVideosRepository, mapper) {
+
     @PostConstruct
     fun registerConsumerUserCreated() {
         LOGGER.info("Start consuming events from topic '{}' ..", topicUserCreated)
@@ -51,8 +56,7 @@ class SuggestedVideosMessagingKafkaDao(
     // --------------------------------------------------------------------------
     // -------------------------- Video Creation --------------------------------
     // --------------------------------------------------------------------------
-    @Value("\${killrvideo.messaging.destination.youTubeVideoAdded : topic-kv-videoCreation}")
-    private val topicVideoCreated: String? = null
+
 
     @Inject
     @Qualifier("kafka.consumer.videoCreating")
@@ -78,8 +82,7 @@ class SuggestedVideosMessagingKafkaDao(
     // --------------------------------------------------------------------------
     // -------------------------- Video Rating --------------------------------
     // --------------------------------------------------------------------------
-    @Value("\${killrvideo.messaging.destination.videoRated : topic-kv-videoRating}")
-    private val topicVideoRated: String? = null
+
 
     @Inject
     @Qualifier("kafka.consumer.videoRating")

@@ -22,6 +22,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.springframework.beans.factory.annotation.Value
 import java.util.*
 import java.util.concurrent.CompletableFuture
 
@@ -40,6 +41,9 @@ internal class VideoCatalogServiceGrpcTest {
 
     @MockK
     private lateinit var mapper: VideoCatalogServiceGrpcMapper
+
+    val serviceKey ="VideoCatalogService"
+    private val topicVideoCreated = "topic-kv-videoCreation"
 
     @BeforeEach
     fun setUp() = MockKAnnotations.init(this, relaxUnitFun = true)

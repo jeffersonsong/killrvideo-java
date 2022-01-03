@@ -18,6 +18,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.springframework.beans.factory.annotation.Value
 import java.util.*
 import java.util.concurrent.CompletableFuture
 
@@ -36,6 +37,8 @@ internal class RatingsServiceGrpcTest {
 
     @MockK
     private lateinit var mapper: RatingsServiceGrpcMapper
+    private val serviceKey = "RatingsService";
+    private val topicvideoRated = "topic-kv-videoRating"
 
     @BeforeEach
     fun setUp() = MockKAnnotations.init(this, relaxUnitFun = true)

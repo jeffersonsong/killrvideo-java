@@ -43,7 +43,7 @@ class SuggestedVideosRepository(
     private val session: CqlSession, pageableQueryFactory: PageableQueryFactory, mapper: VideoMapper,
     @Qualifier("suggestedVideoRowMapper") videoRowMapper: VideoRowMapper,
     @Inject
-    private val traversalSource: KillrVideoTraversalSource
+    private val traversalSource: KillrVideoTraversalSource,
 ) {
     private val videoDao: VideoDao = mapper.videoDao
 
@@ -59,7 +59,7 @@ class SuggestedVideosRepository(
      * https://github.com/spring-projects/spring-boot/issues/501
      */
     @Value("#{'\${killrvideo.search.ignoredWords}'.split(',')}")
-    private val ignoredWords: Set<kotlin.String> = HashSet()
+    private var ignoredWords: Set<kotlin.String> = HashSet()
 
     init {
         findRelatedVideos = pageableQueryFactory.newPageableQuery(

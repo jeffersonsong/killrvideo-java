@@ -20,7 +20,9 @@ import java.time.Instant
 class SearchServiceGrpc(
     private val searchRepository: SearchRepository,
     private val validator: SearchServiceGrpcValidator,
-    private val mapper: SearchServiceGrpcMapper
+    private val mapper: SearchServiceGrpcMapper,
+    @Value("\${killrvideo.discovery.services.search : SearchService}")
+    val serviceKey: String
 ) : SearchServiceGrpcKt.SearchServiceCoroutineImplBase() {
     private val logger = KotlinLogging.logger {}
     /**
@@ -28,8 +30,7 @@ class SearchServiceGrpc(
      *
      * @return current value of 'serviceKey'
      */
-    @Value("\${killrvideo.discovery.services.search : SearchService}")
-    val serviceKey: String? = null
+
 
     /**
      * {@inheritDoc}

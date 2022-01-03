@@ -28,19 +28,13 @@ class CommentsServiceGrpc(
     private val commentRepository: CommentRepository,
     private val messagingDao: MessagingDao,
     private val validator: CommentsServiceGrpcValidator,
-    private val mapper: CommentsServiceGrpcMapper
+    private val mapper: CommentsServiceGrpcMapper,
+    @Value("\${killrvideo.discovery.services.comment : CommentsService}")
+    val serviceKey: String,
+    @Value("\${killrvideo.messaging.destinations.commentCreated : topic-kv-commentCreation}")
+    private val messageDestination: String
 ) : CommentsServiceGrpcKt.CommentsServiceCoroutineImplBase() {
     private val logger = KotlinLogging.logger {}
-    /**
-     * Getter accessor for attribute 'serviceKey'.
-     *
-     * @return current value of 'serviceKey'
-     */
-    @Value("\${killrvideo.discovery.services.comment : CommentsService}")
-    val serviceKey: String? = null
-
-    @Value("\${killrvideo.messaging.destinations.commentCreated : topic-kv-commentCreation}")
-    private val messageDestination: String? = null
 
     /**
      * {@inheritDoc}

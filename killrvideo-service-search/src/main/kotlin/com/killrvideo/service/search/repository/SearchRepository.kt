@@ -46,7 +46,7 @@ class SearchRepository(
      * https://github.com/spring-projects/spring-boot/issues/501
      */
     @Value("#{'\${killrvideo.search.ignoredWords}'.split(',')}")
-    private val ignoredWords: Set<String> = HashSet()
+    private var ignoredWords: Set<String> = HashSet()
 
     init {
         // Statement for tags

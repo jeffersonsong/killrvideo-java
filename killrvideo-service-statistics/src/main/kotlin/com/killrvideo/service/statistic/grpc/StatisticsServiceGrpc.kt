@@ -21,7 +21,9 @@ import java.time.Instant
 class StatisticsServiceGrpc(
     private val statisticsRepository: StatisticsRepository,
     private val validator: StatisticsServiceGrpcValidator,
-    private val mapper: StatisticsServiceGrpcMapper
+    private val mapper: StatisticsServiceGrpcMapper,
+    @Value("\${killrvideo.discovery.services.statistic : StatisticsService}")
+    val serviceKey: String
 ) : StatisticsServiceGrpcKt.StatisticsServiceCoroutineImplBase() {
     private val logger = KotlinLogging.logger {}
 
@@ -31,8 +33,6 @@ class StatisticsServiceGrpc(
      * @return
      * current value of 'serviceKey'
      */
-    @Value("\${killrvideo.discovery.services.statistic : StatisticsService}")
-    val serviceKey: String? = null
 
     /** {@inheritDoc}  */
     override suspend fun recordPlaybackStarted(request: RecordPlaybackStartedRequest): RecordPlaybackStartedResponse {

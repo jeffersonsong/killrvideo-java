@@ -16,6 +16,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.springframework.beans.factory.annotation.Value
 import java.util.*
 
 internal class SuggestedVideosServiceGrpcTest {
@@ -30,6 +31,7 @@ internal class SuggestedVideosServiceGrpcTest {
 
     @MockK
     private lateinit var mapper: SuggestedVideosServiceGrpcMapper
+    val serviceKey = "SuggestedVideoService"
 
     @BeforeEach
     fun setUp() = MockKAnnotations.init(this)

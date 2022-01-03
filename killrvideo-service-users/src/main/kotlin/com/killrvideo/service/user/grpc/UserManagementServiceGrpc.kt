@@ -22,20 +22,20 @@ class UserManagementServiceGrpc(
     private val userService: UserManagementService,
     private val messagingDao: MessagingDao,
     private val validator: UserManagementServiceGrpcValidator,
-    private val mapper: UserManagementServiceGrpcMapper
+    private val mapper: UserManagementServiceGrpcMapper,
+    @Value("\${killrvideo.messaging.destinations.userCreated : topic-kv-userCreation}")
+    private val topicUserCreated: String,
+    @Value("\${killrvideo.discovery.services.user : UserManagementService}")
+    val serviceKey: String
 ) : UserManagementServiceGrpcKt.UserManagementServiceCoroutineImplBase() {
     private val logger = KotlinLogging.logger {}
-
-    @Value("\${killrvideo.messaging.destinations.userCreated : topic-kv-userCreation}")
-    private val topicUserCreated: String? = null
 
     /**
      * Getter accessor for attribute 'serviceKey'.
      *
      * @return current value of 'serviceKey'
      */
-    @Value("\${killrvideo.discovery.services.user : UserManagementService}")
-    val serviceKey: String? = null
+
 
     override suspend fun createUser(request: CreateUserRequest): CreateUserResponse {
         // Validate Parameters
