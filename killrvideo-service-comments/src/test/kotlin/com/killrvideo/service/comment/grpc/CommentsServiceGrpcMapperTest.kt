@@ -48,7 +48,7 @@ internal class CommentsServiceGrpcMapperTest {
     @Test
     fun testMapFromDseVideoCommentToGrpcResponse() {
         val comment = comment()
-        val comments = ResultListPage(listOf(comment), Optional.empty())
+        val comments = ResultListPage(listOf(comment), null)
         val proto = mapper.mapFromDseVideoCommentToGrpcResponse(comments)
         assertEquals(comment.videoid.toString(), proto.videoId.value)
         assertEquals(1, proto.commentsCount)
@@ -57,7 +57,7 @@ internal class CommentsServiceGrpcMapperTest {
     @Test
     fun testMapFromDseUserCommentToGrpcResponse() {
         val comment = comment()
-        val comments = ResultListPage(listOf(comment), Optional.empty())
+        val comments = ResultListPage(listOf(comment), null)
         val proto = mapper.mapFromDseUserCommentToGrpcResponse(comments)
         assertEquals(comment.userid.toString(), proto.userId.value)
         assertEquals(1, proto.commentsCount)

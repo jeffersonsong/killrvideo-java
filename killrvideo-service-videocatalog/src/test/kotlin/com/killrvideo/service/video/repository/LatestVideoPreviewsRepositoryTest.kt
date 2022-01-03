@@ -42,7 +42,7 @@ internal class LatestVideoPreviewsRepositoryTest {
     private fun resultListPage(latestVideo: LatestVideo, pagingState: String): ResultListPage<LatestVideo> =
         ResultListPage(
             listOf(latestVideo),
-            Optional.of(pagingState)
+            pagingState
         )
 
     @Test

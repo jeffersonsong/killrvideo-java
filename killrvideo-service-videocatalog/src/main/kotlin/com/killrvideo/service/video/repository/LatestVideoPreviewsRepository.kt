@@ -27,8 +27,8 @@ class LatestVideoPreviewsRepository(
     pageableQueryFactory: PageableQueryFactory,
     latestVideoRowMapper: LatestVideoRowMapper
 ) {
-    private val findLatestVideoPreview_startingPoint: PageableQuery<LatestVideo?>
-    private val findLatestVideoPreview_noStartingPoint: PageableQuery<LatestVideo?>
+    private val findLatestVideoPreview_startingPoint: PageableQuery<LatestVideo>
+    private val findLatestVideoPreview_noStartingPoint: PageableQuery<LatestVideo>
 
     init {
         findLatestVideoPreview_startingPoint = pageableQueryFactory.newPageableQuery(
@@ -130,19 +130,19 @@ class LatestVideoPreviewsRepository(
      */
     private fun loadCurrentPage(
         request: GetLatestVideoPreviewsForGivenDateRequestData
-    ): CompletableFuture<ResultListPage<LatestVideo?>> {
+    ): CompletableFuture<ResultListPage<LatestVideo>> {
         return if (request.startDate != null && request.startVideoId != null) {
             findLatestVideoPreview_startingPoint.queryNext(
-                Optional.of(request.pageSize),
-                Optional.ofNullable(request.pagingState),
+                request.pageSize,
+                request.pagingState,
                 request.yyyymmdd,
                 request.startDate,
                 request.startVideoId
             )
         } else {
             findLatestVideoPreview_noStartingPoint.queryNext(
-                Optional.of(request.pageSize),
-                Optional.ofNullable(request.pagingState),
+                request.pageSize,
+                request.pagingState,
                 request.yyyymmdd
             )
         }
@@ -154,11 +154,11 @@ class LatestVideoPreviewsRepository(
 
     private fun nextState(
         cpState: CustomPagingState,
-        pagingState: Optional<String>,
+        pagingState: String?,
         gotEnough: Boolean
     ): CustomPagingState {
         return if (gotEnough)
-            cpState.changeCassandraPagingState(pagingState.orElse(""))
+            cpState.changeCassandraPagingState(pagingState ?: "")
         else
             cpState.incCurrentBucketIndex()
     }

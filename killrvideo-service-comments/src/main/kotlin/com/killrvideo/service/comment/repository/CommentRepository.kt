@@ -28,8 +28,8 @@ class CommentRepository(
 ) {
     private val commentByUserDao: CommentByUserDao = mapper.commentByUserDao
     private val commentByVideoDao: CommentByVideoDao = mapper.commentByVideoDao
-    private val findCommentsByUser: PageableQuery<Comment?>
-    private val findCommentsByVideo: PageableQuery<Comment?>
+    private val findCommentsByUser: PageableQuery<Comment>
+    private val findCommentsByVideo: PageableQuery<Comment>
 
     init {
         findCommentsByUser = pageableQueryFactory.newPageableQuery(
@@ -62,13 +62,13 @@ class CommentRepository(
             if (query.commentId != null) {
                 commentByVideoDao.find(query.videoId, query.commentId)
                     .thenApply { it?.toComment() }
-                    .thenApply { toResultListPage(it) }
+                    .thenApply { ResultListPage.fromNullable(it) }
             } else {
                 findCommentsByVideo.queryNext(
-                    Optional.of(query.pageSize),
-                    Optional.ofNullable(query.pageState),
+                    query.pageSize,
+                    query.pageState,
                     query.videoId
-                ).thenApply { filter(it)}
+                )
             }
 
         return future.await()
@@ -82,30 +82,18 @@ class CommentRepository(
             if (query.commentId != null) {
                 commentByUserDao.find(query.userId, query.commentId)
                     .thenApply { it?.toComment() }
-                    .thenApply { toResultListPage(it) }
+                    .thenApply { ResultListPage.fromNullable(it) }
             } else {
                 findCommentsByUser.queryNext(
-                    Optional.of(query.pageSize),
-                    Optional.ofNullable(query.pageState),
+                    query.pageSize,
+                    query.pageState,
                     query.userId
-                ).thenApply { filter(it)}
+                )
             }
 
         return future.await()
     }
 
-    private fun <T> toResultListPage(element: T?) =
-        if (element != null) {
-            ResultListPage.from(element)
-        } else {
-            ResultListPage.empty()
-        }
-
-    private fun <T> filter(rs: ResultListPage<T?>): ResultListPage<T> =
-        ResultListPage(
-            rs.results.filter { it != null }.toList(),
-            rs.pagingState
-        )
 
     companion object {
         private const val QUERY_COMMENTS_BY_USERID =

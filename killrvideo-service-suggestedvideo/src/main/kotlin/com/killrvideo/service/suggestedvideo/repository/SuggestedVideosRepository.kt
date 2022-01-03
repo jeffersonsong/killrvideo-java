@@ -50,7 +50,7 @@ class SuggestedVideosRepository(
     /**
      * Precompile statements to speed up queries.
      */
-    private val findRelatedVideos: PageableQuery<Video?>
+    private val findRelatedVideos: PageableQuery<Video>
 
     /**
      * Create a set of sentence conjunctions and other "undesirable"
@@ -71,7 +71,7 @@ class SuggestedVideosRepository(
     /**
      * Get Pageable result for related video.
      */
-    suspend fun getRelatedVideos(request: GetRelatedVideosRequestData): ResultListPage<Video?> {
+    suspend fun getRelatedVideos(request: GetRelatedVideosRequestData): ResultListPage<Video> {
         return findVideoById(request.videoid)
             .thenCompose { video: Video? ->
                 if (video == null) {
@@ -81,8 +81,8 @@ class SuggestedVideosRepository(
                 } else {
                     val query = buildSolrQueryToSearchVideos(video)
                     findRelatedVideos.queryNext(
-                        Optional.of(request.pageSize),
-                        Optional.ofNullable(request.pagingState),
+                        request.pageSize,
+                        request.pagingState,
                         query
                     )
                 }

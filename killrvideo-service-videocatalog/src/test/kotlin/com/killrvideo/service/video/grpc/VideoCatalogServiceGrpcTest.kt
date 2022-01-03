@@ -252,7 +252,7 @@ internal class VideoCatalogServiceGrpcTest {
         val userid = UUID.randomUUID()
         val grpcReq = createGetUserVideoPreviewsRequest(userid)
         every { validator.validateGrpcRequest_getUserVideoPreviews(any()) } just Runs
-        val resultListPage: ResultListPage<UserVideo?> = mockk()
+        val resultListPage: ResultListPage<UserVideo> = mockk()
         coEvery { videoCatalogRepository.getUserVideosPreview(any()) } returns resultListPage
         val response = GetUserVideoPreviewsResponse.getDefaultInstance()
         every {

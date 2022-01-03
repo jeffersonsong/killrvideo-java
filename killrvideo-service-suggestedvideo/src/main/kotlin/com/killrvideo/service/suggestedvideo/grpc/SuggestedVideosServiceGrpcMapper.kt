@@ -62,7 +62,7 @@ class SuggestedVideosServiceGrpcMapper {
             }
         }
 
-    fun mapToGetRelatedVideosResponse(resultPage: ResultListPage<Video?>, _videoid: UUID): GetRelatedVideosResponse {
+    fun mapToGetRelatedVideosResponse(resultPage: ResultListPage<Video>, _videoid: UUID): GetRelatedVideosResponse {
         val videoGrpcUUID = uuidToUuid(_videoid)
         return getRelatedVideosResponse {
             videoId = videoGrpcUUID
@@ -73,7 +73,7 @@ class SuggestedVideosServiceGrpcMapper {
                 .filter { it.videoId != videoGrpcUUID }
                 .forEach { videos.add(it) }
 
-            resultPage.pagingState.ifPresent { pagingState = it }
+            resultPage.pagingState?.let { pagingState = it }
         }
     }
 }

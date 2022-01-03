@@ -66,7 +66,7 @@ internal class SuggestedVideosServiceGrpcMapperTest {
     fun testMapToGetRelatedVideosResponse() {
         val v = video()
         val videoid = UUID.randomUUID()
-        val resultPage = ResultListPage(listOf(v), Optional.of("next page"))
+        val resultPage = ResultListPage(listOf(v), "next page")
         val response = mapper.mapToGetRelatedVideosResponse(resultPage, videoid)
         assertEquals(videoid.toString(), response.videoId.value)
         assertEquals("next page", response.pagingState)

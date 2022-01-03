@@ -3,7 +3,6 @@ package com.killrvideo.service.suggestedvideo.dto
 import com.datastax.oss.driver.api.mapper.annotations.CqlName
 import com.datastax.oss.driver.api.mapper.annotations.Entity
 import com.datastax.oss.driver.api.mapper.annotations.PartitionKey
-import com.killrvideo.dse.utils.EmptyCollectionIfNull
 import java.time.Instant
 import java.util.*
 import javax.validation.constraints.NotNull
@@ -25,7 +24,7 @@ data class Video(
     var location: @Size(min = 1, message = "location must not be empty") String? = null,
     var locationType: Int? = 0,
     var previewImageLocation: String? = null,
-    var tags: @EmptyCollectionIfNull MutableSet<String>? = mutableSetOf(),
+    var tags: MutableSet<String>? = mutableSetOf(),
     var addedDate: @NotNull Instant?
 ) {
     companion object {

@@ -14,7 +14,7 @@ import java.util.function.Function
 // TODO - Remove JvmStatic, convert to mockk
 object CassandraTestUtils {
     @JvmStatic
-    fun <T> mockMappedAsyncPagingIterable(list: List<T>?): MappedAsyncPagingIterable<T> {
+    fun <T> mockMappedAsyncPagingIterable(list: List<T>): MappedAsyncPagingIterable<T> {
         val iter = mock(MappedAsyncPagingIterable::class.java) as MappedAsyncPagingIterable<T>
         `when`(iter.hasMorePages()).thenReturn(false)
         `when`(iter.currentPage()).thenReturn(list)
@@ -23,15 +23,15 @@ object CassandraTestUtils {
 
     @JvmStatic
     @SafeVarargs
-    fun <T> mockPageableQueryFactory(vararg queries: PageableQuery<T>?): PageableQueryFactory {
+    fun <T> mockPageableQueryFactory(vararg queries: PageableQuery<T>): PageableQueryFactory {
         val pageableQueryFactory = mock(PageableQueryFactory::class.java)
         when (queries.size) {
             0 -> {}
             1 -> `when`(
-                pageableQueryFactory.newPageableQuery(any(), any(), any<Any>() as Function<Row?, T>?)
+                pageableQueryFactory.newPageableQuery(any(), any(), any<Any>() as Function<Row, T>)
             ).thenReturn(queries[0])
             else -> `when`(
-                pageableQueryFactory.newPageableQuery(any(), any(), any<Any>() as Function<Row?, T>?)
+                pageableQueryFactory.newPageableQuery(any(), any(), any<Any>() as Function<Row, T>)
             ).thenReturn(queries[0], *Arrays.copyOfRange(queries, 1, queries.size))
         }
         return pageableQueryFactory

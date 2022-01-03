@@ -39,12 +39,12 @@ class SearchServiceGrpcMapper {
     }
 
     fun buildSearchGrpcResponse(
-        resultPage: ResultListPage<Video?>,
+        resultPage: ResultListPage<Video>,
         _query: String
     ): SearchVideosResponse =
         searchVideosResponse {
             query = _query
-            resultPage.pagingState.ifPresent { pagingState = it }
+            resultPage.pagingState?.let { pagingState = it }
             resultPage.results.stream()
                 .filter { it != null }
                 .map { maptoResultVideoPreview(it!!) }

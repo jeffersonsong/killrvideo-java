@@ -39,8 +39,8 @@ class VideoCatalogRepository(
     /**
      * Prepare Statements 'getUserVideo'.
      */
-    private val findUserVideoPreview_startingPoint: PageableQuery<UserVideo?>
-    private val findUserVideoPreview_noStartingPoint: PageableQuery<UserVideo?>
+    private val findUserVideoPreview_startingPoint: PageableQuery<UserVideo>
+    private val findUserVideoPreview_noStartingPoint: PageableQuery<UserVideo>
 
     init {
         findUserVideoPreview_startingPoint = pageableQueryFactory.newPageableQuery(
@@ -80,19 +80,19 @@ class VideoCatalogRepository(
      * @param request request.
      * @return requested video (page)
      */
-    suspend fun getUserVideosPreview(request: GetUserVideoPreviewsRequestData): ResultListPage<UserVideo?> {
+    suspend fun getUserVideosPreview(request: GetUserVideoPreviewsRequestData): ResultListPage<UserVideo> {
         val future = if (request.startingVideoId != null && request.startingAddedDate != null) {
             findUserVideoPreview_startingPoint.queryNext(
-                Optional.ofNullable(request.pagingSize),
-                Optional.ofNullable(request.pagingState),
+                request.pagingSize,
+                request.pagingState,
                 request.userId,
                 request.startingAddedDate,
                 request.startingVideoId
             )
         } else {
             findUserVideoPreview_noStartingPoint.queryNext(
-                Optional.ofNullable(request.pagingSize),
-                Optional.ofNullable(request.pagingState),
+                request.pagingSize,
+                request.pagingState,
                 request.userId
             )
         }

@@ -58,7 +58,7 @@ internal class SearchServiceGrpcTest {
     fun testSearchVideos() {
         val grpcReq = searchVideosRequest { }
         every { validator.validateGrpcRequest_SearchVideos(any()) } just Runs
-        val resultPage: ResultListPage<Video?> = mockk()
+        val resultPage: ResultListPage<Video> = mockk()
         val response = searchVideosResponse {}
         every { mapper.buildSearchGrpcResponse(any(), any()) } returns response
         coEvery {

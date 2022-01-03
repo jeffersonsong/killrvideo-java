@@ -68,7 +68,7 @@ internal class SuggestedVideosServiceGrpcTest {
     fun testGetRelatedVideos() {
         val grpcReq = createGetRelatedVideosRequest(UUID.randomUUID(), 5, "")
         every { validator.validateGrpcRequest_getRelatedVideo(any()) } just Runs
-        val resultListPage: ResultListPage<Video?> = mockk()
+        val resultListPage: ResultListPage<Video> = mockk()
         val response = GetRelatedVideosResponse.getDefaultInstance()
         every { mapper.mapToGetRelatedVideosResponse(any(), any()) } returns response
         coEvery { suggestedVideosRepository.getRelatedVideos(any()) } returns resultListPage

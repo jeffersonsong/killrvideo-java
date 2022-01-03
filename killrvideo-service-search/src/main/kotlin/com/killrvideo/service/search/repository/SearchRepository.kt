@@ -37,7 +37,7 @@ class SearchRepository(
      * Precompile statements to speed up queries.
      */
     private val findSuggestedTags: PreparedStatement
-    private val findVideosByTags: PageableQuery<Video?>
+    private val findVideosByTags: PageableQuery<Video>
 
     /**
      * Create a set of sentence conjunctions and other "undesirable"
@@ -70,10 +70,10 @@ class SearchRepository(
      * enable pagination regardless of our nodes dse.yaml setting.
      * https://docs.datastax.com/en/dse/5.1/dse-dev/datastax_enterprise/search/cursorsDeepPaging.html#cursorsDeepPaging__srchCursorCQL
      */
-    suspend fun searchVideosAsync(request: SearchVideosRequestData): ResultListPage<Video?> =
+    suspend fun searchVideosAsync(request: SearchVideosRequestData): ResultListPage<Video> =
         findVideosByTags.queryNext(
-            Optional.of(request.pageSize),
-            Optional.ofNullable(request.pagingState),
+            request.pageSize,
+            request.pagingState,
             buildSolrQueryToSearchVideos(request.query)
         ).await()
 

@@ -23,11 +23,11 @@ internal class SearchServiceGrpcMapperTest {
             addedDate = Instant.now()
         )
 
-        val resultPage = ResultListPage(listOf(v), Optional.of("paging state"))
+        val resultPage = ResultListPage(listOf(v), "paging state")
         val response = mapper.buildSearchGrpcResponse(resultPage, "query")
         assertEquals("query", response.query)
-        assertTrue(resultPage.pagingState.isPresent)
-        assertEquals(resultPage.pagingState.get(), response.pagingState)
+        assertNotNull(resultPage.pagingState)
+        assertEquals(resultPage.pagingState, response.pagingState)
         assertEquals(1, response.videosCount)
     }
 

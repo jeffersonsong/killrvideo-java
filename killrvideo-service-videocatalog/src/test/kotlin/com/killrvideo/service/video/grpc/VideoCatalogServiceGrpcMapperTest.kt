@@ -144,7 +144,7 @@ internal class VideoCatalogServiceGrpcMapperTest {
         val pagingState = "Paging state"
         val resultListPage = ResultListPage(
             listOf(userVideo),
-            Optional.of(pagingState)
+            pagingState
         )
         val response = mapper.mapToGetUserVideoPreviewsResponse(resultListPage, userid)
         assertEquals(pagingState, response.pagingState)

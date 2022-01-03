@@ -69,9 +69,7 @@ class CommentsServiceGrpcMapper {
                 c.videoid?.let { videoId = uuidToUuid(it) }
                 this.comments.add(newVideoCommentProto(c))
             }
-            comments.pagingState.ifPresent {
-                pagingState = it
-            }
+            comments.pagingState?.let {pagingState=it}
         }
 
     private fun newVideoCommentProto(c: Comment): VideoComment =
@@ -89,7 +87,7 @@ class CommentsServiceGrpcMapper {
                 c.userid?.let { userId = uuidToUuid(it) }
                 comments.add(newUserCommentProto(c))
             }
-            dseRes.pagingState.ifPresent { pagingState = it }
+            dseRes.pagingState?.let { pagingState = it }
         }
 
     private fun newUserCommentProto(c: Comment): UserComment =

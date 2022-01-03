@@ -62,7 +62,7 @@ class VideoCatalogServiceGrpcMapper {
                 GetLatestVideoPreviewsRequestData =
             GetLatestVideoPreviewsRequestData(
                 pageState = if (isNotBlank(this.pagingState))
-                    CustomPagingState.deserialize(this.pagingState).orElse(firstCustomPagingStateFactory.get())
+                    CustomPagingState.deserialize(this.pagingState) ?: firstCustomPagingStateFactory.get()
                 else
                     firstCustomPagingStateFactory.get(),
                 pageSize = this.pageSize,
@@ -156,12 +156,12 @@ class VideoCatalogServiceGrpcMapper {
         }
 
     fun mapToGetUserVideoPreviewsResponse(
-        resultPage: ResultListPage<UserVideo?>,
+        resultPage: ResultListPage<UserVideo>,
         userid: UUID
     ): GetUserVideoPreviewsResponse =
         getUserVideoPreviewsResponse {
             userId = uuidToUuid(userid)
-            resultPage.pagingState.ifPresent { pagingState = it }
+            resultPage.pagingState?.let { pagingState = it }
             resultPage.results.stream()
                 .filter { x -> x != null }
                 .map { mapFromUserVideotoVideoPreview(it!!) }

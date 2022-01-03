@@ -1,6 +1,5 @@
 package com.killrvideo.service.search.dto
 
-import com.killrvideo.dse.utils.EmptyCollectionIfNull
 import java.time.Instant
 import java.util.*
 import javax.validation.constraints.NotNull
@@ -19,7 +18,7 @@ data class Video(
     var location: @Size(min = 1, message = "location must not be empty") String? = null,
     var locationType: Int? = 0,
     var previewImageLocation: String? = null,
-    var tags: @EmptyCollectionIfNull MutableSet<String>? = mutableSetOf(),
+    var tags: MutableSet<String>? = mutableSetOf(),
     var addedDate: @NotNull Instant?
 ) {
     companion object {
