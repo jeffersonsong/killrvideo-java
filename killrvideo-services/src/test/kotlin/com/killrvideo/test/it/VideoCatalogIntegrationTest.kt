@@ -1,25 +1,17 @@
-package com.killrvideo.test.it;
+package com.killrvideo.test.it
 
-import com.killrvideo.KillrvideoServicesGrpcClient;
+import com.killrvideo.KillrvideoServicesGrpcClient
+import killrvideo.user_management.UserManagementServiceOuterClass.VerifyCredentialsRequest
 
-import killrvideo.user_management.UserManagementServiceOuterClass.VerifyCredentialsRequest;
-import killrvideo.user_management.UserManagementServiceOuterClass.VerifyCredentialsResponse;
-
-public class VideoCatalogIntegrationTest {
-    
-    public static void main(String[] args) {
-        KillrvideoServicesGrpcClient client = 
-                new KillrvideoServicesGrpcClient("localhost", 8899);
-
-        VerifyCredentialsRequest creRequest = VerifyCredentialsRequest.newBuilder()
-                .setEmail("a.a@a.com")
-                .setPassword("aaa")
-                .build();
-               
-        VerifyCredentialsResponse res = client.userServiceGrpcClient.verifyCredentials(creRequest);
-        System.out.println(res.getUserId());
-        
-        
+object VideoCatalogIntegrationTest {
+    @JvmStatic
+    fun main(args: Array<String>) {
+        val client = KillrvideoServicesGrpcClient("localhost", 8899)
+        val creRequest = VerifyCredentialsRequest.newBuilder()
+            .setEmail("a.a@a.com")
+            .setPassword("aaa")
+            .build()
+        val res = client.userServiceGrpcClient!!.verifyCredentials(creRequest)
+        println(res.userId)
     }
-
 }
