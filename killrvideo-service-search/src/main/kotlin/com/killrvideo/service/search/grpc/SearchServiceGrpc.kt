@@ -33,7 +33,7 @@ class SearchServiceGrpc(
         val requestData = request.parse()
 
         // Map Result back to GRPC
-        return kotlin.runCatching { searchRepository.searchVideosAsync(requestData) }
+        return runCatching { searchRepository.searchVideosAsync(requestData) }
             .map { mapper.buildSearchGrpcResponse(it, request.query)}
             .getOrThrow()
     }
@@ -49,7 +49,7 @@ class SearchServiceGrpc(
         val requestData = request.parse()
 
         // Invoke Dao (Async)
-        return kotlin.runCatching { searchRepository.getQuerySuggestionsAsync(requestData) }
+        return runCatching { searchRepository.getQuerySuggestionsAsync(requestData) }
             .map { mapper.buildQuerySuggestionsResponse(it, requestData.query) }
             .getOrThrow()
     }

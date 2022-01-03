@@ -45,7 +45,7 @@ class SuggestedVideosServiceGrpc(
         val userid = GrpcMappingUtils.fromUuid(request.userId)
 
         // Invoke DAO Async
-        return kotlin.runCatching { suggestedVideosRepository.getSuggestedVideosForUser(userid) }
+        return runCatching { suggestedVideosRepository.getSuggestedVideosForUser(userid) }
             .map {
                 mapper.mapToGetSuggestedForUserResponse(userid, it)
             }

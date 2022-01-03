@@ -50,7 +50,7 @@ class VideoCatalogServiceGrpc(
         logger.debug { "Insert youtube video ${video.videoid} for user ${video.userid} : $video" }
 
         // Execute query (ASYNC)
-        return kotlin.runCatching { videoCatalogRepository.insertVideoAsync(video) }
+        return runCatching { videoCatalogRepository.insertVideoAsync(video) }
             .mapCatching { rs ->
                 notifyYoutubeVideoAdded(video)
                 rs
@@ -155,7 +155,7 @@ class VideoCatalogServiceGrpc(
         // GRPC Parameters Mappings
         val requestData = request.parse()
         // Map Result back to GRPC
-        return kotlin.runCatching { videoCatalogRepository.getUserVideosPreview(requestData) }
+        return runCatching { videoCatalogRepository.getUserVideosPreview(requestData) }
             .map { mapper.mapToGetUserVideoPreviewsResponse(it, requestData.userId) }
             .getOrThrow()
     }
