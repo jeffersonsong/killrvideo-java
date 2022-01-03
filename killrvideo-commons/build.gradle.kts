@@ -18,6 +18,8 @@ repositories {
 
 dependencies {
     api(kotlin("stdlib"))
+    api(Deps.Google.protobufJavaUtils)
+    api(Deps.Google.protobufKotlin)
 
     implementation(Deps.JetBrian.Kotlinx.coroutinesJdk8)
     implementation(Deps.kotlinLogging)
@@ -90,17 +92,27 @@ protobuf {
         id("grpc") {
             artifact = Deps.Grpc.protocGenJava
         }
+        id("grpckt") {
+            artifact = Deps.Grpc.protocGenKotlin
+        }
     }
     generateProtoTasks {
         all().forEach {
             it.plugins {
                 id("grpc")
+                id("grpckt")
+            }
+            it.builtins {
+                id("kotlin")
             }
         }
     }
 }
 
 sourceSets.getByName("main") {
-    java.srcDir("src/main/java")
+    java.srcDir("build/generated/source/kaptKotlin/main")
     java.srcDir("build/generated/source/proto/main/java")
+    java.srcDir("build/generated/source/proto/main/kotlin")
+    java.srcDir("build/generated/source/proto/main/grpc")
+    java.srcDir("build/generated/source/proto/main/grpckt")
 }
