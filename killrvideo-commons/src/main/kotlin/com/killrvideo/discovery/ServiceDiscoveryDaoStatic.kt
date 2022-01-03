@@ -44,7 +44,7 @@ class ServiceDiscoveryDaoStatic : ServiceDiscoveryDao {
         val endPointList: MutableList<String> = ArrayList()
         LOGGER.info(" + Lookup for key '{}':", serviceName)
         if (kafkaServiceName.equals(serviceName, ignoreCase = true)) {
-            if (kafkaBrokersEnvVar!!.isPresent && !kafkaBrokersEnvVar.get().isBlank()) {
+            if (kafkaBrokersEnvVar!!.isPresent && kafkaBrokersEnvVar.get().isNotBlank()) {
                 cassandraContactPoints = kafkaBrokersEnvVar.get()
                 LOGGER.info(" + Reading broker from KILLRVIDEO_KAFKA_BROKERS")
             }
@@ -53,7 +53,7 @@ class ServiceDiscoveryDaoStatic : ServiceDiscoveryDao {
         } else if (cassandraServiceName.equals(serviceName, ignoreCase = true)) {
             // Explicit overwriting of contact points from env var
             // Better than default spring : simpler
-            if (cassandraContactPointsEnvVar!!.isPresent && !cassandraContactPointsEnvVar.get().isBlank()) {
+            if (cassandraContactPointsEnvVar!!.isPresent && cassandraContactPointsEnvVar.get().isNotBlank()) {
                 cassandraContactPoints = cassandraContactPointsEnvVar.get()
                 LOGGER.info(" + Reading contactPoints from KILLRVIDEO_DSE_CONTACT_POINTS")
             }

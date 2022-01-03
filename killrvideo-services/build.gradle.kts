@@ -29,6 +29,7 @@ dependencies {
         exclude(group = "junit", module = "junit");
     }
     implementation(Deps.Javax.inject)
+    implementation(Deps.kotlinLogging)
 }
 
 tasks.getByName<BootJar>("bootJar") {

@@ -41,7 +41,7 @@ class MessagingDaoKafka : MessagingDao {
      * Same producer can be used evrytime (as the topicName is stored in [ProducerRecord].)
      */
     @Inject
-    protected lateinit var protobufProducer: KafkaProducer<String, ByteArray>
+    private lateinit var protobufProducer: KafkaProducer<String, ByteArray>
 
     /**
      * Common error processing from topic topic-kv-errors.
@@ -103,7 +103,7 @@ class MessagingDaoKafka : MessagingDao {
      *
      * @param eventErrorPayload
      */
-    fun consumeErrorEvent(eventErrorPayload: ByteArray) {
+    private fun consumeErrorEvent(eventErrorPayload: ByteArray) {
         try {
             errorProcessor.handle(ErrorEvent.parseFrom(eventErrorPayload))
         } catch (e: InvalidProtocolBufferException) {

@@ -97,7 +97,7 @@ class LatestVideoPreviewsRepository(
             )
             val currentPage = loadCurrentPage(query).get()
 
-            currentPage.results.filter { Objects.nonNull(it) }.forEach { returnedPage.listOfPreview.add(it!!) }
+            currentPage.results.filter { Objects.nonNull(it) }.forEach { returnedPage.listOfPreview.add(it) }
 
             if (LOGGER.isDebugEnabled) {
                 LOGGER.debug(

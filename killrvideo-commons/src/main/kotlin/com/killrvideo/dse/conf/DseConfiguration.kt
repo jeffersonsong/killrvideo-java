@@ -193,7 +193,7 @@ open class DseConfiguration {
     private fun asSocketInetAdress(contactPoint: String?): Optional<InetSocketAddress> {
         val target: Optional<InetSocketAddress> = Optional.empty()
         try {
-            if (contactPoint != null && contactPoint.length > 0) {
+            if (contactPoint != null && contactPoint.isNotEmpty()) {
                 val chunks = contactPoint.split(":").toTypedArray()
                 if (chunks.size == 2) {
                     LOGGER.info(" + Adding node '{}' to the Cassandra cluster definition", contactPoint)
@@ -223,7 +223,7 @@ open class DseConfiguration {
      */
     private fun populateAuthentication(clusterConfig: CqlSessionBuilder) {
         if (dseUsername!!.isPresent && dsePassword!!.isPresent
-            && dseUsername!!.get().length > 0
+            && dseUsername!!.get().isNotEmpty()
         ) {
             clusterConfig.withAuthCredentials(dseUsername!!.get(), dsePassword!!.get())
             val obfuscatedPassword = String(CharArray(dsePassword!!.get().length)).replace("\u0000", "*")

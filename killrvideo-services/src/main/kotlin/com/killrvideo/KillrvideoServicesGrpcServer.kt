@@ -1,6 +1,5 @@
 package com.killrvideo
 
-import com.killrvideo.KillrvideoServicesGrpcServer
 import com.killrvideo.conf.KillrVideoConfiguration
 import com.killrvideo.discovery.ServiceDiscoveryDao
 import com.killrvideo.service.comment.grpc.CommentsServiceGrpc
@@ -12,7 +11,7 @@ import com.killrvideo.service.user.grpc.UserManagementServiceGrpc
 import com.killrvideo.service.video.grpc.VideoCatalogServiceGrpc
 import io.grpc.Server
 import io.grpc.ServerBuilder
-import org.slf4j.LoggerFactory
+import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import javax.annotation.PostConstruct
@@ -26,6 +25,8 @@ import javax.inject.Inject
  */
 @Component
 class KillrvideoServicesGrpcServer {
+    private val logger = KotlinLogging.logger {}
+
     /** Listening Port for GRPC.  */
     @Value("\${killrvideo.grpc-server.port: 50101}")
     private val grpcPort = 0
@@ -88,7 +89,7 @@ class KillrvideoServicesGrpcServer {
     @PostConstruct
     @Throws(Exception::class)
     fun start() {
-        LOGGER.info("Initializing Grpc Server...")
+        logger.info("Initializing Grpc Server...")
 
         // Create GRPC server referencing only enabled services
         val builder = ServerBuilder.forPort(grpcPort)
@@ -120,14 +121,14 @@ class KillrvideoServicesGrpcServer {
 
         // Start Grpc listener
         grpcServer.start()
-        LOGGER.info("[OK] Grpc Server started on port: '{}'", grpcPort)
+        logger.info("[OK] Grpc Server started on port: '{}'", grpcPort)
         registerServices()
     }
 
     @PreDestroy
     fun stopGrpcServer() {
-        LOGGER.info("Calling shutdown for GrpcServer")
-        grpcServer!!.shutdown()
+        logger.info("Calling shutdown for GrpcServer")
+        grpcServer.shutdown()
         unRegisterServices()
     }
 
@@ -235,10 +236,5 @@ class KillrvideoServicesGrpcServer {
                 grpcPort
             )
         }
-    }
-
-    companion object {
-        /** Some logger.  */
-        private val LOGGER = LoggerFactory.getLogger(KillrvideoServicesGrpcServer::class.java)
     }
 }

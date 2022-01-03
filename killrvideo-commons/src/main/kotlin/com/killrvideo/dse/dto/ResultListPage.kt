@@ -27,7 +27,7 @@ data class ResultListPage<ENTITY>(
 ) {
     companion object {
         fun <T> empty(): ResultListPage<T> =
-            ResultListPage(emptyList<T>(), null)
+            ResultListPage(emptyList(), null)
 
         fun <T> from(element: T): ResultListPage<T> =
             ResultListPage(listOf(element), null)

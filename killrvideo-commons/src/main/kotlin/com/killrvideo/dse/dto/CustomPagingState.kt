@@ -53,7 +53,7 @@ data class CustomPagingState private constructor(
     fun serialize(): String {
         val joiner = StringJoiner("_")
         listOfBuckets.forEach { joiner.add(it) }
-        return "${joiner.toString()},$currentBucket,$cassandraPagingState"
+        return "${joiner},$currentBucket,$cassandraPagingState"
     }
 
     /**

@@ -1,22 +1,17 @@
 package com.killrvideo.dse.utils
 
 import com.datastax.oss.driver.api.core.ConsistencyLevel
-import com.killrvideo.dse.dto.ResultListPage
-import com.killrvideo.dse.utils.AsyncResultSetUtils
-import java.util.stream.StreamSupport
-import java.lang.annotation.Documented
-import java.util.concurrent.CompletableFuture
 import com.datastax.oss.driver.api.core.CqlSession
-import com.datastax.oss.driver.api.core.cql.*
+import com.datastax.oss.driver.api.core.cql.AsyncResultSet
+import com.datastax.oss.driver.api.core.cql.BoundStatement
+import com.datastax.oss.driver.api.core.cql.PreparedStatement
+import com.datastax.oss.driver.api.core.cql.Row
 import com.datastax.oss.protocol.internal.util.Bytes
-import com.killrvideo.dse.utils.PageableQuery
-import com.killrvideo.dse.utils.PageableQueryFactory.PageableQueryImpl
+import com.killrvideo.dse.dto.ResultListPage
 import mu.KotlinLogging
-import org.apache.commons.lang3.StringUtils
 import org.apache.commons.lang3.StringUtils.isNotBlank
-import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
-import java.util.*
+import java.util.concurrent.CompletableFuture
 import java.util.function.Function
 
 @Component
@@ -44,7 +39,7 @@ class PageableQueryFactory(private val session: CqlSession) {
         ): CompletableFuture<ResultListPage<ENTITY>> {
             val statement = buildStatement(pageSize, pageState, arrayOf(*queryParams))
             val result = executeAsync(statement)
-            logger.debug {"Executed query ${statement.preparedStatement.query} with parameters: ${queryParams}"}
+            logger.debug {"Executed query ${statement.preparedStatement.query} with parameters: $queryParams"}
             return result
         }
 

@@ -62,7 +62,7 @@ internal class SuggestedVideosServiceGrpcTest {
             suggestedVideosRepository.getRelatedVideos(any())
         } throws Exception()
         assertThrows<Exception> {
-            runBlocking { service!!.getRelatedVideos(grpcReq) }
+            runBlocking { service.getRelatedVideos(grpcReq) }
         }
     }
 

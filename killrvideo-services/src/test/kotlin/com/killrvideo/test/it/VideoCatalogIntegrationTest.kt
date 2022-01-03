@@ -11,7 +11,7 @@ object VideoCatalogIntegrationTest {
             .setEmail("a.a@a.com")
             .setPassword("aaa")
             .build()
-        val res = client.userServiceGrpcClient!!.verifyCredentials(creRequest)
+        val res = client.userServiceGrpcClient.verifyCredentials(creRequest)
         println(res.userId)
     }
 }

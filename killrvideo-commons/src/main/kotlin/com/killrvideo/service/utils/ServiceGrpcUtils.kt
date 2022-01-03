@@ -39,6 +39,6 @@ object ServiceGrpcUtils {
     }
 
     fun <T> toNullable(optional: Optional<T>): T? =
-        if (optional.isPresent()) optional.get()
+        if (optional.isPresent) optional.get()
         else null
 }

@@ -86,7 +86,7 @@ internal class SearchServiceGrpcTest {
         every { validator.validateGrpcRequest_GetQuerySuggestions(any()) } just Runs
         coEvery { searchRepository.getQuerySuggestionsAsync(any()) } throws Exception()
         assertThrows<Exception> {
-            runBlocking { service!!.getQuerySuggestions(grpcReq) }
+            runBlocking { service.getQuerySuggestions(grpcReq) }
         }
     }
 

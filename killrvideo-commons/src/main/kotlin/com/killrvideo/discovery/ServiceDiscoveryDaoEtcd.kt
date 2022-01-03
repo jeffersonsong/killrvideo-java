@@ -4,7 +4,6 @@ import com.evanlennick.retry4j.CallExecutor
 import com.evanlennick.retry4j.Status
 import com.evanlennick.retry4j.config.RetryConfigBuilder
 import com.killrvideo.conf.KillrVideoConfiguration
-import com.killrvideo.discovery.ServiceDiscoveryDaoEtcd
 import com.xqbase.etcd4j.EtcdClient
 import com.xqbase.etcd4j.EtcdClientException
 import com.xqbase.etcd4j.EtcdNode

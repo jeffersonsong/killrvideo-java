@@ -15,7 +15,7 @@ object AsyncResultSetUtils {
         return ResultListPage(list, nextPage)
     }
 
-    fun <T> getResultsOnCurrentPage(rs: AsyncResultSet, mapper: Function<Row, T>): List<T> {
+    private fun <T> getResultsOnCurrentPage(rs: AsyncResultSet, mapper: Function<Row, T>): List<T> {
         return StreamSupport.stream(rs.currentPage().spliterator(), false)
             .map(mapper).collect(Collectors.toList())
     }
