@@ -1,12 +1,11 @@
-package com.killrvideo.model;
+package com.killrvideo.model
 
 /**
  * Information related to SCHEMA : use to 'decorate' POJO in Mapper, then prepareStatements.
  *
  * @author DataStax Developer Advocates team.
  */
-public interface CommonConstants {
-
-    /** Core KeySpace. */
-    String KILLRVIDEO_KEYSPACE = "killrvideo"; 
+object CommonConstants {
+    /** Core KeySpace.  */
+    const val KILLRVIDEO_KEYSPACE = "killrvideo"
 }
