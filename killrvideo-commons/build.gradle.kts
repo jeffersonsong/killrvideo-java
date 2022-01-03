@@ -8,6 +8,7 @@ plugins {
     id("com.datastax.java-conventions")
     id("com.google.protobuf")
     kotlin("jvm")
+    kotlin("kapt")
 }
 
 repositories {
@@ -17,6 +18,9 @@ repositories {
 
 dependencies {
     api(kotlin("stdlib"))
+
+    implementation(Deps.JetBrian.Kotlinx.coroutinesJdk8)
+    implementation(Deps.kotlinLogging)
 
     runtimeOnly(Deps.Google.protobufJavaUtils)
 
@@ -70,9 +74,10 @@ dependencies {
     testImplementation(Deps.Mockito.core)
 
     // Annotation processors
-    annotationProcessor(Deps.lombok)
-    annotationProcessor(Deps.Datastax.mapperProcessor)
-    annotationProcessor(Deps.Apache.Tinkerpop.tinkergraph)
+    //annotationProcessor(Deps.lombok)
+    //annotationProcessor(Deps.Datastax.mapperProcessor)
+    //annotationProcessor(Deps.Apache.Tinkerpop.tinkergraph)
+    kapt(Deps.Apache.Tinkerpop.tinkergraph)
 }
 
 description = "+ killrvideo-commons"
