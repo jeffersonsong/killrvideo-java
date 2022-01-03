@@ -6,7 +6,6 @@ import com.datastax.oss.driver.api.core.cql.AsyncResultSet
 import com.datastax.oss.driver.api.core.cql.BoundStatement
 import com.datastax.oss.driver.api.core.cql.PreparedStatement
 import com.datastax.oss.driver.api.core.cql.Row
-import com.killrvideo.dse.dto.AbstractVideo
 import com.killrvideo.dse.dto.ResultListPage
 import com.killrvideo.dse.utils.PageableQuery
 import com.killrvideo.dse.utils.PageableQueryFactory
@@ -185,8 +184,8 @@ class SearchRepository(
              * concatenate them together, apply regex, and add any results into
              * our suggestionSet TreeSet.  The TreeSet will handle any duplicates.
              */
-            val name = row.getString(AbstractVideo.COLUMN_NAME)
-            val tags = row.getSet(AbstractVideo.COLUMN_TAGS, String::class.java)
+            val name = row.getString(Video.COLUMN_NAME)
+            val tags = row.getSet(Video.COLUMN_TAGS, String::class.java)
             val regexMatcher = checkRegex.matcher(name + tags.toString())
             while (regexMatcher.find()) {
                 suggestionSet.add(regexMatcher.group().lowercase(Locale.getDefault()))

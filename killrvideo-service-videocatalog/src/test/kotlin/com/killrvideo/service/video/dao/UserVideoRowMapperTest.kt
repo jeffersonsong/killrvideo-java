@@ -1,7 +1,6 @@
 package com.killrvideo.service.video.dao
 
 import com.datastax.oss.driver.api.core.cql.Row
-import com.killrvideo.dse.dto.AbstractVideo
 import com.killrvideo.service.video.dto.Video
 import io.mockk.every
 import io.mockk.mockk
@@ -23,8 +22,8 @@ internal class UserVideoRowMapperTest {
         val row = mockk<Row>()
         every {row.getUuid(Video.COLUMN_USERID)} returns userid
         every {row.getUuid(Video.COLUMN_VIDEOID)} returns videoid
-        every {row.getString(AbstractVideo.COLUMN_NAME)} returns name
-        every {row.getString(AbstractVideo.COLUMN_PREVIEW)} returns previewLocation
+        every {row.getString(Video.COLUMN_NAME)} returns name
+        every {row.getString(Video.COLUMN_PREVIEW)} returns previewLocation
         every {row.getInstant(Video.COLUMN_ADDED_DATE)} returns addedDate
 
         val result = mapper.map(row)
