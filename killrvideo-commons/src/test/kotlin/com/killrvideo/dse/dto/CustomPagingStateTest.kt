@@ -1,11 +1,9 @@
 package com.killrvideo.dse.dto
 
-import com.killrvideo.dse.dto.CustomPagingStateTest
 import mu.KotlinLogging
-import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
-import org.slf4j.LoggerFactory
 import java.time.Instant
 import java.time.ZoneId
 import java.time.ZoneOffset

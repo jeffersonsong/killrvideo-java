@@ -1,29 +1,25 @@
-package com.killrvideo.messaging.utils;
+package com.killrvideo.messaging.utils
 
-import killrvideo.common.CommonEvents;
-import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.killrvideo.messaging.utils.MessagingUtils.mapCustomError
+import com.killrvideo.messaging.utils.MessagingUtils.mapError
+import mu.KotlinLogging
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Test
 
-import static com.killrvideo.messaging.utils.MessagingUtils.mapCustomError;
-import static com.killrvideo.messaging.utils.MessagingUtils.mapError;
-import static org.junit.jupiter.api.Assertions.*;
-
-class MessagingUtilsTest {
-    private static final Logger LOGGER = LoggerFactory.getLogger(MessagingUtils.class);
-
+internal class MessagingUtilsTest {
+    private val logger = KotlinLogging.logger {  }
     @Test
-    public void testMapError() {
-        Throwable t = new RuntimeException("Something bad happened.");
-        CommonEvents.ErrorEvent event = mapError(t);
-        assertNotNull(event);
-        LOGGER.info(event.toString());
+    fun testMapError() {
+        val t: Throwable = RuntimeException("Something bad happened.")
+        val event = mapError(t)
+        assertNotNull(event)
+        logger.info(event.toString())
     }
 
     @Test
-    public void testMapCustomError() {
-        CommonEvents.ErrorEvent event = mapCustomError("Custom error");
-        assertNotNull(event);
-        LOGGER.info(event.toString());
+    fun testMapCustomError() {
+        val event = mapCustomError("Custom error")
+        assertNotNull(event)
+        logger.info(event.toString())
     }
 }

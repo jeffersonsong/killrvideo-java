@@ -96,11 +96,6 @@ object Deps {
         val jupiterEngine = "org.junit.jupiter:junit-jupiter-engine:$jupiterVersion"
     }
 
-    object Mockito {
-        const val mockitoVersion = "4.0.0"
-        val core = "org.mockito:mockito-core:$mockitoVersion"
-    }
-
     object JetBrian {
         object Kotlinx {
             val coroutinesCore = "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion"

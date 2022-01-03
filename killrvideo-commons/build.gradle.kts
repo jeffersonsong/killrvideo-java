@@ -70,7 +70,7 @@ dependencies {
 
     // Junit5 + Spring
     testImplementation(Deps.Junit.jupiter)
-    testImplementation(Deps.Mockito.core)
+    testImplementation(Deps.mockk)
 
     // Annotation processors
     kapt(Deps.Apache.Tinkerpop.tinkergraph)

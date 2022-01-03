@@ -10,7 +10,6 @@ dependencies {
 
     implementation(Deps.Junit.jupiter)
     implementation(Deps.mockk)
-    implementation(Deps.Mockito.core)
     implementation(Deps.Datastax.core)
 }
 
