@@ -1,13 +1,13 @@
-package com.killrvideo.service.suggestedvideo.dao;
+package com.killrvideo.service.suggestedvideo.dao
 
-import com.datastax.oss.driver.api.core.CqlSession;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+import com.datastax.oss.driver.api.core.CqlSession
+import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Configuration
 
 @Configuration
-public class VideoDaoConfig {
+open class VideoDaoConfig {
     @Bean
-    public VideoMapper videoMapper(CqlSession session) {
-        return VideoMapper.build(session).build();
+    open fun videoMapper(session: CqlSession?): VideoMapper? {
+        return VideoMapperBuilder(session).build()
     }
 }

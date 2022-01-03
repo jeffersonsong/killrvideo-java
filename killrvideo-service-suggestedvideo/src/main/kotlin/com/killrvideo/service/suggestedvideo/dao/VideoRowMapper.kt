@@ -1,24 +1,22 @@
-package com.killrvideo.service.suggestedvideo.dao;
+package com.killrvideo.service.suggestedvideo.dao
 
-import com.datastax.oss.driver.api.core.cql.Row;
-import com.killrvideo.service.suggestedvideo.dto.Video;
-import org.springframework.stereotype.Component;
-
-import static com.killrvideo.service.suggestedvideo.dto.Video.*;
+import com.datastax.oss.driver.api.core.cql.Row
+import com.killrvideo.service.suggestedvideo.dto.Video
+import org.springframework.stereotype.Component
 
 @Component("suggestedVideoRowMapper")
-public class VideoRowMapper {
-    public Video map(Row row) {
-        return new Video(
-                row.getUuid(COLUMN_VIDEOID),
-                row.getUuid(COLUMN_USERID),
-                row.getString(COLUMN_NAME),
-                row.getString(COLUMN_DESCRIPTION),
-                row.getString(COLUMN_LOCATION),
-                row.getInt(COLUMN_LOCATIONTYPE),
-                row.getString(COLUMN_PREVIEW),
-                row.getSet(COLUMN_TAGS, String.class),
-                row.getInstant(COLUMN_ADDED_DATE)
-        );
+class VideoRowMapper {
+    fun map(row: Row): Video {
+        return Video(
+            row.getUuid(Video.COLUMN_VIDEOID),
+            row.getUuid(Video.COLUMN_USERID),
+            row.getString(Video.COLUMN_NAME),
+            row.getString(Video.COLUMN_DESCRIPTION),
+            row.getString(Video.COLUMN_LOCATION),
+            row.getInt(Video.COLUMN_LOCATIONTYPE),
+            row.getString(Video.COLUMN_PREVIEW),
+            row.getSet(Video.COLUMN_TAGS, String::class.java),
+            row.getInstant(Video.COLUMN_ADDED_DATE)
+        )
     }
 }

@@ -1,16 +1,10 @@
-package com.killrvideo.service.suggestedvideo.dao;
+package com.killrvideo.service.suggestedvideo.dao
 
-import com.datastax.oss.driver.api.core.CqlSession;
-import com.datastax.oss.driver.api.mapper.MapperBuilder;
-import com.datastax.oss.driver.api.mapper.annotations.DaoFactory;
-import com.datastax.oss.driver.api.mapper.annotations.Mapper;
+import com.datastax.oss.driver.api.mapper.annotations.DaoFactory
+import com.datastax.oss.driver.api.mapper.annotations.Mapper
 
 @Mapper
-public interface VideoMapper {
-    @DaoFactory
-    VideoDao getVideoDao();
-
-    static MapperBuilder<VideoMapper> build(CqlSession session) {
-        return new VideoMapperBuilder(session);
-    }
+interface VideoMapper {
+    @get:DaoFactory
+    val videoDao: VideoDao
 }

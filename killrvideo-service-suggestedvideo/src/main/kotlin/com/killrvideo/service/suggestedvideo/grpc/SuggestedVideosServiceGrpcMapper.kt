@@ -1,22 +1,17 @@
-package com.killrvideo.service.suggestedvideo.grpc;
+package com.killrvideo.service.suggestedvideo.grpc
 
-import com.killrvideo.dse.dto.ResultListPage;
-import com.killrvideo.service.suggestedvideo.dto.Video;
-import com.killrvideo.service.suggestedvideo.request.GetRelatedVideosRequestData;
-import com.killrvideo.utils.GrpcMappingUtils;
-import killrvideo.common.CommonTypes;
-import killrvideo.suggested_videos.SuggestedVideosService.GetRelatedVideosRequest;
-import killrvideo.suggested_videos.SuggestedVideosService.GetRelatedVideosResponse;
-import killrvideo.suggested_videos.SuggestedVideosService.SuggestedVideoPreview;
-import killrvideo.video_catalog.events.VideoCatalogEvents.YouTubeVideoAdded;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.stereotype.Component;
-
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.UUID;
-
-import static com.killrvideo.utils.GrpcMappingUtils.*;
+import com.killrvideo.dse.dto.ResultListPage
+import com.killrvideo.service.suggestedvideo.dto.Video
+import com.killrvideo.service.suggestedvideo.request.GetRelatedVideosRequestData
+import com.killrvideo.utils.GrpcMappingUtils.*
+import killrvideo.suggested_videos.SuggestedVideosService.*
+import killrvideo.suggested_videos.getRelatedVideosResponse
+import killrvideo.suggested_videos.getSuggestedForUserResponse
+import killrvideo.suggested_videos.suggestedVideoPreview
+import killrvideo.video_catalog.events.VideoCatalogEvents.YouTubeVideoAdded
+import org.apache.commons.lang3.StringUtils.isNotBlank
+import org.springframework.stereotype.Component
+import java.util.*
 
 /**
  * Helper and mappers for DAO <=> GRPC Communications
@@ -24,52 +19,61 @@ import static com.killrvideo.utils.GrpcMappingUtils.*;
  * @author DataStax Developer Advocates Team
  */
 @Component
-public class SuggestedVideosServiceGrpcMapper {
-
-    public Video mapVideoAddedtoVideoDTO(YouTubeVideoAdded videoAdded) {
-        // Convert Stub to Dto, dao must not be related to interface GRPC
-        Video video = new Video();
-        video.setVideoid(fromUuid(videoAdded.getVideoId()));
-        video.setAddedDate(timestampToInstant(videoAdded.getAddedDate()));
-        video.setUserid(fromUuid(videoAdded.getUserId()));
-        video.setName(videoAdded.getName());
-        video.setTags(new HashSet<>(videoAdded.getTagsList()));
-        video.setPreviewImageLocation(videoAdded.getPreviewImageLocation());
-        video.setLocation(videoAdded.getLocation());
-        return video;
+class SuggestedVideosServiceGrpcMapper {
+    object GetRelatedVideosRequestExtensions {
+        fun GetRelatedVideosRequest.parse(): GetRelatedVideosRequestData =
+            GetRelatedVideosRequestData(
+                videoid = fromUuid(this.videoId),
+                pageSize = this.pageSize,
+                pagingState = if (isNotBlank(this.pagingState)) this.pagingState else null
+            )
     }
+
+    fun mapVideoAddedtoVideoDTO(videoAdded: YouTubeVideoAdded): Video =
+        // Convert Stub to Dto, dao must not be related to interface GRPC
+        Video(
+            videoid = fromUuid(videoAdded.videoId),
+            addedDate = timestampToInstant(videoAdded.addedDate),
+            userid = fromUuid(videoAdded.userId),
+            name = videoAdded.name,
+            tags = HashSet(videoAdded.tagsList),
+            previewImageLocation = videoAdded.previewImageLocation,
+            location = videoAdded.location
+        )
 
     /**
      * Mapping to generated GPRC beans. (Suggested videos special)
      */
-    public SuggestedVideoPreview mapVideotoSuggestedVideoPreview(Video v) {
-        return SuggestedVideoPreview.newBuilder()
-                .setName(v.getName())
-                .setVideoId(uuidToUuid(v.getVideoid()))
-                .setUserId(uuidToUuid(v.getUserid()))
-                .setPreviewImageLocation(v.getPreviewImageLocation())
-                .setAddedDate(GrpcMappingUtils.instantToTimeStamp(v.getAddedDate()))
-                .build();
-    }
+    fun mapVideotoSuggestedVideoPreview(v: Video): SuggestedVideoPreview =
+        suggestedVideoPreview {
+            v.name?.let { name = it }
+            v.videoid?.let { videoId = uuidToUuid(it) }
+            v.userid?.let { userId = uuidToUuid(it) }
+            v.previewImageLocation?.let { previewImageLocation = it }
+            v.addedDate?.let { addedDate = instantToTimeStamp(it) }
+        }
 
-    @SuppressWarnings("ConstantConditions")
-    public GetRelatedVideosRequestData parseGetRelatedVideosRequestData(GetRelatedVideosRequest grpcReq) {
-        final UUID videoId = fromUuid(grpcReq.getVideoId());
-        int videoPageSize = grpcReq.getPageSize();
-        Optional<String> videoPagingState = Optional.ofNullable(grpcReq.getPagingState()).filter(StringUtils::isNotBlank);
 
-        return new GetRelatedVideosRequestData(videoId, videoPageSize, videoPagingState);
-    }
+    fun mapToGetSuggestedForUserResponse(_userid: UUID, _videos: List<Video>): GetSuggestedForUserResponse =
+        getSuggestedForUserResponse {
+            userId = uuidToUuid(_userid)
+            _videos.stream().map { mapVideotoSuggestedVideoPreview(it) }.forEach {
+                videos.add(it)
+            }
+        }
 
-    public GetRelatedVideosResponse mapToGetRelatedVideosResponse(ResultListPage<Video> resultPage, UUID videoId) {
-        CommonTypes.Uuid videoGrpcUUID = uuidToUuid(videoId);
-        final GetRelatedVideosResponse.Builder builder =
-                GetRelatedVideosResponse.newBuilder().setVideoId(videoGrpcUUID);
-        resultPage.getResults().stream()
-                .map(this::mapVideotoSuggestedVideoPreview)
-                .filter(preview -> !preview.getVideoId().equals(videoGrpcUUID))
-                .forEach(builder::addVideos);
-        resultPage.getPagingState().ifPresent(builder::setPagingState);
-        return builder.build();
+    fun mapToGetRelatedVideosResponse(resultPage: ResultListPage<Video?>, _videoid: UUID): GetRelatedVideosResponse {
+        val videoGrpcUUID = uuidToUuid(_videoid)
+        return getRelatedVideosResponse {
+            videoId = videoGrpcUUID
+
+            resultPage.results.stream()
+                .filter { it != null }
+                .map { mapVideotoSuggestedVideoPreview(it!!) }
+                .filter { it.videoId != videoGrpcUUID }
+                .forEach { videos.add(it) }
+
+            resultPage.pagingState.ifPresent { pagingState = it }
+        }
     }
 }

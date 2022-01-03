@@ -8,6 +8,7 @@ plugins {
     id("com.datastax.java-conventions")
     id("com.google.protobuf")
     kotlin("jvm")
+    kotlin("kapt")
 }
 
 repositories {
@@ -24,9 +25,10 @@ dependencies {
     api(Deps.Grpc.kotlinStub)
 
     implementation(project(":killrvideo-commons"))
-    testImplementation(Deps.Junit.jupiter)
-    testImplementation(Deps.Mockito.core)
-    compileOnly(Deps.lombok)
+    testImplementation(project(":killrvideo-test-utils"))
+
+    implementation(Deps.JetBrian.Kotlinx.coroutinesJdk8)
+    implementation(Deps.kotlinLogging)
 
     implementation(Deps.Spring.context)
     implementation(Deps.Datastax.mapperRuntime)
@@ -36,7 +38,7 @@ dependencies {
         exclude(group = "junit", module = "junit")
     }
 
-    implementation(Deps.Datastax.core)
+    // implementation(Deps.Datastax.core)
 
     implementation(Deps.Apache.Commons.lang3)
     implementation(Deps.Javax.validation)
@@ -45,8 +47,11 @@ dependencies {
     implementation(Deps.Apache.Kafka.connectApi)
     implementation(Deps.Apache.Tinkerpop.tinkergraph)
 
-    annotationProcessor(Deps.lombok)
-    annotationProcessor(Deps.Datastax.mapperProcessor)
+    testImplementation(Deps.Junit.jupiter)
+    testImplementation(Deps.mockk)
+    testImplementation(Deps.hamcrest)
+
+    kapt(Deps.Datastax.mapperProcessor)
 }
 
 description = "+ killrvideo-service-suggestedvideo"

@@ -1,122 +1,89 @@
-package com.killrvideo.service.suggestedvideo.grpc;
+package com.killrvideo.service.suggestedvideo.grpc
 
-import com.killrvideo.dse.dto.ResultListPage;
-import com.killrvideo.service.suggestedvideo.dto.Video;
-import com.killrvideo.service.suggestedvideo.request.GetRelatedVideosRequestData;
-import com.killrvideo.service.suggestedvideo.repository.SuggestedVideosRepository;
-import io.grpc.stub.StreamObserver;
-import killrvideo.suggested_videos.SuggestedVideosService.*;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import com.killrvideo.dse.dto.ResultListPage
+import com.killrvideo.service.suggestedvideo.dto.Video
+import com.killrvideo.service.suggestedvideo.repository.SuggestedVideosRepository
+import com.killrvideo.utils.GrpcMappingUtils.uuidToUuid
+import io.grpc.Status
+import io.grpc.StatusRuntimeException
+import io.mockk.*
+import io.mockk.impl.annotations.InjectMockKs
+import io.mockk.impl.annotations.MockK
+import killrvideo.suggested_videos.SuggestedVideosService.*
+import killrvideo.suggested_videos.getRelatedVideosRequest
+import kotlinx.coroutines.runBlocking
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
+import java.util.*
 
+internal class SuggestedVideosServiceGrpcTest {
+    @InjectMockKs
+    private lateinit var service: SuggestedVideosServiceGrpc
 
-import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
+    @MockK
+    private lateinit var suggestedVideosRepository: SuggestedVideosRepository
 
-import static com.killrvideo.utils.GrpcMappingUtils.uuidToUuid;
-import static org.mockito.Mockito.*;
+    @MockK
+    private lateinit var validator: SuggestedVideosServiceGrpcValidator
 
-@SuppressWarnings("unchecked")
-class SuggestedVideosServiceGrpcTest {
-    @InjectMocks private SuggestedVideosServiceGrpc service;
-    @Mock
-    private SuggestedVideosRepository suggestedVideosRepository;
-    @Mock
-    private SuggestedVideosServiceGrpcValidator validator;
-    @Mock
-    private SuggestedVideosServiceGrpcMapper mapper;
-
-    private AutoCloseable closeable;
+    @MockK
+    private lateinit var mapper: SuggestedVideosServiceGrpcMapper
 
     @BeforeEach
-    public void openMocks() {
-        closeable = MockitoAnnotations.openMocks(this);
-    }
+    fun setUp() = MockKAnnotations.init(this)
 
-    @AfterEach
-    public void releaseMocks() throws Exception {
-        closeable.close();
-    }
-
-    @Test
-    public void testGetRelatedVideosWithValidationFailure() {
-        GetRelatedVideosRequest grpcReq = GetRelatedVideosRequest.getDefaultInstance();
-        StreamObserver<GetRelatedVideosResponse> grpcResObserver = mock(StreamObserver.class);
-
-        doThrow(new IllegalArgumentException()).when(validator)
-                .validateGrpcRequest_getRelatedVideo(any(), any());
-
-        Assertions.assertThrows(IllegalArgumentException.class, () ->
-                this.service.getRelatedVideos(grpcReq, grpcResObserver)
-        );
+    fun createGetRelatedVideosRequest(videoid: UUID, pagesize: Int, pagingstate: String): GetRelatedVideosRequest {
+        return getRelatedVideosRequest {
+            videoId = uuidToUuid(videoid)
+            pageSize = pagesize
+            pagingState = pagingstate
+        }
     }
 
     @Test
-    public void testGetRelatedVideosWithQueryFailure() {
-        GetRelatedVideosRequest grpcReq = getRelatedVideosRequest(UUID.randomUUID(), 5, "");
-        StreamObserver<GetRelatedVideosResponse> grpcResObserver = mock(StreamObserver.class);
-
-        doNothing().when(validator).validateGrpcRequest_getRelatedVideo(any(), any());
-        GetRelatedVideosRequestData requestData = mock(GetRelatedVideosRequestData.class);
-        when(this.mapper.parseGetRelatedVideosRequestData(any())).thenReturn(requestData);
-
-        when(this.suggestedVideosRepository.getRelatedVideos(any()))
-                .thenReturn(CompletableFuture.failedFuture(new Exception()));
-
-        this.service.getRelatedVideos(grpcReq, grpcResObserver);
-
-        verify(grpcResObserver, times(1)).onError(any());
-        verify(grpcResObserver, times(0)).onNext(any());
-        verify(grpcResObserver, times(0)).onCompleted();
+    fun testGetRelatedVideosWithValidationFailure() {
+        val grpcReq = GetRelatedVideosRequest.getDefaultInstance()
+        every { validator.validateGrpcRequest_getRelatedVideo(any()) } throws
+                Status.INVALID_ARGUMENT.asRuntimeException()
+        assertThrows<StatusRuntimeException> {
+            runBlocking { service.getRelatedVideos(grpcReq) }
+        }
     }
 
     @Test
-    public void testGetRelatedVideos() {
-        GetRelatedVideosRequest grpcReq = getRelatedVideosRequest(UUID.randomUUID(), 5, "");
-        StreamObserver<GetRelatedVideosResponse> grpcResObserver = mock(StreamObserver.class);
-
-        doNothing().when(validator).validateGrpcRequest_getRelatedVideo(any(), any());
-        GetRelatedVideosRequestData requestData = mock(GetRelatedVideosRequestData.class);
-        when(this.mapper.parseGetRelatedVideosRequestData(any())).thenReturn(requestData);
-
-        ResultListPage<Video> resultListPage = mock(ResultListPage.class);
-        GetRelatedVideosResponse response = GetRelatedVideosResponse.getDefaultInstance();
-        when(mapper.mapToGetRelatedVideosResponse(any(), any())).thenReturn(response);
-
-        when(this.suggestedVideosRepository.getRelatedVideos(any()))
-                .thenReturn(CompletableFuture.completedFuture(resultListPage));
-
-        this.service.getRelatedVideos(grpcReq, grpcResObserver);
-
-        verify(grpcResObserver, times(0)).onError(any());
-        verify(grpcResObserver, times(1)).onNext(any());
-        verify(grpcResObserver, times(1)).onCompleted();
+    fun testGetRelatedVideosWithQueryFailure() {
+        val grpcReq = createGetRelatedVideosRequest(UUID.randomUUID(), 5, "")
+        every { validator.validateGrpcRequest_getRelatedVideo(any()) } just Runs
+        coEvery {
+            suggestedVideosRepository.getRelatedVideos(any())
+        } throws Exception()
+        assertThrows<Exception> {
+            runBlocking { service!!.getRelatedVideos(grpcReq) }
+        }
     }
 
     @Test
-    void testGetSuggestedForUserWithValidationFailure() {
-        GetSuggestedForUserRequest grpcReq = GetSuggestedForUserRequest.getDefaultInstance();
-        StreamObserver<GetSuggestedForUserResponse> grpcResObserver = mock(StreamObserver.class);
+    fun testGetRelatedVideos() {
+        val grpcReq = createGetRelatedVideosRequest(UUID.randomUUID(), 5, "")
+        every { validator.validateGrpcRequest_getRelatedVideo(any()) } just Runs
+        val resultListPage: ResultListPage<Video?> = mockk()
+        val response = GetRelatedVideosResponse.getDefaultInstance()
+        every { mapper.mapToGetRelatedVideosResponse(any(), any()) } returns response
+        coEvery { suggestedVideosRepository.getRelatedVideos(any()) } returns resultListPage
 
-        doThrow(new IllegalArgumentException()).when(validator)
-                .validateGrpcRequest_getUserSuggestedVideo(any(), any());
-
-        Assertions.assertThrows(IllegalArgumentException.class, () ->
-                this.service.getSuggestedForUser(grpcReq, grpcResObserver)
-        );
+        val result = runBlocking { service.getRelatedVideos(grpcReq) }
+        assertEquals(response, result)
     }
 
-    @SuppressWarnings("SameParameterValue")
-    private GetRelatedVideosRequest getRelatedVideosRequest(UUID videoid, int pageSize, String pagingState) {
-        return GetRelatedVideosRequest.newBuilder()
-                .setVideoId(uuidToUuid(videoid))
-                .setPageSize(pageSize)
-                .setPagingState(pagingState)
-                .build();
+    @Test
+    fun testGetSuggestedForUserWithValidationFailure() {
+        val grpcReq = GetSuggestedForUserRequest.getDefaultInstance()
+        every {validator.validateGrpcRequest_getUserSuggestedVideo(any()) } throws
+                Status.INVALID_ARGUMENT.asRuntimeException()
+        assertThrows<StatusRuntimeException> {
+            runBlocking { service.getSuggestedForUser(grpcReq) }
+        }
     }
 }

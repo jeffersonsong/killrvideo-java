@@ -1,125 +1,107 @@
-package com.killrvideo.service.suggestedvideo.dao;
+package com.killrvideo.service.suggestedvideo.dao
 
-import com.google.protobuf.InvalidProtocolBufferException;
-import com.killrvideo.conf.KillrVideoConfiguration;
-import com.killrvideo.service.suggestedvideo.grpc.SuggestedVideosServiceGrpcMapper;
-import com.killrvideo.service.suggestedvideo.repository.SuggestedVideosRepository;
-import killrvideo.ratings.events.RatingsEvents.UserRatedVideo;
-import killrvideo.user_management.events.UserManagementEvents.UserCreated;
-import killrvideo.video_catalog.events.VideoCatalogEvents.YouTubeVideoAdded;
-import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.apache.kafka.clients.consumer.KafkaConsumer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Repository;
-
-import javax.annotation.PostConstruct;
-import javax.inject.Inject;
-import java.time.Duration;
-import java.util.Collections;
-import java.util.stream.StreamSupport;
+import com.google.protobuf.InvalidProtocolBufferException
+import com.killrvideo.conf.KillrVideoConfiguration
+import com.killrvideo.service.suggestedvideo.grpc.SuggestedVideosServiceGrpcMapper
+import com.killrvideo.service.suggestedvideo.repository.SuggestedVideosRepository
+import killrvideo.ratings.events.RatingsEvents.UserRatedVideo
+import killrvideo.user_management.events.UserManagementEvents.UserCreated
+import killrvideo.video_catalog.events.VideoCatalogEvents.YouTubeVideoAdded
+import org.apache.kafka.clients.consumer.ConsumerRecord
+import org.apache.kafka.clients.consumer.KafkaConsumer
+import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.context.annotation.Profile
+import org.springframework.stereotype.Repository
+import java.time.Duration
+import java.util.stream.StreamSupport
+import javax.annotation.PostConstruct
+import javax.inject.Inject
 
 @Repository("killrvideo.rating.dao.messaging")
 @Profile(KillrVideoConfiguration.PROFILE_MESSAGING_KAFKA)
-public class SuggestedVideosMessagingKafkaDao extends SuggestedVideosMessagingDaoSupport {
-
-    /**
-     * Loger for that class.
-     */
-    private static final Logger LOGGER = LoggerFactory.getLogger(SuggestedVideosMessagingKafkaDao.class);
-
+class SuggestedVideosMessagingKafkaDao(
+    suggestedVideosRepository: SuggestedVideosRepository,
+    mapper: SuggestedVideosServiceGrpcMapper,
     // --------------------------------------------------------------------------
     // -------------------------- User Creation ---------------------------------
     // --------------------------------------------------------------------------
-
-    private final KafkaConsumer<String, byte[]> consumerUserCreatedProtobuf;
-
-    @Value("${killrvideo.messaging.destination.userCreated : topic-kv-userCreation}")
-    private String topicUserCreated;
-
-    public SuggestedVideosMessagingKafkaDao(
-            SuggestedVideosRepository suggestedVideosRepository,
-            SuggestedVideosServiceGrpcMapper mapper,
-            @Qualifier("kafka.consumer.userCreating") KafkaConsumer<String, byte[]> consumerUserCreatedProtobuf) {
-        super(suggestedVideosRepository, mapper);
-        this.consumerUserCreatedProtobuf = consumerUserCreatedProtobuf;
-    }
-
+    @Qualifier("kafka.consumer.userCreating") private val consumerUserCreatedProtobuf: KafkaConsumer<String, ByteArray>
+) : SuggestedVideosMessagingDaoSupport(suggestedVideosRepository, mapper) {
+    @Value("\${killrvideo.messaging.destination.userCreated : topic-kv-userCreation}")
+    private val topicUserCreated: String? = null
     @PostConstruct
-    public void registerConsumerUserCreated() {
-        LOGGER.info("Start consuming events from topic '{}' ..", topicUserCreated);
-        consumerUserCreatedProtobuf.subscribe(Collections.singletonList(topicUserCreated));
+    fun registerConsumerUserCreated() {
+        LOGGER.info("Start consuming events from topic '{}' ..", topicUserCreated)
+        consumerUserCreatedProtobuf.subscribe(listOf(topicUserCreated))
         StreamSupport.stream(consumerUserCreatedProtobuf.poll(Duration.ofSeconds(2L)).spliterator(), false)
-                .map(ConsumerRecord::value)
-                .forEach(this::parseUserCreatedMessage);
+            .map { obj: ConsumerRecord<String, ByteArray> -> obj.value() }
+            .forEach { payload: ByteArray? -> parseUserCreatedMessage(payload) }
     }
 
-    public void parseUserCreatedMessage(byte[] payload) {
+    fun parseUserCreatedMessage(payload: ByteArray?) {
         try {
-            super.onUserCreatingMessage(UserCreated.parseFrom(payload));
-        } catch (InvalidProtocolBufferException e) {
-            LOGGER.error("Cannot parse message expecting object " + UserCreated.class.getName(), e);
+            super.onUserCreatingMessage(UserCreated.parseFrom(payload))
+        } catch (e: InvalidProtocolBufferException) {
+            LOGGER.error("Cannot parse message expecting object " + UserCreated::class.java.name, e)
         }
     }
 
     // --------------------------------------------------------------------------
     // -------------------------- Video Creation --------------------------------
     // --------------------------------------------------------------------------
-
-    @Value("${killrvideo.messaging.destination.youTubeVideoAdded : topic-kv-videoCreation}")
-    private String topicVideoCreated;
+    @Value("\${killrvideo.messaging.destination.youTubeVideoAdded : topic-kv-videoCreation}")
+    private val topicVideoCreated: String? = null
 
     @Inject
     @Qualifier("kafka.consumer.videoCreating")
-    private KafkaConsumer<String, byte[]> consumerVideoCreatedProtobuf;
-
+    private val consumerVideoCreatedProtobuf: KafkaConsumer<String, ByteArray>? = null
     @PostConstruct
-    public void registerConsumerYoutubeVideoAdded() {
-        LOGGER.info("Start consuming events from topic '{}' ..", topicVideoCreated);
-        consumerVideoCreatedProtobuf.subscribe(Collections.singletonList(topicVideoCreated));
+    fun registerConsumerYoutubeVideoAdded() {
+        LOGGER.info("Start consuming events from topic '{}' ..", topicVideoCreated)
+        consumerVideoCreatedProtobuf!!.subscribe(listOf(topicVideoCreated))
         StreamSupport.stream(consumerVideoCreatedProtobuf.poll(Duration.ofSeconds(2L)).spliterator(), false)
-                .map(ConsumerRecord::value)
-                .forEach(this::parseYoutubeVideoAddedMessage);
+            .map { obj: ConsumerRecord<String, ByteArray> -> obj.value() }
+            .forEach { payload: ByteArray -> parseYoutubeVideoAddedMessage(payload) }
     }
 
-    private void parseYoutubeVideoAddedMessage(byte[] payload) {
+    private fun parseYoutubeVideoAddedMessage(payload: ByteArray) {
         try {
             // Marshall binary to Protobuf Stub
-            super.onYoutubeVideoAddingMessage(YouTubeVideoAdded.parseFrom(payload));
-        } catch (InvalidProtocolBufferException e) {
-            LOGGER.error("Cannot parse message expecting object " + UserCreated.class.getName(), e);
+            super.onYoutubeVideoAddingMessage(YouTubeVideoAdded.parseFrom(payload))
+        } catch (e: InvalidProtocolBufferException) {
+            LOGGER.error("Cannot parse message expecting object " + UserCreated::class.java.name, e)
         }
     }
-
 
     // --------------------------------------------------------------------------
     // -------------------------- Video Rating --------------------------------
     // --------------------------------------------------------------------------
-
-    @Value("${killrvideo.messaging.destination.videoRated : topic-kv-videoRating}")
-    private String topicVideoRated;
+    @Value("\${killrvideo.messaging.destination.videoRated : topic-kv-videoRating}")
+    private val topicVideoRated: String? = null
 
     @Inject
     @Qualifier("kafka.consumer.videoRating")
-    private KafkaConsumer<String, byte[]> consumerVideoRatingProtobuf;
-
+    private val consumerVideoRatingProtobuf: KafkaConsumer<String, ByteArray>? = null
     @PostConstruct
-    public void registerConsumerVideoRating() {
-        LOGGER.info("Start consuming events from topic '{}' ..", topicVideoRated);
-        consumerVideoRatingProtobuf.subscribe(Collections.singletonList(topicVideoRated));
+    fun registerConsumerVideoRating() {
+        LOGGER.info("Start consuming events from topic '{}' ..", topicVideoRated)
+        consumerVideoRatingProtobuf!!.subscribe(listOf(topicVideoRated))
         StreamSupport.stream(consumerVideoRatingProtobuf.poll(Duration.ofSeconds(2L)).spliterator(), false)
-                .map(ConsumerRecord::value)
-                .forEach(this::parseVideoRatingMessage);
+            .map { obj: ConsumerRecord<String, ByteArray> -> obj.value() }
+            .forEach { payload: ByteArray -> parseVideoRatingMessage(payload) }
     }
 
-    private void parseVideoRatingMessage(byte[] payload) {
+    private fun parseVideoRatingMessage(payload: ByteArray) {
         try {
-            super.onVideoRatingMessage(UserRatedVideo.parseFrom(payload));
-        } catch (InvalidProtocolBufferException e) {
-            LOGGER.error("Cannot parse message expecting object " + UserCreated.class.getName(), e);
+            super.onVideoRatingMessage(UserRatedVideo.parseFrom(payload))
+        } catch (e: InvalidProtocolBufferException) {
+            LOGGER.error("Cannot parse message expecting object " + UserCreated::class.java.name, e)
         }
+    }
+
+    companion object {
+        private val LOGGER = LoggerFactory.getLogger(SuggestedVideosMessagingKafkaDao::class.java)
     }
 }

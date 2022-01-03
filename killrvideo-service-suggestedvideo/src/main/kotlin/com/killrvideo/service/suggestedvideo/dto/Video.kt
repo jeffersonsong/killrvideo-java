@@ -1,18 +1,13 @@
-package com.killrvideo.service.suggestedvideo.dto;
+package com.killrvideo.service.suggestedvideo.dto
 
-import com.datastax.oss.driver.api.mapper.annotations.CqlName;
-import com.datastax.oss.driver.api.mapper.annotations.Entity;
-import com.datastax.oss.driver.api.mapper.annotations.PartitionKey;
-import com.killrvideo.dse.dto.AbstractVideo;
-import com.killrvideo.dse.utils.EmptyCollectionIfNull;
-import lombok.Getter;
-import lombok.Setter;
-
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
-import java.time.Instant;
-import java.util.Set;
-import java.util.UUID;
+import com.datastax.oss.driver.api.mapper.annotations.CqlName
+import com.datastax.oss.driver.api.mapper.annotations.Entity
+import com.datastax.oss.driver.api.mapper.annotations.PartitionKey
+import com.killrvideo.dse.utils.EmptyCollectionIfNull
+import java.time.Instant
+import java.util.*
+import javax.validation.constraints.NotNull
+import javax.validation.constraints.Size
 
 /**
  * Pojo representing DTO for table 'videos'.
@@ -21,61 +16,27 @@ import java.util.UUID;
  */
 @Entity
 @CqlName("videos")
-@Getter @Setter
-public class Video extends AbstractVideo {
-    private static final long serialVersionUID = 7035802926837646137L;
-
-    /** Column names in the DB. */
-    public static final String COLUMN_USERID       = "userid";
-    public static final String COLUMN_VIDEOID      = "videoid";
-    public static final String COLUMN_DESCRIPTION  = "description";
-    public static final String COLUMN_LOCATION     = "location";
-    public static final String COLUMN_LOCATIONTYPE = "location_type";
-    public static final String COLUMN_ADDED_DATE   = "added_date";
-
+data class Video(
     @PartitionKey
-    private UUID videoid;
-
-    @NotNull
-    private UUID userid;
-
-    @Size(min = 1, message = "description must not be empty")
-    private String description;
-
-    @Size(min = 1, message = "location must not be empty")
-    private String location;
-
-    private int locationType;
-
-    @EmptyCollectionIfNull
-    private Set<String> tags;
-
-    @NotNull
-    private Instant addedDate;
-
-    /**
-     * Default Constructor allowing reflection.
-     */
-    public Video() {}
-    
-    /**
-     * Default Constructor allowing reflection.
-     */
-    public Video(String title) {
-        this.name = title;
-    }
-
-    /**
-     * All attributes constructor.
-     */
-    public Video(UUID videoid, UUID userid, String name, String description, String location, int locationType, String previewImageLocation, Set<String> tags, Instant addedDate) {
-        super(name, previewImageLocation);
-        this.videoid = videoid;
-        this.userid = userid;
-        this.description = description;
-        this.location = location;
-        this.locationType = locationType;
-        this.tags = tags;
-        this.addedDate = addedDate;
+    var videoid: UUID? = null,
+    var userid: @NotNull UUID? = null,
+    var name: String? = null,
+    var description: @Size(min = 1, message = "description must not be empty") String? = null,
+    var location: @Size(min = 1, message = "location must not be empty") String? = null,
+    var locationType: Int? = 0,
+    var previewImageLocation: String? = null,
+    var tags: @EmptyCollectionIfNull MutableSet<String>? = mutableSetOf(),
+    var addedDate: @NotNull Instant?
+) {
+    companion object {
+        const val COLUMN_VIDEOID = "videoid"
+        const val COLUMN_USERID = "userid"
+        const val COLUMN_NAME = "name"
+        const val COLUMN_DESCRIPTION = "description"
+        const val COLUMN_LOCATION = "location"
+        const val COLUMN_LOCATIONTYPE = "location_type"
+        const val COLUMN_PREVIEW = "preview_image_location"
+        const val COLUMN_TAGS = "tags"
+        const val COLUMN_ADDED_DATE = "added_date"
     }
 }
