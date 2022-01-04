@@ -5,7 +5,6 @@ import com.killrvideo.service.suggestedvideo.repository.SuggestedVideosRepositor
 import com.killrvideo.utils.GrpcMappingUtils
 import killrvideo.suggested_videos.SuggestedVideoServiceGrpcKt
 import killrvideo.suggested_videos.SuggestedVideosService.*
-import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 
@@ -22,7 +21,6 @@ class SuggestedVideosServiceGrpc(
     @Value("\${killrvideo.discovery.services.suggestedVideo : SuggestedVideoService}")
     val serviceKey: String
 ) : SuggestedVideoServiceGrpcKt.SuggestedVideoServiceCoroutineImplBase() {
-    private val logger = KotlinLogging.logger { }
 
     /** {@inheritDoc}  */
     override suspend fun getRelatedVideos(request: GetRelatedVideosRequest): GetRelatedVideosResponse {

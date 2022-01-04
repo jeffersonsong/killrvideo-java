@@ -7,7 +7,6 @@ import killrvideo.statistics.StatisticsServiceGrpcKt
 import killrvideo.statistics.StatisticsServiceOuterClass.*
 import killrvideo.statistics.getNumberOfPlaysResponse
 import killrvideo.statistics.recordPlaybackStartedResponse
-import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 
@@ -24,7 +23,6 @@ class StatisticsServiceGrpc(
     @Value("\${killrvideo.discovery.services.statistic : StatisticsService}")
     val serviceKey: String
 ) : StatisticsServiceGrpcKt.StatisticsServiceCoroutineImplBase() {
-    private val logger = KotlinLogging.logger {}
 
     /** {@inheritDoc}  */
     override suspend fun recordPlaybackStarted(request: RecordPlaybackStartedRequest): RecordPlaybackStartedResponse {

@@ -7,7 +7,6 @@ import com.killrvideo.service.user.grpc.UserManagementServiceGrpcMapper.GetUserP
 import killrvideo.user_management.UserManagementServiceGrpcKt
 import killrvideo.user_management.UserManagementServiceOuterClass.*
 import killrvideo.user_management.createUserResponse
-import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 
@@ -27,7 +26,6 @@ class UserManagementServiceGrpc(
     @Value("\${killrvideo.discovery.services.user : UserManagementService}")
     val serviceKey: String
 ) : UserManagementServiceGrpcKt.UserManagementServiceCoroutineImplBase() {
-    private val logger = KotlinLogging.logger {}
 
     override suspend fun createUser(request: CreateUserRequest): CreateUserResponse {
         // Validate Parameters

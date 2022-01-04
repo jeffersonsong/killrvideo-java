@@ -9,7 +9,6 @@ import com.killrvideo.utils.GrpcMappingUtils.fromUuid
 import killrvideo.ratings.RatingsServiceGrpcKt
 import killrvideo.ratings.RatingsServiceOuterClass.*
 import killrvideo.ratings.rateVideoResponse
-import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 
@@ -29,7 +28,6 @@ class RatingsServiceGrpc(
     @Value("\${killrvideo.messaging.kafka.topics.videoRated : topic-kv-videoRating}")
     private val topicvideoRated: String
 ) : RatingsServiceGrpcKt.RatingsServiceCoroutineImplBase() {
-    private val logger = KotlinLogging.logger {}
 
     /**
      * {@inheritDoc}

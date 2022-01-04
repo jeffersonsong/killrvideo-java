@@ -5,7 +5,6 @@ import com.killrvideo.service.search.grpc.SearchServiceGrpcMapper.SearchVideosRe
 import com.killrvideo.service.search.repository.SearchRepository
 import killrvideo.search.SearchServiceGrpcKt
 import killrvideo.search.SearchServiceOuterClass.*
-import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 
@@ -22,7 +21,6 @@ class SearchServiceGrpc(
     @Value("\${killrvideo.discovery.services.search : SearchService}")
     val serviceKey: String
 ) : SearchServiceGrpcKt.SearchServiceCoroutineImplBase() {
-    private val logger = KotlinLogging.logger {}
 
     /**
      * {@inheritDoc}
