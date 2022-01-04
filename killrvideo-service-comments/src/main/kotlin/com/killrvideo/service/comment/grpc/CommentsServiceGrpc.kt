@@ -6,7 +6,6 @@ import com.killrvideo.service.comment.grpc.CommentsServiceGrpcMapper.CommentOnVi
 import com.killrvideo.service.comment.grpc.CommentsServiceGrpcMapper.GetUserCommentsRequestExtensions.parse
 import com.killrvideo.service.comment.grpc.CommentsServiceGrpcMapper.GetVideoCommentsRequestExtensions.parse
 import com.killrvideo.service.comment.repository.CommentRepository
-import com.killrvideo.service.utils.ServiceGrpcUtils.trace
 import killrvideo.comments.CommentsServiceGrpcKt
 import killrvideo.comments.CommentsServiceOuterClass.*
 import killrvideo.comments.commentOnVideoResponse
@@ -43,9 +42,6 @@ class CommentsServiceGrpc(
         // Boilerplate Code for validation delegated to {@link CommentsServiceGrpcValidator}
         validator.validateGrpcRequestCommentOnVideo(request)
 
-        // Stands as stopwatch for logging and messaging 
-        val starts = Instant.now()
-
         // Mapping GRPC => Domain (Dao)
         val comment = request.parse()
         logger.debug {"Insert comment on video ${comment.videoid} for user ${comment.userid} : $comment" }
@@ -56,7 +52,7 @@ class CommentsServiceGrpc(
                 rs
             }.map {
                 commentOnVideoResponse {}
-            }.trace(logger, "commentOnVideo", starts).getOrThrow()
+            }.getOrThrow()
     }
 
     private fun notifyUserCommentedOnVideo(comment: Comment) =
@@ -69,9 +65,6 @@ class CommentsServiceGrpc(
         // Parameter validations
         validator.validateGrpcRequestGetVideoComment(request)
 
-        // Stands as stopwatch for logging and messaging 
-        val starts = Instant.now()
-
         // Mapping GRPC => Domain (Dao) : Dedicated bean creating for flexibility
         val query = request.parse()
 
@@ -80,7 +73,7 @@ class CommentsServiceGrpc(
             .map { mapper.mapFromDseVideoCommentToGrpcResponse(it) }
             .onFailure { error ->
                 messagingDao.sendErrorEvent(serviceKey, error)
-            }.trace(logger, "getVideoComments", starts).getOrThrow()
+            }.getOrThrow()
     }
 
     /**
@@ -89,9 +82,6 @@ class CommentsServiceGrpc(
     override suspend fun getUserComments(request: GetUserCommentsRequest): GetUserCommentsResponse {
         // GRPC Parameters Validation
         validator.validateGrpcRequest_GetUserComments(request)
-
-        // Stands as stopwatch for logging and messaging 
-        val starts = Instant.now()
 
         // Mapping GRPC => Domain (Dao) : Dedicated bean creating for flexibility
         val query = request.parse()
@@ -102,6 +92,6 @@ class CommentsServiceGrpc(
             .map { mapper.mapFromDseUserCommentToGrpcResponse(it) }
             .onFailure { error ->
                 messagingDao.sendErrorEvent(serviceKey, error)
-            }.trace(logger, "getUserComments", starts).getOrThrow()
+            }.getOrThrow()
     }
 }

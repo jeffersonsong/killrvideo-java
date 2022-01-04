@@ -5,7 +5,6 @@ import com.killrvideo.service.rating.dto.VideoRatingByUser
 import com.killrvideo.service.rating.grpc.RatingsServiceGrpcMapper.GetUserRatingRequestExtensions.parse
 import com.killrvideo.service.rating.grpc.RatingsServiceGrpcMapper.RateVideoRequestExtensions.parse
 import com.killrvideo.service.rating.repository.RatingRepository
-import com.killrvideo.service.utils.ServiceGrpcUtils.trace
 import com.killrvideo.utils.GrpcMappingUtils.fromUuid
 import killrvideo.ratings.RatingsServiceGrpcKt
 import killrvideo.ratings.RatingsServiceOuterClass.*
@@ -13,7 +12,6 @@ import killrvideo.ratings.rateVideoResponse
 import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
-import java.time.Instant
 
 /**
  * Operations on Ratings with GRPC.
@@ -40,9 +38,6 @@ class RatingsServiceGrpc(
         // Validate Parameters
         validator.validateGrpcRequest_RateVideo(request)
 
-        // Stands as stopwatch for logging and messaging 
-        val starts = Instant.now()
-
         // Mapping GRPC => Domain (Dao)
         val videoRatingByUser: VideoRatingByUser = request.parse()
 
@@ -51,7 +46,7 @@ class RatingsServiceGrpc(
             .map { rateVideoResponse {}}
             .onSuccess {
                 notifyUserRatedVideo(videoRatingByUser)
-            }.trace(logger, "rateVideo", starts).getOrThrow()
+            }.getOrThrow()
     }
 
     private fun notifyUserRatedVideo(videoRatingByUser: VideoRatingByUser) =
@@ -64,16 +59,12 @@ class RatingsServiceGrpc(
         // Validate Parameters
         validator.validateGrpcRequest_GetRating(request)
 
-        // Stands as stopwatch for logging and messaging 
-        val starts = Instant.now()
-
         // Mapping GRPC => Domain (Dao)
         val videoid = fromUuid(request.videoId)
 
         // Invoking Dao (Async) and map result back to GRPC (maptoRatingResponse)
         return runCatching { ratingRepository.findRating(videoid) }
             .map { mapper.mapToRatingResponse(it) }
-            .trace(logger, "getRating", starts)
             .getOrThrow()
     }
 
@@ -84,16 +75,12 @@ class RatingsServiceGrpc(
         // Validate Parameters
         validator.validateGrpcRequest_GetUserRating(request)
 
-        // Stands as stopwatch for logging and messaging 
-        val starts = Instant.now()
-
         // Mapping GRPC => Domain (Dao)
         val requestData = request.parse()
 
         // Invoking Dao (Async) and map result back to GRPC (maptoRatingResponse)
         return runCatching { ratingRepository.findUserRating(requestData) }
             .map { mapper.mapToUserRatingResponse(it) }
-            .trace(logger, "getUserRating", starts)
             .getOrThrow()
     }
 }

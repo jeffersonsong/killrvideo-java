@@ -2,7 +2,6 @@ package com.killrvideo.service.statistic.grpc
 
 import com.killrvideo.service.statistic.grpc.StatisticsServiceGrpcMapper.GetNumberOfPlaysRequestExtensions.parse
 import com.killrvideo.service.statistic.repository.StatisticsRepository
-import com.killrvideo.service.utils.ServiceGrpcUtils.trace
 import com.killrvideo.utils.GrpcMappingUtils.fromUuid
 import killrvideo.statistics.StatisticsServiceGrpcKt
 import killrvideo.statistics.StatisticsServiceOuterClass.*
@@ -11,7 +10,6 @@ import killrvideo.statistics.recordPlaybackStartedResponse
 import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
-import java.time.Instant
 
 /**
  * Get statistics on a video.
@@ -33,16 +31,12 @@ class StatisticsServiceGrpc(
         // Validate Parameters
         validator.validateGrpcRequest_RecordPlayback(request)
 
-        // Stands as stopwatch for logging and messaging 
-        val starts = Instant.now()
-
         // Mapping GRPC => Domain (Dao)
         val videoId = fromUuid(request.videoId)
 
         // Invoke DAO Async
         return runCatching { statisticsRepository.recordPlaybackStartedAsync(videoId) }
             .map { recordPlaybackStartedResponse {}}
-            .trace(logger, "recordPlaybackStarted", starts)
             .getOrThrow()
     }
 
@@ -50,9 +44,6 @@ class StatisticsServiceGrpc(
     override suspend fun getNumberOfPlays(request: GetNumberOfPlaysRequest): GetNumberOfPlaysResponse {
         // Validate Parameters
         validator.validateGrpcRequest_GetNumberPlays(request)
-
-        // Stands as stopwatch for logging and messaging 
-        val starts = Instant.now()
 
         // Mapping GRPC => Domain (Dao)
         val listOfVideoId = request.parse()
@@ -63,8 +54,7 @@ class StatisticsServiceGrpc(
         } else {
             // Invoke DAO Async
             runCatching { statisticsRepository.getNumberOfPlaysAsync(listOfVideoId) }
-                .map { mapper.buildGetNumberOfPlayResponse(request, it)
-                }.trace(logger, "getNumberOfPlays", starts)
+                .map { mapper.buildGetNumberOfPlayResponse(request, it) }
                 .getOrThrow()
         }
     }

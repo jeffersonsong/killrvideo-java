@@ -4,7 +4,6 @@ import com.killrvideo.messaging.dao.MessagingDao
 import com.killrvideo.service.user.dto.User
 import com.killrvideo.service.user.grpc.UserManagementServiceGrpcMapper.CreateUserRequestExtensions.parse
 import com.killrvideo.service.user.grpc.UserManagementServiceGrpcMapper.GetUserProfileRequestExtensions.parse
-import com.killrvideo.service.utils.ServiceGrpcUtils.trace
 import killrvideo.user_management.UserManagementServiceGrpcKt
 import killrvideo.user_management.UserManagementServiceOuterClass.*
 import killrvideo.user_management.createUserResponse
@@ -35,9 +34,6 @@ class UserManagementServiceGrpc(
         // Validate Parameters
         validator.validateGrpcRequest_createUser(request)
 
-        // Stands as stopwatch for logging and messaging 
-        val starts = Instant.now()
-
         // Mapping GRPC => Domain (Dao)
         val (user, hashedPassword) = request.parse()
 
@@ -47,7 +43,7 @@ class UserManagementServiceGrpc(
 
         return result
             .onSuccess { notifyUserCreated(user) }
-            .trace(logger, "createUser", starts).getOrThrow()
+            .getOrThrow()
     }
 
     private fun notifyUserCreated(user: User) =
@@ -62,7 +58,6 @@ class UserManagementServiceGrpc(
 
         return userService.verifyCredentials(request.email, request.password)
             .map { credential -> mapper.mapResponseVerifyCredentials(credential.userid) }
-            .trace(logger, "verifyCredentials", starts)
             .getOrThrow()
     }
 
@@ -79,7 +74,6 @@ class UserManagementServiceGrpc(
         // Execute Async
         return userService.getUserProfile(listOfUserId)
             .map { mapper.buildGetUserProfileResponse(it) }
-            .trace(logger, "getUserProfile", starts)
             .getOrThrow()
     }
 }

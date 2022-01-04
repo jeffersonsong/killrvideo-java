@@ -3,8 +3,6 @@ package com.killrvideo.service.video.grpc
 import com.killrvideo.dse.dto.CustomPagingState
 import com.killrvideo.exception.NotFoundException
 import com.killrvideo.messaging.dao.MessagingDao
-import com.killrvideo.service.utils.ServiceGrpcUtils.trace
-import com.killrvideo.service.utils.ServiceGrpcUtils.traceSuccess
 import com.killrvideo.service.video.dto.Video
 import com.killrvideo.service.video.grpc.VideoCatalogServiceGrpcMapper.GetLatestVideoPreviewsRequestExtensions.parse
 import com.killrvideo.service.video.grpc.VideoCatalogServiceGrpcMapper.GetUserVideoPreviewsRequestExtensions.parse
@@ -46,9 +44,6 @@ class VideoCatalogServiceGrpc(
         // GRPC Parameters Validation
         validator.validateGrpcRequest_submitYoutubeVideo(request)
 
-        // Stands as stopwatch for logging and messaging 
-        val starts = Instant.now()
-
         // Mapping GRPC => Domain (Dao)
         val video = request.parse()
 
@@ -61,7 +56,6 @@ class VideoCatalogServiceGrpc(
                 rs
             }
             .map { submitYouTubeVideoResponse {}}
-            .trace(logger, "submitYouTubeVideo", starts)
             .getOrThrow()
     }
 
@@ -103,14 +97,10 @@ class VideoCatalogServiceGrpc(
         // GRPC Parameters Validation
         validator.validateGrpcRequest_getLatestPreviews(request)
 
-        // Stands as stopwatch for logging and messaging 
-        val starts = Instant.now()
-
         // GRPC Parameters Mappings
         val requestData = request.parse { CustomPagingState.buildFirstCustomPagingState() }
         return runCatching { videoCatalogRepository.getLatestVideoPreviewsAsync(requestData) }
             .map { mapper.mapLatestVideoToGrpcResponse(it)}
-            .trace(logger, "getLatestVideoPreviews", starts)
             .getOrThrow()
     }
 
@@ -121,9 +111,6 @@ class VideoCatalogServiceGrpc(
         // GRPC Parameters Validation
         validator.validateGrpcRequest_getVideo(request)
 
-        // Stands as stopwatch for logging and messaging 
-        val starts = Instant.now()
-
         // GRPC Parameters Mappings
         val videoId = fromUuid(request.videoId)
 
@@ -133,7 +120,6 @@ class VideoCatalogServiceGrpc(
                 video ?: throw NotFoundException("Video with id $videoId was not found")
                 video
             }.map { mapper.mapFromVideotoVideoResponse(it) }
-            .trace(logger, "getVideo", starts)
             .getOrThrow()
     }
 
@@ -144,12 +130,8 @@ class VideoCatalogServiceGrpc(
         // GRPC Parameters Validation
         validator.validateGrpcRequest_getVideoPreviews(request)
 
-        // Stands as stopwatch for logging and messaging 
-        val starts = Instant.now()
-
         return if (request.videoIdsCount == 0) {
             logger.warn { "No video id provided for video preview" }
-            traceSuccess(logger, "getVideoPreviews", starts)
             getVideoPreviewsResponse {}
 
         } else {
@@ -159,7 +141,6 @@ class VideoCatalogServiceGrpc(
             // Execute Async
             runCatching { videoCatalogRepository.getVideoPreview(listOfVideoIds) }
                 .map { mapper.mapToGetVideoPreviewsResponse(it) }
-                .trace(logger, "getVideoPreviews", starts)
                 .getOrThrow()
         }
     }
@@ -171,15 +152,11 @@ class VideoCatalogServiceGrpc(
         // GRPC Parameters Validation
         validator.validateGrpcRequest_getUserVideoPreviews(request)
 
-        // Stands as stopwatch for logging and messaging 
-        val starts = Instant.now()
-
         // GRPC Parameters Mappings
         val requestData = request.parse()
         // Map Result back to GRPC
         return kotlin.runCatching { videoCatalogRepository.getUserVideosPreview(requestData) }
             .map { mapper.mapToGetUserVideoPreviewsResponse(it, requestData.userId) }
-            .trace(logger, "getUserVideoPreviews", starts)
             .getOrThrow()
     }
 }

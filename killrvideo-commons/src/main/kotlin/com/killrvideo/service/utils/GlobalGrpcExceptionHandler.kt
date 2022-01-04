@@ -1,9 +1,8 @@
-package com.killrvideo.service.comment.grpc
+package com.killrvideo.service.utils
 
 import com.killrvideo.exception.AlreadyExistsException
 import com.killrvideo.exception.NotFoundException
 import io.grpc.*
-import io.grpc.ForwardingServerCallListener.SimpleForwardingServerCallListener
 import mu.KotlinLogging
 
 class GlobalGrpcExceptionHandler : ServerInterceptor {
@@ -14,15 +13,12 @@ class GlobalGrpcExceptionHandler : ServerInterceptor {
     private class ExceptionTranslatingServerCall<ReqT, RespT>(
         delegate: ServerCall<ReqT, RespT>
     ) : ForwardingServerCall.SimpleForwardingServerCall<ReqT, RespT>(delegate) {
-        private val logger = KotlinLogging.logger {}
         override fun close(status: Status, trailers: Metadata) {
             if (status.isOk) {
                 return super.close(status, trailers)
             }
             val cause = status.cause
             var newStatus = status
-
-            logger.error(cause) { "Error handling gRPC endpoint." }
 
             if (status.code == Status.Code.UNKNOWN) {
                 val translatedStatus = when (cause) {
