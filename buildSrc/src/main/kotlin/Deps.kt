@@ -61,7 +61,6 @@ object Deps {
     const val etcd4j = "com.xqbase:etcd4j:1.2"
     const val retry4j = "com.evanlennick:retry4j:0.14.0"
 
-    const val commonsCodec = "commons-codec:commons-codec:1.15"
     const val hamcrest = "org.hamcrest:hamcrest:2.2"
     const val mockk = "io.mockk:mockk:1.12.2"
 
@@ -98,7 +97,6 @@ object Deps {
 
     object JetBrian {
         object Kotlinx {
-            val coroutinesCore = "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion"
             val coroutinesJdk8 = "org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:$coroutinesVersion"
         }
     }
