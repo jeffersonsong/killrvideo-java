@@ -18,11 +18,7 @@ repositories {
 
 dependencies {
     api(kotlin("stdlib"))
-    api(Deps.Google.protobufJavaUtils)
     api(Deps.Google.protobufKotlin)
-
-    implementation(Deps.JetBrian.Kotlinx.coroutinesJdk8)
-    implementation(Deps.kotlinLogging)
 
     runtimeOnly(Deps.Google.protobufJavaUtils)
 
@@ -31,7 +27,6 @@ dependencies {
     implementation(Deps.Javax.inject)
 
     // Logging
-    implementation(Deps.Logback.core)
     runtimeOnly(Deps.Logback.classic)
     implementation(Deps.kotlinLogging)
 
