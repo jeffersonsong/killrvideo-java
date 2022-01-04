@@ -10,7 +10,6 @@ import killrvideo.user_management.createUserResponse
 import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
-import java.time.Instant
 
 /**
  * Create or update users.
@@ -53,9 +52,6 @@ class UserManagementServiceGrpc(
         // Validate Parameters
         validator.validateGrpcRequest_VerifyCredentials(request)
 
-        // Stands as stopwatch for logging and messaging 
-        val starts = Instant.now()
-
         return userService.verifyCredentials(request.email, request.password)
             .map { credential -> mapper.mapResponseVerifyCredentials(credential.userid) }
             .getOrThrow()
@@ -64,9 +60,6 @@ class UserManagementServiceGrpc(
     override suspend fun getUserProfile(request: GetUserProfileRequest): GetUserProfileResponse {
         // Validate Parameters
         validator.validateGrpcRequest_getUserProfile(request)
-
-        // Stands as stopwatch for logging and messaging 
-        val starts = Instant.now()
 
         // Mapping GRPC => Domain (Dao)
         val listOfUserId = request.parse()

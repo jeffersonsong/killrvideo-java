@@ -16,7 +16,6 @@ import killrvideo.video_catalog.submitYouTubeVideoResponse
 import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
-import java.time.Instant
 import java.util.stream.Collectors
 
 /**

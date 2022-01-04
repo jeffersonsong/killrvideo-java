@@ -8,7 +8,6 @@ import killrvideo.suggested_videos.SuggestedVideosService.*
 import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
-import java.time.Instant
 
 /**
  * Suggested video for a user.
@@ -43,9 +42,6 @@ class SuggestedVideosServiceGrpc(
     override suspend fun getSuggestedForUser(request: GetSuggestedForUserRequest): GetSuggestedForUserResponse {
         // Validate Parameters
         validator.validateGrpcRequest_getUserSuggestedVideo(request)
-
-        // Stands as stopwatch for logging and messaging 
-        val starts = Instant.now()
 
         // Mapping GRPC => Domain (Dao)
         val userid = GrpcMappingUtils.fromUuid(request.userId)
