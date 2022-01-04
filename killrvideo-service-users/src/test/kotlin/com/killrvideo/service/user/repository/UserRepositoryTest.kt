@@ -1,12 +1,12 @@
 package com.killrvideo.service.user.repository
 
+import com.killrvideo.exception.AlreadyExistsException
 import com.killrvideo.service.user.dao.UserCredentialsDao
 import com.killrvideo.service.user.dao.UserDao
 import com.killrvideo.service.user.dao.UserMapper
 import com.killrvideo.service.user.dto.User
 import com.killrvideo.service.user.dto.UserCredentials
 import com.killrvideo.utils.test.CassandraTestUtilsKt.mockMappedAsyncPagingIterable
-import io.grpc.StatusRuntimeException
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
@@ -40,7 +40,7 @@ internal class UserRepositoryTest {
         val user = User(userid = UUID.randomUUID(), email = "joe@gmail.com")
         every { userCredentialsDao.insert(any()) } returns CompletableFuture.completedFuture(false)
 
-        assertThrows<StatusRuntimeException> {
+        assertThrows<AlreadyExistsException> {
             runBlocking {
                 repository.createUserAsync(user, "passwd")
             }

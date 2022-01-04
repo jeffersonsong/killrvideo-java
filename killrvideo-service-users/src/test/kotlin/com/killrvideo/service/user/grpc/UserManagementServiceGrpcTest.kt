@@ -5,8 +5,6 @@ import com.killrvideo.service.user.dto.User
 import com.killrvideo.service.user.dto.UserCredentials
 import com.killrvideo.utils.GrpcMappingUtils.uuidToUuid
 import com.killrvideo.utils.HashUtils
-import io.grpc.Status
-import io.grpc.StatusRuntimeException
 import io.mockk.*
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
@@ -49,9 +47,9 @@ internal class UserManagementServiceGrpcTest {
 
         every {
             validator.validateGrpcRequest_createUser(any())
-        } throws Status.INVALID_ARGUMENT.asRuntimeException()
+        } throws IllegalArgumentException()
 
-        assertThrows<StatusRuntimeException> {
+        assertThrows<IllegalArgumentException> {
             runBlocking {
                 service.createUser(request)
             }
@@ -64,9 +62,9 @@ internal class UserManagementServiceGrpcTest {
         val request = createUserRequest { password = "passwd"; email = "joe@gmail.com"; userId=uuidToUuid(userid) }
         every { validator.validateGrpcRequest_createUser(any()) } just Runs
 
-        coEvery { userService.createUser(any(), any()) } returns Result.failure(Status.INTERNAL.asRuntimeException())
+        coEvery { userService.createUser(any(), any()) } returns Result.failure(Exception())
 
-        assertThrows<StatusRuntimeException> {
+        assertThrows<Exception> {
             runBlocking {
                 service.createUser(request)
             }
@@ -102,9 +100,9 @@ internal class UserManagementServiceGrpcTest {
     @Test
     fun testVerifyCredentialsWithValidationFailure() {
         val request = verifyCredentialsRequest {}
-        every { validator.validateGrpcRequest_VerifyCredentials(any()) } throws Status.INVALID_ARGUMENT.asRuntimeException()
+        every { validator.validateGrpcRequest_VerifyCredentials(any()) } throws IllegalArgumentException()
 
-        assertThrows<StatusRuntimeException> {
+        assertThrows<IllegalArgumentException> {
             runBlocking {
                 service.verifyCredentials(request)
             }
@@ -115,9 +113,9 @@ internal class UserManagementServiceGrpcTest {
     fun testVerifyCredentialsWithQueryFailure() {
         val request = verifyCredentialsRequest { email = "joe@gmail.com"; password = "passwd" }
         every { validator.validateGrpcRequest_VerifyCredentials(any()) } just Runs
-        coEvery { userService.verifyCredentials(any(), any()) } returns Result.failure(Status.INTERNAL.asRuntimeException())
+        coEvery { userService.verifyCredentials(any(), any()) } returns Result.failure(Exception())
 
-        assertThrows<StatusRuntimeException> {
+        assertThrows<Exception> {
             runBlocking {
                 service.verifyCredentials(request)
             }
@@ -147,8 +145,8 @@ internal class UserManagementServiceGrpcTest {
     @Test
     fun testGetUserProfileWithValidationFailure() {
         val request = getUserProfileRequest {}
-        every { validator.validateGrpcRequest_getUserProfile(any()) } throws Status.INVALID_ARGUMENT.asRuntimeException()
-        assertThrows<StatusRuntimeException> {
+        every { validator.validateGrpcRequest_getUserProfile(any()) } throws IllegalArgumentException()
+        assertThrows<IllegalArgumentException> {
             runBlocking {
                 service.getUserProfile(request)
             }
@@ -164,9 +162,9 @@ internal class UserManagementServiceGrpcTest {
         every { validator.validateGrpcRequest_getUserProfile(any()) } just Runs
         coEvery {
             userService.getUserProfile(any())
-        } returns Result.failure(Status.INTERNAL.asRuntimeException())
+        } returns Result.failure(Exception())
 
-        assertThrows<StatusRuntimeException> {
+        assertThrows<Exception> {
             runBlocking {
                 service.getUserProfile(request)
             }

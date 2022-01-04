@@ -1,6 +1,5 @@
 package com.killrvideo.service.search.grpc
 
-import io.grpc.StatusRuntimeException
 import killrvideo.search.SearchServiceOuterClass.GetQuerySuggestionsRequest
 import killrvideo.search.SearchServiceOuterClass.SearchVideosRequest
 import killrvideo.search.getQuerySuggestionsRequest
@@ -23,7 +22,7 @@ internal class SearchServiceGrpcValidatorTest {
     @Test
     fun testValidateGrpcRequest_GetQuerySuggestions_Failure() {
         val request = GetQuerySuggestionsRequest.getDefaultInstance()
-        assertThrows<StatusRuntimeException> {
+        assertThrows<IllegalArgumentException> {
             validator.validateGrpcRequest_GetQuerySuggestions(request)
         }
     }
@@ -40,7 +39,7 @@ internal class SearchServiceGrpcValidatorTest {
     @Test
     fun testValidateGrpcRequest_SearchVideos_Failure() {
         val request = SearchVideosRequest.getDefaultInstance()
-        assertThrows<StatusRuntimeException> {
+        assertThrows<IllegalArgumentException> {
             validator.validateGrpcRequest_SearchVideos(request)
         }
     }

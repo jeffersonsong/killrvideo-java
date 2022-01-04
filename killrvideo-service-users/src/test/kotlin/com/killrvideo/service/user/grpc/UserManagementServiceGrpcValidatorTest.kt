@@ -1,7 +1,6 @@
 package com.killrvideo.service.user.grpc
 
 import com.killrvideo.utils.GrpcMappingUtils.randomUuid
-import io.grpc.StatusRuntimeException
 import killrvideo.user_management.createUserRequest
 import killrvideo.user_management.getUserProfileRequest
 import killrvideo.user_management.verifyCredentialsRequest
@@ -26,7 +25,7 @@ internal class UserManagementServiceGrpcValidatorTest {
     @Test
     fun testValidateGrpcRequest_createUser_Failure() {
         val request = createUserRequest {}
-        assertThrows<StatusRuntimeException> {
+        assertThrows<IllegalArgumentException> {
             validator.validateGrpcRequest_createUser(request)
         }
     }
@@ -43,7 +42,7 @@ internal class UserManagementServiceGrpcValidatorTest {
     @Test
     fun testValidateGrpcRequest_VerifyCredentials_Failure() {
         val request = verifyCredentialsRequest {}
-        assertThrows<StatusRuntimeException> {
+        assertThrows<IllegalArgumentException> {
             validator.validateGrpcRequest_VerifyCredentials(request)
         }
     }
@@ -63,7 +62,7 @@ internal class UserManagementServiceGrpcValidatorTest {
                 IntStream.range(0, 21).mapToObj { _ -> randomUuid() }.collect(Collectors.toList())
             )
         }
-        assertThrows<StatusRuntimeException> {
+        assertThrows<IllegalArgumentException> {
             validator.validateGrpcRequest_getUserProfile(request)
         }
     }

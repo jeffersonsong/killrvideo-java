@@ -11,7 +11,6 @@ import com.killrvideo.service.video.dto.LatestVideo
 import com.killrvideo.service.video.dto.LatestVideosPage
 import com.killrvideo.service.video.request.GetLatestVideoPreviewsForGivenDateRequestData
 import com.killrvideo.service.video.request.GetLatestVideoPreviewsRequestData
-import io.grpc.Status
 import mu.KotlinLogging
 import org.apache.commons.lang3.StringUtils.isNotBlank
 import org.springframework.stereotype.Component
@@ -51,7 +50,7 @@ class LatestVideoPreviewsRepository(
                 request.startVideoId
             )
         } catch (ex: Exception) {
-            throw Status.INTERNAL.withCause(ex).asRuntimeException()
+            throw ex
         } finally {
             logger.debug {"End getting latest video preview"}
         }

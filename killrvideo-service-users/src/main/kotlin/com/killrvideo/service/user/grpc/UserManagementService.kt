@@ -4,7 +4,6 @@ import com.killrvideo.service.user.dto.User
 import com.killrvideo.service.user.dto.UserCredentials
 import com.killrvideo.service.user.repository.UserRepository
 import com.killrvideo.utils.HashUtils
-import io.grpc.Status
 import org.springframework.stereotype.Service
 import java.util.*
 
@@ -20,8 +19,7 @@ class UserManagementService(
             userRepository.getUserCredentialAsync(email)
         }.mapCatching { credential ->
             if (credential?.password == null || !HashUtils.isPasswordValid(password, credential.password!!)) {
-                throw Status.INVALID_ARGUMENT
-                    .withDescription("Email address or password are not correct").asRuntimeException()
+                throw IllegalArgumentException("Email address or password are not correct")
             }
             credential
         }

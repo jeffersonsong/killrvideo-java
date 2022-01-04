@@ -3,8 +3,6 @@ package com.killrvideo.service.search.grpc
 import com.killrvideo.dse.dto.ResultListPage
 import com.killrvideo.service.search.dto.Video
 import com.killrvideo.service.search.repository.SearchRepository
-import io.grpc.Status
-import io.grpc.StatusRuntimeException
 import io.mockk.*
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
@@ -38,9 +36,8 @@ internal class SearchServiceGrpcTest {
     @Test
     fun testSearchVideosWithValidationFailed() {
         val request = searchVideosRequest { }
-        every { validator.validateGrpcRequest_SearchVideos(any()) } throws
-                Status.INVALID_ARGUMENT.asRuntimeException()
-        assertThrows<StatusRuntimeException> {
+        every { validator.validateGrpcRequest_SearchVideos(any()) } throws IllegalArgumentException()
+        assertThrows<IllegalArgumentException> {
             runBlocking { service.searchVideos(request) }
         }
     }
@@ -72,9 +69,8 @@ internal class SearchServiceGrpcTest {
     @Test
     fun testGetQuerySuggestionsWithValidationFailed() {
         val request = getQuerySuggestionsRequest {}
-        every { validator.validateGrpcRequest_GetQuerySuggestions(any()) } throws
-                Status.INVALID_ARGUMENT.asRuntimeException()
-        assertThrows<StatusRuntimeException> {
+        every { validator.validateGrpcRequest_GetQuerySuggestions(any()) } throws IllegalArgumentException()
+        assertThrows<IllegalArgumentException> {
             runBlocking { service.getQuerySuggestions(request) }
         }
     }

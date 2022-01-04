@@ -1,7 +1,6 @@
 package com.killrvideo.service.statistic.grpc
 
 import com.killrvideo.utils.GrpcMappingUtils.randomUuid
-import io.grpc.StatusRuntimeException
 import killrvideo.statistics.getNumberOfPlaysRequest
 import killrvideo.statistics.recordPlaybackStartedRequest
 import org.junit.jupiter.api.Test
@@ -21,7 +20,7 @@ internal class StatisticsServiceGrpcValidatorTest {
     @Test
     fun testValidateGrpcRequest_GetNumberPlays_Failure() {
         val request = getNumberOfPlaysRequest {}
-        assertThrows<StatusRuntimeException> {
+        assertThrows<IllegalArgumentException> {
             validator.validateGrpcRequest_GetNumberPlays(request)
         }
     }
@@ -37,7 +36,7 @@ internal class StatisticsServiceGrpcValidatorTest {
     @Test
     fun testValidateGrpcRequest_RecordPlayback_Failure() {
         val request = recordPlaybackStartedRequest {}
-        assertThrows<StatusRuntimeException> {
+        assertThrows<IllegalArgumentException> {
             validator.validateGrpcRequest_RecordPlayback(request)
         }
     }

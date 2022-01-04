@@ -6,8 +6,6 @@ import com.killrvideo.service.rating.dto.VideoRatingByUser
 import com.killrvideo.service.rating.repository.RatingRepository
 import com.killrvideo.utils.GrpcMappingUtils.randomUuid
 import com.killrvideo.utils.GrpcMappingUtils.uuidToUuid
-import io.grpc.Status
-import io.grpc.StatusRuntimeException
 import io.mockk.*
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
@@ -45,10 +43,9 @@ internal class RatingsServiceGrpcTest {
     @Test
     fun testRateVideoWithValidationFailed() {
         val request = rateVideoRequest {}
-        every { validator.validateGrpcRequest_RateVideo(any())} throws
-                Status.INVALID_ARGUMENT.asRuntimeException()
+        every { validator.validateGrpcRequest_RateVideo(any())} throws IllegalArgumentException()
         
-        assertThrows<StatusRuntimeException> {
+        assertThrows<IllegalArgumentException> {
             runBlocking { service.rateVideo(request) }
         }
     }
@@ -89,9 +86,8 @@ internal class RatingsServiceGrpcTest {
     @Test
     fun testGetRating() {
         val request = getRatingRequest {}
-        every { validator.validateGrpcRequest_GetRating(any()) } throws
-                Status.INVALID_ARGUMENT.asRuntimeException()
-        assertThrows<StatusRuntimeException> {
+        every { validator.validateGrpcRequest_GetRating(any()) } throws IllegalArgumentException()
+        assertThrows<IllegalArgumentException> {
             runBlocking { service.getRating(request) }
         }
     }
@@ -122,9 +118,8 @@ internal class RatingsServiceGrpcTest {
     @Test
     fun testGetUserRatingWithValidationFailed() {
         val request = getUserRatingRequest {}
-        every { validator.validateGrpcRequest_GetUserRating(any()) } throws
-                Status.INVALID_ARGUMENT.asRuntimeException()
-        assertThrows<StatusRuntimeException>{
+        every { validator.validateGrpcRequest_GetUserRating(any()) } throws IllegalArgumentException()
+        assertThrows<IllegalArgumentException>{
             runBlocking { service.getUserRating(request) }
         }
     }

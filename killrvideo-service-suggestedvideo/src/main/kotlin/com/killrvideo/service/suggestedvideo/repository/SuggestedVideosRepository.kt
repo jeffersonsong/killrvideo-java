@@ -12,10 +12,10 @@ import com.killrvideo.dse.graph.KillrVideoTraversalConstants
 import com.killrvideo.dse.graph.KillrVideoTraversalSource
 import com.killrvideo.dse.utils.PageableQuery
 import com.killrvideo.dse.utils.PageableQueryFactory
+import com.killrvideo.exception.NotFoundException
 import com.killrvideo.service.suggestedvideo.dao.*
 import com.killrvideo.service.suggestedvideo.dto.Video
 import com.killrvideo.service.suggestedvideo.request.GetRelatedVideosRequestData
-import io.grpc.Status
 import kotlinx.coroutines.future.await
 import mu.KotlinLogging
 import org.apache.tinkerpop.gremlin.structure.Vertex
@@ -76,9 +76,7 @@ class SuggestedVideosRepository(
         return findVideoById(request.videoid)
             .thenCompose { video: Video? ->
                 if (video == null) {
-                    throw CompletionException(Status.NOT_FOUND
-                        .withDescription("Video ${request.videoid} not found").asRuntimeException()
-                    )
+                    throw CompletionException(NotFoundException("Video ${request.videoid} not found"))
                 } else {
                     val query = buildSolrQueryToSearchVideos(video)
                     findRelatedVideos.queryNext(

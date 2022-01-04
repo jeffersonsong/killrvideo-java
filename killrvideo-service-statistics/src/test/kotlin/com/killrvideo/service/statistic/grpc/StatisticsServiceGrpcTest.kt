@@ -4,8 +4,6 @@ import com.killrvideo.service.statistic.dto.VideoPlaybackStats
 import com.killrvideo.service.statistic.repository.StatisticsRepository
 import com.killrvideo.utils.GrpcMappingUtils.randomUuid
 import com.killrvideo.utils.GrpcMappingUtils.uuidToUuid
-import io.grpc.Status
-import io.grpc.StatusRuntimeException
 import io.mockk.*
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
@@ -40,9 +38,8 @@ internal class StatisticsServiceGrpcTest {
     @Test
     fun testRecordPlaybackStartedWithValidationFailure() {
         val request = recordPlaybackStartedRequest {}
-        every { validator.validateGrpcRequest_RecordPlayback(any()) } throws
-                Status.INVALID_ARGUMENT.asRuntimeException()
-        assertThrows<StatusRuntimeException> {
+        every { validator.validateGrpcRequest_RecordPlayback(any()) } throws IllegalArgumentException()
+        assertThrows<IllegalArgumentException> {
             runBlocking { service.recordPlaybackStarted(request) }
         }
     }
@@ -69,9 +66,8 @@ internal class StatisticsServiceGrpcTest {
     @Test
     fun testGetNumberOfPlaysWithValidationFailure() {
         val request = getNumberOfPlaysRequest {}
-        every { validator.validateGrpcRequest_GetNumberPlays(any()) } throws
-                Status.INVALID_ARGUMENT.asRuntimeException()
-        assertThrows<StatusRuntimeException> {
+        every { validator.validateGrpcRequest_GetNumberPlays(any()) } throws IllegalArgumentException()
+        assertThrows<IllegalArgumentException> {
             runBlocking { service.getNumberOfPlays(request) }
         }
     }

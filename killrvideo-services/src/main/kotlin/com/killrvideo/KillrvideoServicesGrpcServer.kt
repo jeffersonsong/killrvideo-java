@@ -1,16 +1,17 @@
 package com.killrvideo
 
+import com.google.common.collect.ImmutableList
 import com.killrvideo.conf.KillrVideoConfiguration
 import com.killrvideo.discovery.ServiceDiscoveryDao
 import com.killrvideo.service.comment.grpc.CommentsServiceGrpc
+import com.killrvideo.service.comment.grpc.GlobalGrpcExceptionHandler
 import com.killrvideo.service.rating.grpc.RatingsServiceGrpc
 import com.killrvideo.service.search.grpc.SearchServiceGrpc
 import com.killrvideo.service.statistic.grpc.StatisticsServiceGrpc
 import com.killrvideo.service.suggestedvideo.grpc.SuggestedVideosServiceGrpc
 import com.killrvideo.service.user.grpc.UserManagementServiceGrpc
 import com.killrvideo.service.video.grpc.VideoCatalogServiceGrpc
-import io.grpc.Server
-import io.grpc.ServerBuilder
+import io.grpc.*
 import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
@@ -91,29 +92,17 @@ class KillrvideoServicesGrpcServer {
     fun start() {
         logger.info("Initializing Grpc Server...")
 
+        val interceptors = listOf(GlobalGrpcExceptionHandler())
+        val serviceList = buildServiceList()
+
         // Create GRPC server referencing only enabled services
         val builder = ServerBuilder.forPort(grpcPort)
-        if (commentServiceEnabled) {
-            builder.addService(commentService!!.bindService())
+        serviceList.forEach {service ->
+            builder.addService(
+                ServerInterceptors.intercept(service, interceptors)
+            )
         }
-        if (ratingServiceEnabled) {
-            builder.addService(ratingService!!.bindService())
-        }
-        if (searchServiceEnabled) {
-            builder.addService(searchService!!.bindService())
-        }
-        if (statisticServiceEnabled) {
-            builder.addService(statisticsService!!.bindService())
-        }
-        if (videoCatalogServiceEnabled) {
-            builder.addService(videoCatalogService!!.bindService())
-        }
-        if (suggestedVideoServiceEnabled) {
-            builder.addService(suggestedVideosService!!.bindService())
-        }
-        if (userServiceEnabled) {
-            builder.addService(userService!!.bindService())
-        }
+
         grpcServer = builder.build()
 
         // Declare a shutdown hook otherwise JVM is listening on  a port forever
@@ -123,6 +112,33 @@ class KillrvideoServicesGrpcServer {
         grpcServer.start()
         logger.info("[OK] Grpc Server started on port: '{}'", grpcPort)
         registerServices()
+    }
+
+    private fun buildServiceList(): ImmutableList<BindableService> {
+        val serviecListBuilder = ImmutableList.Builder<BindableService>();
+        if (commentServiceEnabled) {
+            serviecListBuilder.add(commentService)
+        }
+        if (ratingServiceEnabled) {
+            serviecListBuilder.add(ratingService)
+        }
+        if (searchServiceEnabled) {
+            serviecListBuilder.add(searchService)
+        }
+        if (statisticServiceEnabled) {
+            serviecListBuilder.add(statisticsService)
+        }
+        if (videoCatalogServiceEnabled) {
+            serviecListBuilder.add(videoCatalogService)
+        }
+        if (suggestedVideoServiceEnabled) {
+            serviecListBuilder.add(suggestedVideosService)
+        }
+        if (userServiceEnabled) {
+            serviecListBuilder.add(userService)
+        }
+
+        return serviecListBuilder.build()
     }
 
     @PreDestroy

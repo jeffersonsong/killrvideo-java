@@ -5,8 +5,6 @@ import com.killrvideo.messaging.dao.MessagingDao
 import com.killrvideo.service.comment.dto.Comment
 import com.killrvideo.service.comment.repository.CommentRepository
 import com.killrvideo.utils.GrpcMappingUtils.randomUuid
-import io.grpc.Status
-import io.grpc.StatusRuntimeException
 import io.mockk.*
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
@@ -50,9 +48,9 @@ class CommentsServiceGrpcTest {
 
         every {
             validator.validateGrpcRequestCommentOnVideo(any())
-        } throws Status.INVALID_ARGUMENT.asRuntimeException()
+        } throws IllegalArgumentException()
 
-        assertThrows<StatusRuntimeException> {
+        assertThrows<IllegalArgumentException> {
             runBlocking {
                 service.commentOnVideo(request)
             }

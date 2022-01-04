@@ -2,7 +2,6 @@ package com.killrvideo.service.comment.grpc
 
 import com.killrvideo.utils.GrpcMappingUtils.randomTimeUuid
 import com.killrvideo.utils.GrpcMappingUtils.randomUuid
-import io.grpc.StatusRuntimeException
 import killrvideo.comments.commentOnVideoRequest
 import killrvideo.comments.getUserCommentsRequest
 import killrvideo.comments.getVideoCommentsRequest
@@ -26,7 +25,7 @@ internal class CommentsServiceGrpcValidatorTest {
     @Test
     fun testValidateGrpcRequestCommentOnVideoFailed() {
         val request = commentOnVideoRequest {}
-        assertThrows<StatusRuntimeException> {
+        assertThrows<IllegalArgumentException> {
             validator.validateGrpcRequestCommentOnVideo(request)
         }
     }
@@ -43,7 +42,7 @@ internal class CommentsServiceGrpcValidatorTest {
     @Test
     fun testValidateGrpcRequestGetVideoCommentFailed() {
         val request = getVideoCommentsRequest {}
-        assertThrows<StatusRuntimeException> {
+        assertThrows<IllegalArgumentException> {
             validator.validateGrpcRequestGetVideoComment(request)
         }
     }
@@ -60,7 +59,7 @@ internal class CommentsServiceGrpcValidatorTest {
     @Test
     fun testValidateGrpcRequest_GetUserCommentsFailed() {
         val request =getUserCommentsRequest {}
-        assertThrows<StatusRuntimeException> {
+        assertThrows<IllegalArgumentException> {
             validator.validateGrpcRequest_GetUserComments(request)
         }
     }

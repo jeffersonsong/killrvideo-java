@@ -4,8 +4,6 @@ import com.killrvideo.dse.dto.ResultListPage
 import com.killrvideo.service.suggestedvideo.dto.Video
 import com.killrvideo.service.suggestedvideo.repository.SuggestedVideosRepository
 import com.killrvideo.utils.GrpcMappingUtils.uuidToUuid
-import io.grpc.Status
-import io.grpc.StatusRuntimeException
 import io.mockk.*
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
@@ -46,9 +44,8 @@ internal class SuggestedVideosServiceGrpcTest {
     @Test
     fun testGetRelatedVideosWithValidationFailure() {
         val request = GetRelatedVideosRequest.getDefaultInstance()
-        every { validator.validateGrpcRequest_getRelatedVideo(any()) } throws
-                Status.INVALID_ARGUMENT.asRuntimeException()
-        assertThrows<StatusRuntimeException> {
+        every { validator.validateGrpcRequest_getRelatedVideo(any()) } throws IllegalArgumentException()
+        assertThrows<IllegalArgumentException> {
             runBlocking { service.getRelatedVideos(request) }
         }
     }
@@ -81,9 +78,8 @@ internal class SuggestedVideosServiceGrpcTest {
     @Test
     fun testGetSuggestedForUserWithValidationFailure() {
         val request = GetSuggestedForUserRequest.getDefaultInstance()
-        every {validator.validateGrpcRequest_getUserSuggestedVideo(any()) } throws
-                Status.INVALID_ARGUMENT.asRuntimeException()
-        assertThrows<StatusRuntimeException> {
+        every {validator.validateGrpcRequest_getUserSuggestedVideo(any()) } throws IllegalArgumentException()
+        assertThrows<IllegalArgumentException> {
             runBlocking { service.getSuggestedForUser(request) }
         }
     }

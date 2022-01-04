@@ -1,7 +1,6 @@
 package com.killrvideo.service.rating.grpc
 
 import com.killrvideo.utils.GrpcMappingUtils.randomUuid
-import io.grpc.StatusRuntimeException
 import killrvideo.ratings.getRatingRequest
 import killrvideo.ratings.getUserRatingRequest
 import killrvideo.ratings.rateVideoRequest
@@ -23,7 +22,7 @@ internal class RatingsServiceGrpcValidatorTest {
     @Test
     fun testValidateGrpcRequest_RateVideo_Failure() {
         val request = rateVideoRequest {}
-        assertThrows<StatusRuntimeException> {
+        assertThrows<IllegalArgumentException> {
             validator.validateGrpcRequest_RateVideo(request)
         }
     }
@@ -39,7 +38,7 @@ internal class RatingsServiceGrpcValidatorTest {
     @Test
     fun testValidateGrpcRequest_GetRating_Failure() {
         val request = getRatingRequest {}
-        assertThrows<StatusRuntimeException> {
+        assertThrows<IllegalArgumentException> {
             validator.validateGrpcRequest_GetRating(request)
         }
     }
@@ -56,7 +55,7 @@ internal class RatingsServiceGrpcValidatorTest {
     @Test
     fun testValidateGrpcRequest_GetUserRating_Failure() {
         val request = getUserRatingRequest {}
-        assertThrows<StatusRuntimeException> {
+        assertThrows<IllegalArgumentException> {
             validator.validateGrpcRequest_GetUserRating(request)
         }
     }

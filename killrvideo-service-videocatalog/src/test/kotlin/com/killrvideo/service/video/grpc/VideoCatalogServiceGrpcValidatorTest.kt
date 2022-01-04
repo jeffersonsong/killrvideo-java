@@ -1,7 +1,6 @@
 package com.killrvideo.service.video.grpc
 
 import com.killrvideo.utils.GrpcMappingUtils.randomUuid
-import io.grpc.StatusRuntimeException
 import killrvideo.video_catalog.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -25,7 +24,7 @@ internal class VideoCatalogServiceGrpcValidatorTest {
     @Test
     fun testValidateGrpcRequest_submitYoutubeVideo_Failure() {
         val request = submitYouTubeVideoRequest {}
-        assertThrows<StatusRuntimeException> {
+        assertThrows<IllegalArgumentException> {
             validator.validateGrpcRequest_submitYoutubeVideo(request)
         }
     }
@@ -41,7 +40,7 @@ internal class VideoCatalogServiceGrpcValidatorTest {
     @Test
     fun testValidateGrpcRequest_getLatestPreviews_Failure() {
         val request = getLatestVideoPreviewsRequest {}
-        assertThrows<StatusRuntimeException> {
+        assertThrows<IllegalArgumentException> {
             validator.validateGrpcRequest_getLatestPreviews(request)
         }
     }
@@ -57,7 +56,7 @@ internal class VideoCatalogServiceGrpcValidatorTest {
     @Test
     fun testValidateGrpcRequest_getVideo_Failure() {
         val request = getVideoRequest {}
-        assertThrows<StatusRuntimeException> {
+        assertThrows<IllegalArgumentException> {
             validator.validateGrpcRequest_getVideo(request)
         }
     }
@@ -77,7 +76,7 @@ internal class VideoCatalogServiceGrpcValidatorTest {
                 .mapToObj { randomUuid() }
                 .forEach {videoIds.add(it) }
         }
-        assertThrows<StatusRuntimeException> {
+        assertThrows<IllegalArgumentException> {
             validator.validateGrpcRequest_getVideoPreviews(request)
         }
     }
@@ -95,7 +94,7 @@ internal class VideoCatalogServiceGrpcValidatorTest {
     @Test
     fun testValidateGrpcRequest_getUserVideoPreviews_Failure() {
         val request = getUserVideoPreviewsRequest {}
-        assertThrows<StatusRuntimeException> {
+        assertThrows<IllegalArgumentException> {
             validator.validateGrpcRequest_getUserVideoPreviews(request)
         }
     }

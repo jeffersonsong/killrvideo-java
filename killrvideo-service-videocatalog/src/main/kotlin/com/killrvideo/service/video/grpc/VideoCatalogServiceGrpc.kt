@@ -1,9 +1,9 @@
 package com.killrvideo.service.video.grpc
 
 import com.killrvideo.dse.dto.CustomPagingState
+import com.killrvideo.exception.NotFoundException
 import com.killrvideo.messaging.dao.MessagingDao
 import com.killrvideo.service.utils.ServiceGrpcUtils.trace
-import com.killrvideo.service.utils.ServiceGrpcUtils.traceError
 import com.killrvideo.service.utils.ServiceGrpcUtils.traceSuccess
 import com.killrvideo.service.video.dto.Video
 import com.killrvideo.service.video.grpc.VideoCatalogServiceGrpcMapper.GetLatestVideoPreviewsRequestExtensions.parse
@@ -11,7 +11,6 @@ import com.killrvideo.service.video.grpc.VideoCatalogServiceGrpcMapper.GetUserVi
 import com.killrvideo.service.video.grpc.VideoCatalogServiceGrpcMapper.SubmitYouTubeVideoRequestExtensions.parse
 import com.killrvideo.service.video.repository.VideoCatalogRepository
 import com.killrvideo.utils.GrpcMappingUtils.fromUuid
-import io.grpc.Status
 import killrvideo.video_catalog.VideoCatalogServiceGrpcKt
 import killrvideo.video_catalog.VideoCatalogServiceOuterClass.*
 import killrvideo.video_catalog.getVideoPreviewsResponse
@@ -131,8 +130,7 @@ class VideoCatalogServiceGrpc(
         // Invoke Async
         return runCatching { videoCatalogRepository.getVideoById(videoId) }
             .mapCatching { video ->
-                video ?: throw Status.NOT_FOUND.withDescription("Video with id $videoId was not found")
-                        .asRuntimeException()
+                video ?: throw NotFoundException("Video with id $videoId was not found")
                 video
             }.map { mapper.mapFromVideotoVideoResponse(it) }
             .trace(logger, "getVideo", starts)

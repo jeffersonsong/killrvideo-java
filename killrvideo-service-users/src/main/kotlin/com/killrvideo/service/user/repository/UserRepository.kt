@@ -1,16 +1,17 @@
 package com.killrvideo.service.user.repository
 
 import com.killrvideo.dse.utils.MappedAsyncPagingIterableExtensions.all
+import com.killrvideo.exception.AlreadyExistsException
 import com.killrvideo.service.user.dao.UserCredentialsDao
 import com.killrvideo.service.user.dao.UserDao
 import com.killrvideo.service.user.dao.UserMapper
 import com.killrvideo.service.user.dto.User
 import com.killrvideo.service.user.dto.UserCredentials
-import io.grpc.Status
 import kotlinx.coroutines.future.await
 import mu.KotlinLogging
 import org.springframework.stereotype.Repository
 import java.util.*
+import java.util.concurrent.CompletionException
 
 /**
  * Handling user.
@@ -45,7 +46,7 @@ open class UserRepository(mapper: UserMapper) {
         if (duplicate) {
             val errMsg = "Exception creating user because it already exists with email ${userCredentials.email}"
             logger.error(errMsg)
-            throw Status.ALREADY_EXISTS.withDescription(errMsg).asRuntimeException()
+            throw CompletionException(AlreadyExistsException(errMsg))
         }
     }
 

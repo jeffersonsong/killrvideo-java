@@ -1,7 +1,6 @@
 package com.killrvideo.service.suggestedvideo.grpc
 
 import com.killrvideo.utils.GrpcMappingUtils.randomUuid
-import io.grpc.StatusRuntimeException
 import killrvideo.suggested_videos.SuggestedVideosService.GetRelatedVideosRequest
 import killrvideo.suggested_videos.SuggestedVideosService.GetSuggestedForUserRequest
 import killrvideo.suggested_videos.getRelatedVideosRequest
@@ -23,7 +22,7 @@ internal class SuggestedVideosServiceGrpcValidatorTest {
     @Test
     fun testValidateGrpcRequest_getRelatedVideo_Failure() {
         val request = GetRelatedVideosRequest.getDefaultInstance()
-        assertThrows<StatusRuntimeException> {
+        assertThrows<IllegalArgumentException> {
             validator.validateGrpcRequest_getRelatedVideo(request)
         }
     }
@@ -39,7 +38,7 @@ internal class SuggestedVideosServiceGrpcValidatorTest {
     @Test
     fun testValidateGrpcRequest_getUserSuggestedVideo_Failure() {
         val request = GetSuggestedForUserRequest.getDefaultInstance()
-        assertThrows<StatusRuntimeException> {
+        assertThrows<IllegalArgumentException> {
             validator.validateGrpcRequest_getUserSuggestedVideo(request)
         }
     }

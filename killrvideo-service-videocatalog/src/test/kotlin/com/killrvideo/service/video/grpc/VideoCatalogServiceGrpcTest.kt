@@ -1,6 +1,7 @@
 package com.killrvideo.service.video.grpc
 
 import com.killrvideo.dse.dto.ResultListPage
+import com.killrvideo.exception.NotFoundException
 import com.killrvideo.messaging.dao.MessagingDao
 import com.killrvideo.service.video.dto.LatestVideosPage
 import com.killrvideo.service.video.dto.UserVideo
@@ -9,8 +10,6 @@ import com.killrvideo.service.video.repository.VideoCatalogRepository
 import com.killrvideo.service.video.request.GetUserVideoPreviewsRequestData
 import com.killrvideo.utils.GrpcMappingUtils.randomUuid
 import com.killrvideo.utils.GrpcMappingUtils.uuidToUuid
-import io.grpc.Status
-import io.grpc.StatusRuntimeException
 import io.mockk.*
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
@@ -50,9 +49,8 @@ internal class VideoCatalogServiceGrpcTest {
     @Test
     fun testSubmitYouTubeVideoWithValidationFailure() {
         val request = createSubmitYouTubeVideoRequest()
-        every { validator.validateGrpcRequest_submitYoutubeVideo(any()) } throws
-                Status.INVALID_ARGUMENT.asRuntimeException()
-        assertThrows<StatusRuntimeException> {
+        every { validator.validateGrpcRequest_submitYoutubeVideo(any()) } throws IllegalArgumentException()
+        assertThrows<IllegalArgumentException> {
             runBlocking { service.submitYouTubeVideo(request) }
         }
     }
@@ -62,9 +60,9 @@ internal class VideoCatalogServiceGrpcTest {
         val request = createSubmitYouTubeVideoRequest()
         every { validator.validateGrpcRequest_submitYoutubeVideo(any()) } just Runs
 
-        coEvery { videoCatalogRepository.insertVideoAsync(any()) } throws Status.INTERNAL.asRuntimeException()
+        coEvery { videoCatalogRepository.insertVideoAsync(any()) } throws Exception()
 
-        assertThrows<StatusRuntimeException> {
+        assertThrows<Exception> {
             runBlocking { service.submitYouTubeVideo(request) }
         }
     }
@@ -112,9 +110,8 @@ internal class VideoCatalogServiceGrpcTest {
     @Test
     fun testGetLatestVideoPreviewsWithValidationFailure() {
         val request = getLatestVideoPreviewsRequest {}
-        every { validator.validateGrpcRequest_getLatestPreviews(any()) } throws
-                Status.INVALID_ARGUMENT.asRuntimeException()
-        assertThrows<StatusRuntimeException> {
+        every { validator.validateGrpcRequest_getLatestPreviews(any()) } throws IllegalArgumentException()
+        assertThrows<IllegalArgumentException> {
             runBlocking { service.getLatestVideoPreviews(request) }
         }
     }
@@ -123,9 +120,8 @@ internal class VideoCatalogServiceGrpcTest {
     fun testGetLatestVideoPreviewsWithQueryFailure() {
         val request = getLatestVideoPreviewsRequest {}
         every { validator.validateGrpcRequest_getLatestPreviews(any()) } just Runs
-        coEvery { videoCatalogRepository.getLatestVideoPreviewsAsync(any()) } throws
-                Status.INTERNAL.asRuntimeException()
-        assertThrows<StatusRuntimeException> {
+        coEvery { videoCatalogRepository.getLatestVideoPreviewsAsync(any()) } throws Exception()
+        assertThrows<Exception> {
             runBlocking { service.getLatestVideoPreviews(request) }
         }
     }
@@ -144,9 +140,8 @@ internal class VideoCatalogServiceGrpcTest {
     @Test
     fun testGetVideoWithValidationFailure() {
         val request = getVideoRequest {}
-        every { validator.validateGrpcRequest_getVideo(any()) } throws
-                Status.INVALID_ARGUMENT.asRuntimeException()
-        assertThrows<StatusRuntimeException> {
+        every { validator.validateGrpcRequest_getVideo(any()) } throws IllegalArgumentException()
+        assertThrows<IllegalArgumentException> {
             runBlocking { service.getVideo(request) }
         }
     }
@@ -167,7 +162,7 @@ internal class VideoCatalogServiceGrpcTest {
         val request = createGetVideoRequest(UUID.randomUUID())
         every { validator.validateGrpcRequest_getVideo(any()) } just Runs
         coEvery { videoCatalogRepository.getVideoById(any()) } returns null
-        assertThrows<StatusRuntimeException> {
+        assertThrows<NotFoundException> {
             runBlocking { service.getVideo(request) }
         }
     }
@@ -188,9 +183,8 @@ internal class VideoCatalogServiceGrpcTest {
     @Test
     fun testGetVideoPreviewsWithValidationFailure() {
         val request = GetVideoPreviewsRequest.getDefaultInstance()
-        every { validator.validateGrpcRequest_getVideoPreviews(any()) } throws
-                Status.INVALID_ARGUMENT.asRuntimeException()
-        assertThrows<StatusRuntimeException> {
+        every { validator.validateGrpcRequest_getVideoPreviews(any()) } throws IllegalArgumentException()
+        assertThrows<IllegalArgumentException> {
             runBlocking { service.getVideoPreviews(request) }
         }
     }
@@ -232,9 +226,8 @@ internal class VideoCatalogServiceGrpcTest {
     @Test
     fun testGetUserVideoPreviewsWithValidationFailure() {
         val request = GetUserVideoPreviewsRequest.getDefaultInstance()
-        every { validator.validateGrpcRequest_getUserVideoPreviews(any()) } throws
-                Status.INVALID_ARGUMENT.asRuntimeException()
-        assertThrows<StatusRuntimeException> {
+        every { validator.validateGrpcRequest_getUserVideoPreviews(any()) } throws IllegalArgumentException()
+        assertThrows<IllegalArgumentException> {
             runBlocking { service.getUserVideoPreviews(request) }
         }
     }
