@@ -35,9 +35,7 @@ dependencies {
     }
 
     implementation(Deps.Apache.Commons.lang3)
-    implementation(Deps.Apache.Commons.collections4)
     implementation(Deps.Javax.annotation)
-    implementation(Deps.commonsCodec)
 
     testImplementation(Deps.Junit.jupiter)
     testImplementation(Deps.mockk)
