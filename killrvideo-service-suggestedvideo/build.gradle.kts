@@ -43,7 +43,6 @@ dependencies {
 
     testImplementation(Deps.Junit.jupiter)
     testImplementation(Deps.mockk)
-    testImplementation(Deps.hamcrest)
 
     kapt(Deps.Datastax.mapperProcessor)
 }
