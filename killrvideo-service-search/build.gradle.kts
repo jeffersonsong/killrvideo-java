@@ -18,10 +18,6 @@ repositories {
 
 dependencies {
     api(kotlin("stdlib"))
-    api(Deps.JetBrian.Kotlinx.coroutinesCore)
-    api(Deps.Grpc.protobuf)
-    api(Deps.Google.protobufJavaUtils)
-    api(Deps.Google.protobufKotlin)
     api(Deps.Grpc.kotlinStub)
 
     implementation(project(":killrvideo-commons"))
