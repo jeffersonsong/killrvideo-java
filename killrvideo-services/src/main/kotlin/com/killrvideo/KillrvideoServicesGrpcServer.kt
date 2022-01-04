@@ -4,13 +4,13 @@ import com.google.common.collect.ImmutableList
 import com.killrvideo.conf.KillrVideoConfiguration
 import com.killrvideo.discovery.ServiceDiscoveryDao
 import com.killrvideo.service.comment.grpc.CommentsServiceGrpc
-import com.killrvideo.service.utils.GlobalGrpcExceptionHandler
+import com.killrvideo.grpc.interceptor.GlobalGrpcExceptionHandler
 import com.killrvideo.service.rating.grpc.RatingsServiceGrpc
 import com.killrvideo.service.search.grpc.SearchServiceGrpc
 import com.killrvideo.service.statistic.grpc.StatisticsServiceGrpc
 import com.killrvideo.service.suggestedvideo.grpc.SuggestedVideosServiceGrpc
 import com.killrvideo.service.user.grpc.UserManagementServiceGrpc
-import com.killrvideo.service.utils.TraceServiceCallInterceptor
+import com.killrvideo.grpc.interceptor.TraceServiceCallInterceptor
 import com.killrvideo.service.video.grpc.VideoCatalogServiceGrpc
 import io.grpc.*
 import mu.KotlinLogging

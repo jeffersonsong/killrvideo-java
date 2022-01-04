@@ -1,4 +1,4 @@
-package com.killrvideo.service.utils
+package com.killrvideo.grpc.interceptor
 
 import io.grpc.*
 import mu.KotlinLogging
