@@ -5,6 +5,7 @@ import com.killrvideo.conf.KillrVideoConfiguration
 import com.killrvideo.discovery.ServiceDiscoveryDao
 import com.killrvideo.service.comment.grpc.CommentsServiceGrpc
 import com.killrvideo.grpc.interceptor.GlobalGrpcExceptionHandler
+import com.killrvideo.grpc.interceptor.LogRequestResponseInterceptor
 import com.killrvideo.service.rating.grpc.RatingsServiceGrpc
 import com.killrvideo.service.search.grpc.SearchServiceGrpc
 import com.killrvideo.service.statistic.grpc.StatisticsServiceGrpc
@@ -95,7 +96,8 @@ class KillrvideoServicesGrpcServer {
 
         val interceptors = listOf(
             GlobalGrpcExceptionHandler(),
-            TraceServiceCallInterceptor()
+            TraceServiceCallInterceptor(),
+            LogRequestResponseInterceptor()
         )
         val serviceList = buildServiceList()
 

@@ -2,6 +2,7 @@ package com.killrvideo.messaging.dao
 
 import com.google.common.eventbus.EventBus
 import com.killrvideo.conf.KillrVideoConfiguration
+import com.killrvideo.utils.FormatUtils
 import mu.KotlinLogging
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Repository
@@ -22,7 +23,7 @@ class MessagingDaoInMemory : MessagingDao {
 
     /** {@inheritDoc}  */
     override fun sendEvent(targetDestination: String, event: Any): CompletableFuture<Any?> {
-        logger.info("Publishing event type{} to destination {} ", event.javaClass.name, targetDestination)
+        logger.info {"Publishing event type ${event.javaClass.name} to destination ${targetDestination}, Payload: ${FormatUtils.format(event)}"}
         eventBus.post(event)
         return CompletableFuture.supplyAsync {
             eventBus.post(event)
