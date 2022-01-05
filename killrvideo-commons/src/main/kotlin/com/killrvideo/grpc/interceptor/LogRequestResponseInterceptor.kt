@@ -1,6 +1,8 @@
 package com.killrvideo.grpc.interceptor
 
 import com.killrvideo.utils.FormatUtils
+import com.killrvideo.utils.FormatUtils.formatElapse
+import com.killrvideo.utils.FormatUtils.formatException
 import io.grpc.*
 import mu.KotlinLogging
 import org.apache.commons.lang3.exception.ExceptionUtils
@@ -47,29 +49,5 @@ class LogRequestResponseInterceptor : ServerInterceptor {
                 super.onMessage(message)
             }
         }
-    }
-
-    private fun formatElapse(starts: Instant): String {
-        val elapse = Duration.between(starts, Instant.now()).nano / 1000
-        return "%,d ms".format(elapse)
-    }
-
-    private fun formatException(ex: Throwable): String {
-        val stacktrace = ExceptionUtils.getStackTrace(ex).split("\n")
-        val builder = StringBuilder(stacktrace[0])
-
-        for (i in IntRange(1, stacktrace.size)) {
-            val line = stacktrace[i]
-            if (line.contains(BASE_PACKAGE)) {
-                builder.append("\\n").append(line)
-            } else {
-                break
-            }
-        }
-        return builder.toString()
-    }
-
-    companion object {
-        private const val BASE_PACKAGE = "com.killrvideo"
     }
 }
