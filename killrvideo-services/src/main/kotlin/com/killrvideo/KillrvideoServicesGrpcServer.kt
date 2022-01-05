@@ -96,7 +96,6 @@ class KillrvideoServicesGrpcServer {
 
         val interceptors = listOf(
             GlobalGrpcExceptionHandler(),
-            TraceServiceCallInterceptor(),
             LogRequestResponseInterceptor()
         )
         val serviceList = buildServiceList()
