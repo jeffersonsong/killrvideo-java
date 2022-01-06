@@ -5,8 +5,6 @@ import com.killrvideo.utils.FormatUtils.formatElapse
 import com.killrvideo.utils.FormatUtils.formatException
 import io.grpc.*
 import mu.KotlinLogging
-import org.apache.commons.lang3.exception.ExceptionUtils
-import java.time.Duration
 import java.time.Instant
 
 class LogRequestResponseInterceptor : ServerInterceptor {
