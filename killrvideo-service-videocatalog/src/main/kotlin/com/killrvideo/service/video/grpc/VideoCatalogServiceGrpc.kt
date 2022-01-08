@@ -14,6 +14,7 @@ import killrvideo.video_catalog.VideoCatalogServiceOuterClass.*
 import killrvideo.video_catalog.getVideoPreviewsResponse
 import killrvideo.video_catalog.submitYouTubeVideoResponse
 import mu.KotlinLogging
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import java.util.stream.Collectors
@@ -25,7 +26,7 @@ import java.util.stream.Collectors
  */
 @Service
 class VideoCatalogServiceGrpc(
-    private val videoCatalogRepository: VideoCatalogRepository,
+    @Qualifier("CachedVideoCatalogRepository") private val videoCatalogRepository: VideoCatalogRepository,
     private val messagingDao: MessagingDao,
     private val validator: VideoCatalogServiceGrpcValidator,
     private val mapper: VideoCatalogServiceGrpcMapper,

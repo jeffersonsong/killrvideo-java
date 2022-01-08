@@ -48,9 +48,11 @@ subprojects {
         }
     }
 
-    tasks.withType<Test>() {
+    tasks.withType<Test> {
         useJUnitPlatform()
     }
+
+    tasks.withType<Jar> { duplicatesStrategy = DuplicatesStrategy.EXCLUDE }
 
     dependencies {
         testImplementation(Deps.Junit.jupiter)

@@ -6,7 +6,7 @@ import com.killrvideo.messaging.dao.MessagingDao
 import com.killrvideo.service.video.dto.LatestVideosPage
 import com.killrvideo.service.video.dto.UserVideo
 import com.killrvideo.service.video.dto.Video
-import com.killrvideo.service.video.repository.VideoCatalogRepository
+import com.killrvideo.service.video.repository.CachedVideoCatalogRepository
 import com.killrvideo.service.video.request.GetUserVideoPreviewsRequestData
 import com.killrvideo.utils.GrpcMappingUtils.randomUuid
 import com.killrvideo.utils.GrpcMappingUtils.uuidToUuid
@@ -32,7 +32,7 @@ internal class VideoCatalogServiceGrpcTest {
     private lateinit var messagingDao: MessagingDao
 
     @MockK
-    private lateinit var videoCatalogRepository: VideoCatalogRepository
+    private lateinit var videoCatalogRepository: CachedVideoCatalogRepository
 
     @MockK
     private lateinit var validator: VideoCatalogServiceGrpcValidator

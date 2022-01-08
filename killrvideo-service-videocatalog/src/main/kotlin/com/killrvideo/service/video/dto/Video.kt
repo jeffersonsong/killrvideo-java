@@ -3,6 +3,7 @@ package com.killrvideo.service.video.dto
 import com.datastax.oss.driver.api.mapper.annotations.CqlName
 import com.datastax.oss.driver.api.mapper.annotations.Entity
 import com.datastax.oss.driver.api.mapper.annotations.PartitionKey
+import java.io.Serializable
 import java.time.Instant
 import java.util.*
 import javax.validation.constraints.NotNull
@@ -26,7 +27,7 @@ data class Video(
     var previewImageLocation: String? = null,
     var tags: MutableSet<String>? = mutableSetOf(),
     var addedDate: @NotNull Instant?
-) {
+): Serializable {
     companion object {
         const val COLUMN_VIDEOID = "videoid"
         const val COLUMN_USERID = "userid"

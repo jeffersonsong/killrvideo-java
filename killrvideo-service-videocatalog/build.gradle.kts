@@ -37,6 +37,7 @@ dependencies {
     implementation(Deps.Apache.Commons.lang3)
     implementation(Deps.Javax.validation)
     implementation(Deps.Javax.annotation)
+    implementation(Deps.redisson)
 
     testImplementation(Deps.Junit.jupiter)
     testImplementation(Deps.mockk)

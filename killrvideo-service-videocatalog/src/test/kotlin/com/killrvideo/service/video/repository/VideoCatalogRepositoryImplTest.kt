@@ -24,8 +24,8 @@ import java.time.temporal.ChronoUnit
 import java.util.*
 import java.util.concurrent.CompletableFuture
 
-internal class VideoCatalogRepositoryTest {
-    private lateinit var repository: VideoCatalogRepository
+internal class VideoCatalogRepositoryImplTest {
+    private lateinit var repository: VideoCatalogRepositoryImpl
     private lateinit var videoDao: VideoDao
     private lateinit var userVideoDao: UserVideoDao
     private lateinit var latestVideoDao: LatestVideoDao
@@ -53,7 +53,7 @@ internal class VideoCatalogRepositoryTest {
         val userVideoRowMapper = mockk<UserVideoRowMapper>()
         latestVideoPreviewsRequestRepository = mockk()
 
-        repository = VideoCatalogRepository(
+        repository = VideoCatalogRepositoryImpl(
             pageableQueryFactory, mapper, userVideoRowMapper, latestVideoPreviewsRequestRepository
         )
     }

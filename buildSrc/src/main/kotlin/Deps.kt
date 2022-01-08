@@ -100,4 +100,6 @@ object Deps {
             val coroutinesJdk8 = "org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:$coroutinesVersion"
         }
     }
+
+    const val redisson="org.redisson:redisson:3.16.7"
 }

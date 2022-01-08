@@ -42,6 +42,7 @@ dependencies {
     // Validation
     implementation(Deps.Javax.validation)
     runtimeOnly(Deps.Hibernate.validator)
+    implementation(Deps.redisson)
 
     // Expression language
     runtimeOnly(Deps.Javax.el)
