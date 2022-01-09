@@ -55,7 +55,7 @@ dependencies {
     }
 
     // Kafka
-    implementation(Deps.Apache.Kafka.connectJson)
+    implementation(Deps.Apache.Kafka.client)
 
     // Java driver for DSE
     implementation(Deps.Datastax.mapperProcessor)

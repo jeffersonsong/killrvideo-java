@@ -1,30 +1,23 @@
 package com.killrvideo.messaging.dao
 
-import com.google.common.util.concurrent.FutureCallback
-import com.google.common.util.concurrent.Futures
-import com.google.common.util.concurrent.JdkFutureAdapters
 import com.google.protobuf.AbstractMessageLite
 import com.google.protobuf.InvalidProtocolBufferException
-import killrvideo.common.CommonEvents.ErrorEvent
-import java.util.concurrent.CompletableFuture
 import com.killrvideo.conf.KillrVideoConfiguration
-import org.apache.kafka.clients.producer.KafkaProducer
-import org.apache.kafka.clients.consumer.KafkaConsumer
+import com.killrvideo.messaging.utils.KafkaConsumerExtensions.receiveMessages
+import com.killrvideo.messaging.utils.KafkaProducerExtensions.sendAsync
+import killrvideo.common.CommonEvents.ErrorEvent
 import mu.KotlinLogging
-import org.apache.kafka.clients.producer.RecordMetadata
+import org.apache.kafka.clients.consumer.KafkaConsumer
+import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
-import java.util.concurrent.Executors
-import java.util.stream.StreamSupport
-import org.apache.kafka.clients.consumer.ConsumerRecord
+import org.apache.kafka.clients.producer.RecordMetadata
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Repository
 import java.io.ByteArrayOutputStream
 import java.io.IOException
-import java.lang.IllegalStateException
-import java.time.Duration
-import java.util.concurrent.Executor
+import java.util.concurrent.CompletableFuture
 import javax.annotation.PostConstruct
 import javax.inject.Inject
 
@@ -37,6 +30,7 @@ import javax.inject.Inject
 @Profile(KillrVideoConfiguration.PROFILE_MESSAGING_KAFKA)
 class MessagingDaoKafka : MessagingDao {
     private val logger = KotlinLogging.logger {}
+
     /**
      * Same producer can be used evrytime (as the topicName is stored in [ProducerRecord].)
      */
@@ -58,44 +52,27 @@ class MessagingDaoKafka : MessagingDao {
     /**
      * Error Topic.
      */
-    @Value("\${killrvideo.messaging.topics.errors: topic-kv-errors}")
+    @Value("\${killrvideo.messaging.topics.errors:topic-kv-errors}")
     override lateinit var errorDestination: String
 
     /**
      * {@inheritDoc}
      */
-    override fun sendEvent(targetDestination: String, event: Any): CompletableFuture<Any> {
+    override fun sendEvent(targetDestination: String, event: Any): CompletableFuture<RecordMetadata> {
         logger.info("Sending Event '{}' ..", event.javaClass.name)
         val payload = serializePayload<Any?>(event)
-        logger.info("Sending Event '{}' ..", event.javaClass.name)
-        val cfv = CompletableFuture<Any>()
-        val myCallback: FutureCallback<RecordMetadata> = object : FutureCallback<RecordMetadata> {
-            override fun onFailure(ex: Throwable) {
-                cfv.completeExceptionally(ex)
-            }
-
-            override fun onSuccess(rs: RecordMetadata) {
-                cfv.complete(rs)
-            }
-        }
-        val listenable = JdkFutureAdapters.listenInPoolThread(
-            protobufProducer.send(
-                ProducerRecord(targetDestination, payload)
-            )
+        return protobufProducer.sendAsync(
+            ProducerRecord(targetDestination, payload)
         )
-        val executor: Executor = Executors.newFixedThreadPool(2)
-        Futures.addCallback(listenable, myCallback, executor)
-        return cfv
     }
 
     // -- Common Error Handling --
     @PostConstruct
     fun registerErrorConsumer() {
         logger.info("Start consuming events from topic '{}' ..", errorDestination)
-        errorLogger.subscribe(listOf(errorDestination))
-        StreamSupport.stream(errorLogger.poll(Duration.ofSeconds(5)).spliterator(), false)
-            .map { obj: ConsumerRecord<String, ByteArray> -> obj.value() }
-            .forEach { eventErrorPayload: ByteArray -> consumeErrorEvent(eventErrorPayload) }
+        errorLogger.receiveMessages(errorDestination) { record ->
+            consumeErrorEvent(record.value())
+        }
     }
 
     /**

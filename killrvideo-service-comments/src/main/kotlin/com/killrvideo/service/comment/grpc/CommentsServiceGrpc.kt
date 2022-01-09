@@ -29,7 +29,7 @@ class CommentsServiceGrpc(
     private val mapper: CommentsServiceGrpcMapper,
     @Value("\${killrvideo.discovery.services.comment : CommentsService}")
     val serviceKey: String,
-    @Value("\${killrvideo.messaging.destinations.commentCreated : topic-kv-commentCreation}")
+    @Value("\${killrvideo.messaging.destinations.commentCreated:topic-kv-commentCreation}")
     private val messageDestination: String
 ) : CommentsServiceGrpcKt.CommentsServiceCoroutineImplBase() {
     private val logger = KotlinLogging.logger {}

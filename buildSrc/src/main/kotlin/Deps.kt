@@ -69,7 +69,6 @@ object Deps {
             private const val lang3Version = "3.12.0"
             private const val collections4Version = "4.4"
             val lang3 = "org.apache.commons:commons-lang3:$lang3Version"
-            val collections4 = "org.apache.commons:commons-collections4:$collections4Version"
         }
 
         object Tinkerpop {
@@ -79,8 +78,7 @@ object Deps {
 
         object Kafka {
             private const val kafkaVersion = "3.0.0"
-            val connectJson = "org.apache.kafka:connect-json:$kafkaVersion"
-            val connectApi = "org.apache.kafka:connect-api:$kafkaVersion"
+            val client = "org.apache.kafka:kafka-clients:$kafkaVersion"
         }
     }
 

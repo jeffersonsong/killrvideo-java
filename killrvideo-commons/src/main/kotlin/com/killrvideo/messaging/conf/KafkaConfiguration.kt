@@ -26,12 +26,12 @@ import javax.inject.Inject
 @Profile(KillrVideoConfiguration.PROFILE_MESSAGING_KAFKA)
 open class KafkaConfiguration {
     /** Kafka Server to be used.  */
-    private var kafkaServer: String? = null
+    private var kafkaServer: String? = "localhost:9092"
 
-    @Value("\${kafka.ack: 1 }")
+    @Value("\${kafka.ack:all}")
     private val producerAck: String? = null
 
-    @Value("\${kafka.consumerGroup: killrvideo }")
+    @Value("\${kafka.consumerGroup:killrvideo}")
     private val consumerGroup: String? = null
 
     @Inject
@@ -55,51 +55,32 @@ open class KafkaConfiguration {
     open fun jsonProducer(): KafkaProducer<String, ByteArray> {
         val props = Properties()
         props[ProducerConfig.BOOTSTRAP_SERVERS_CONFIG] = kafkaServerConnectionUrl
-        props[ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG] =
-            StringSerializer::class.java.name
+        props[ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG] = StringSerializer::class.java.name
         props[ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG] = ByteArraySerializer::class.java.name
         props[ProducerConfig.ACKS_CONFIG] = producerAck
         return KafkaProducer(props)
     }
 
     @Bean("kafka.consumer.videoRating")
-    open fun videoRatingConsumer(): KafkaConsumer<String, ByteArray> {
-        val props = Properties()
-        props[ProducerConfig.BOOTSTRAP_SERVERS_CONFIG] = kafkaServerConnectionUrl
-        props[ConsumerConfig.GROUP_ID_CONFIG] = consumerGroup
-        props[ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG] = StringDeserializer::class.java.name
-        props[ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG] = ByteArrayDeserializer::class.java.name
-        return KafkaConsumer(props)
-    }
+    open fun videoRatingConsumer(): KafkaConsumer<String, ByteArray> = createConsumer()
 
     @Bean("kafka.consumer.userCreating")
-    open fun userCreatingConsumer(): KafkaConsumer<String, ByteArray> {
-        val props = Properties()
-        props[ProducerConfig.BOOTSTRAP_SERVERS_CONFIG] = kafkaServerConnectionUrl
-        props[ConsumerConfig.GROUP_ID_CONFIG] = consumerGroup
-        props[ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG] = StringDeserializer::class.java.name
-        props[ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG] = ByteArrayDeserializer::class.java.name
-        return KafkaConsumer(props)
-    }
+    open fun userCreatingConsumer(): KafkaConsumer<String, ByteArray> = createConsumer()
 
     @Bean("kafka.consumer.videoCreating")
-    open fun videoCreatingConsumer(): KafkaConsumer<String, ByteArray> {
-        val props = Properties()
-        props[ProducerConfig.BOOTSTRAP_SERVERS_CONFIG] = kafkaServerConnectionUrl
-        props[ConsumerConfig.GROUP_ID_CONFIG] = consumerGroup
-        props[ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG] =
-            StringDeserializer::class.java.name
-        props[ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG] = ByteArrayDeserializer::class.java.name
-        return KafkaConsumer(props)
-    }
+    open fun videoCreatingConsumer(): KafkaConsumer<String, ByteArray> = createConsumer()
 
     @Bean("kafka.consumer.error")
-    open fun errorConsumer(): KafkaConsumer<String, ByteArray> {
+    open fun errorConsumer(): KafkaConsumer<String, ByteArray> = createConsumer()
+
+    private fun createConsumer(): KafkaConsumer<String, ByteArray> {
         val props = Properties()
         props[ProducerConfig.BOOTSTRAP_SERVERS_CONFIG] = kafkaServerConnectionUrl
         props[ConsumerConfig.GROUP_ID_CONFIG] = consumerGroup
         props[ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG] = StringDeserializer::class.java.name
         props[ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG] = ByteArrayDeserializer::class.java.name
+        props[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "earliest"
+        props[ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG] = false
         return KafkaConsumer(props)
     }
 

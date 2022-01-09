@@ -38,7 +38,7 @@ dependencies {
     implementation(Deps.Javax.validation)
     implementation(Deps.Javax.annotation)
     implementation(Deps.Javax.inject)
-    implementation(Deps.Apache.Kafka.connectApi)
+    implementation(Deps.Apache.Kafka.client)
     implementation(Deps.Apache.Tinkerpop.tinkergraph)
 
     testImplementation(Deps.Junit.jupiter)

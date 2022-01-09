@@ -21,7 +21,7 @@ class UserManagementServiceGrpc(
     private val messagingDao: MessagingDao,
     private val validator: UserManagementServiceGrpcValidator,
     private val mapper: UserManagementServiceGrpcMapper,
-    @Value("\${killrvideo.messaging.destinations.userCreated : topic-kv-userCreation}")
+    @Value("\${killrvideo.messaging.destinations.userCreated:topic-kv-userCreation}")
     private val topicUserCreated: String,
     @Value("\${killrvideo.discovery.services.user : UserManagementService}")
     val serviceKey: String

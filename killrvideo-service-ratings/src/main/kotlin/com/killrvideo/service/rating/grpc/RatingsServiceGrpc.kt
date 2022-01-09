@@ -25,7 +25,7 @@ class RatingsServiceGrpc(
     private val mapper: RatingsServiceGrpcMapper,
     @Value("\${killrvideo.discovery.services.rating : RatingsService}")
     val serviceKey: String,
-    @Value("\${killrvideo.messaging.kafka.topics.videoRated : topic-kv-videoRating}")
+    @Value("\${killrvideo.messaging.kafka.topics.videoRated:topic-kv-videoRating}")
     private val topicvideoRated: String
 ) : RatingsServiceGrpcKt.RatingsServiceCoroutineImplBase() {
 

@@ -32,7 +32,7 @@ class VideoCatalogServiceGrpc(
     private val mapper: VideoCatalogServiceGrpcMapper,
     @Value("\${killrvideo.discovery.services.videoCatalog : VideoCatalogService}")
     val serviceKey: String,
-    @Value("\${killrvideo.messaging.destinations.youTubeVideoAdded : topic-kv-videoCreation}")
+    @Value("\${killrvideo.messaging.destinations.youTubeVideoAdded:topic-kv-videoCreation}")
     private val topicVideoCreated: String
 ) : VideoCatalogServiceGrpcKt.VideoCatalogServiceCoroutineImplBase() {
     private val logger = KotlinLogging.logger {}
