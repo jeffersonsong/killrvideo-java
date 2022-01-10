@@ -7,7 +7,7 @@ import org.springframework.context.annotation.Configuration
 @Configuration
 open class VideoCatalogDaoConfig {
     @Bean
-    open fun videoCatalogMapper(session: CqlSession?): VideoCatalogMapper? {
+    open fun videoCatalogMapper(session: CqlSession): VideoCatalogMapper {
         return VideoCatalogMapperBuilder(session).build()
     }
 }

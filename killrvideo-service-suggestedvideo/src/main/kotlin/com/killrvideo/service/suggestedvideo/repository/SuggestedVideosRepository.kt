@@ -29,7 +29,6 @@ import java.util.concurrent.CompletableFuture
 import java.util.concurrent.CompletionException
 import java.util.stream.Collectors
 import java.util.stream.StreamSupport
-import javax.inject.Inject
 import com.killrvideo.dse.graph.`__` as underscore
 
 /**
@@ -41,8 +40,7 @@ import com.killrvideo.dse.graph.`__` as underscore
 class SuggestedVideosRepository(
     private val session: CqlSession, pageableQueryFactory: PageableQueryFactory, mapper: VideoMapper,
     @Qualifier("suggestedVideoRowMapper") videoRowMapper: VideoRowMapper,
-    @Inject
-    private val traversalSource: KillrVideoTraversalSource,
+    private val traversalSource: KillrVideoTraversalSource
 ) {
     private val logger = KotlinLogging.logger { }
 

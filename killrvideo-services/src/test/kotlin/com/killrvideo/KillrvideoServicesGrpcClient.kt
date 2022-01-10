@@ -46,8 +46,7 @@ class KillrvideoServicesGrpcClient(
      */
     constructor(grpcServer: String?, grpcPort: Int) : this(
         ManagedChannelBuilder.forAddress(grpcServer, grpcPort).usePlaintext().build()
-    ) {
-    }
+    )
 
     /**
      * Extension point for your own GRPC channel.

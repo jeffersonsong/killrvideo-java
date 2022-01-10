@@ -7,7 +7,6 @@ import org.springframework.context.annotation.Configuration
 @Configuration
 open class VideoRatingDaoConfig {
     @Bean
-    open fun videoRatingMapper(session: CqlSession?): VideoRatingMapper? {
-        return VideoRatingMapperBuilder(session).build()
-    }
+    open fun videoRatingMapper(session: CqlSession): VideoRatingMapper =
+        VideoRatingMapperBuilder(session).build()
 }

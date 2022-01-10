@@ -18,6 +18,7 @@ import java.util.concurrent.Callable
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.stream.Collectors
 import javax.annotation.PostConstruct
+import kotlin.system.exitProcess
 
 /**
  * Hanle operation arount ETCD (connection, read, write).
@@ -83,7 +84,7 @@ class ServiceDiscoveryDaoEtcd : ServiceDiscoveryDao {
             .onFailure { s: Status<*>? ->
                 LOGGER.error("ETCD is not ready after {} attempts, exiting", maxNumberOfTriesEtcd)
                 System.err.println("ETCD is not ready after $maxNumberOfTriesEtcd attempts, exiting now.")
-                System.exit(500)
+                exitProcess(500)
             }
             .execute(getKeyFromEtcd).result
             .stream().map { node: EtcdNode -> node.value }
@@ -101,7 +102,7 @@ class ServiceDiscoveryDaoEtcd : ServiceDiscoveryDao {
      */
     override fun lookup(serviceName: String): List<String> {
         var endPointList: List<String> = ArrayList()
-        val serviceDirectoryKey = KILLRVIDEO_SERVICE_NAMESPACE + serviceName + "/"
+        val serviceDirectoryKey = "$KILLRVIDEO_SERVICE_NAMESPACE$serviceName/"
         LOGGER.info(" List endpoints for key '{}':", serviceDirectoryKey)
         try {
             val existingNodes = etcdClient!!.listDir(serviceDirectoryKey)
@@ -177,7 +178,7 @@ class ServiceDiscoveryDaoEtcd : ServiceDiscoveryDao {
 
     /** {@inheritDoc}  */
     override fun unregisterEndpoint(serviceName: String, hostName: String, portNumber: Int) {
-        val serviceDirectoryKey = KILLRVIDEO_SERVICE_NAMESPACE + serviceName + "/"
+        val serviceDirectoryKey = "$KILLRVIDEO_SERVICE_NAMESPACE$serviceName/"
         val endPoint = "$hostName:$portNumber"
         try {
             LOGGER.info("Unregister endpoint '{}' for key '{}':", endPoint, serviceDirectoryKey)
@@ -201,7 +202,7 @@ class ServiceDiscoveryDaoEtcd : ServiceDiscoveryDao {
 
     /** {@inheritDoc}  */
     override fun unregister(serviceName: String) {
-        val serviceDirectoryKey = KILLRVIDEO_SERVICE_NAMESPACE + serviceName + "/"
+        val serviceDirectoryKey = "$KILLRVIDEO_SERVICE_NAMESPACE$serviceName/"
         try {
             LOGGER.info("Delete dir  '{}'", serviceDirectoryKey)
             etcdClient!!.deleteDir("/killrvideo/services/$serviceName", true)

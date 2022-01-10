@@ -1,7 +1,6 @@
 package com.killrvideo.service.video.repository
 
 import com.datastax.oss.driver.api.core.ConsistencyLevel
-import com.datastax.oss.driver.api.core.cql.Row
 import com.killrvideo.dse.dto.CustomPagingState
 import com.killrvideo.dse.dto.ResultListPage
 import com.killrvideo.dse.utils.PageableQuery
@@ -32,11 +31,11 @@ class LatestVideoPreviewsRepository(
         findLatestVideoPreviewStartingPoint = pageableQueryFactory.newPageableQuery(
             QUERY_LATEST_VIDEO_PREVIEW_STARTING_POINT,
             ConsistencyLevel.LOCAL_ONE
-        ) { row: Row -> latestVideoRowMapper.map(row) }
+        ) { latestVideoRowMapper.map(it) }
         findLatestVideoPreviewNoStartingPoint = pageableQueryFactory.newPageableQuery(
             QUERY_LATEST_VIDEO_PREVIEW_NO_STARTING_POINT,
             ConsistencyLevel.LOCAL_ONE
-        ) { row: Row -> latestVideoRowMapper.map(row) }
+        ) { latestVideoRowMapper.map(it) }
     }
 
     fun getLatestVideoPreviewsAsync(

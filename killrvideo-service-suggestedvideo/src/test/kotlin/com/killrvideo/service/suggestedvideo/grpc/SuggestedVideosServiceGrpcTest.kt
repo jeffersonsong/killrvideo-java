@@ -33,7 +33,7 @@ internal class SuggestedVideosServiceGrpcTest {
     @BeforeEach
     fun setUp() = MockKAnnotations.init(this)
 
-    fun createGetRelatedVideosRequest(videoid: UUID, pagesize: Int, pagingstate: String): GetRelatedVideosRequest {
+    private fun createGetRelatedVideosRequest(videoid: UUID, pagesize: Int, pagingstate: String): GetRelatedVideosRequest {
         return getRelatedVideosRequest {
             videoId = uuidToUuid(videoid)
             pageSize = pagesize

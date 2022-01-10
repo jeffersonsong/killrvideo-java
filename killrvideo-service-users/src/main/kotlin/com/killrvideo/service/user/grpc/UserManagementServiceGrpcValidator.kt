@@ -19,20 +19,18 @@ open class UserManagementServiceGrpcValidator {
      *
      * @param request        request.
      */
-    fun validateGrpcRequest_createUser(request: CreateUserRequest) {
+    fun validateGrpcRequest_createUser(request: CreateUserRequest) =
         FluentValidator.of("createUser", request, logger)
             .notEmpty("user id", isBlank(request.userId.value))
             .notEmpty("password", isBlank(request.password))
             .notEmpty("email", isBlank(request.email))
             .validate()
-    }
 
-    fun validateGrpcRequest_VerifyCredentials(request: VerifyCredentialsRequest) {
+    fun validateGrpcRequest_VerifyCredentials(request: VerifyCredentialsRequest) =
         FluentValidator.of("verifyCredentials", request, logger)
             .notEmpty("email", isBlank(request.email))
             .notEmpty("password", isBlank(request.password))
             .validate()
-    }
 
     fun validateGrpcRequest_getUserProfile(request: GetUserProfileRequest) {
         val validator: FluentValidator = FluentValidator.of("verifyCredentials", request, logger)

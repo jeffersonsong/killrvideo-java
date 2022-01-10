@@ -80,7 +80,7 @@ internal class SuggestedVideosServiceGrpcMapperTest {
         val userid = UUID.randomUUID()
         val addedDate = Instant.now()
         val name = "Game"
-        val tagList = Arrays.asList("tag1", "tag2")
+        val tagList = listOf("tag1", "tag2")
         val previewLocation = "url"
         val location = "locationUrl"
         return Video(

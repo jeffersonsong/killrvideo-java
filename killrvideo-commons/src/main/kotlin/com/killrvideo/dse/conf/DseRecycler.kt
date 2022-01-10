@@ -14,10 +14,10 @@ class DseRecycler {
 
     @PreDestroy
     fun onDestroy() {
-        if (!dseSession.isClosed()) {
-            logger.info("Closing DSE Cluster (clean up at shutdown)");
-            dseSession.close();
-            logger.info(" + DSE Cluster is now closed.");
+        if (!dseSession.isClosed) {
+            logger.info("Closing DSE Cluster (clean up at shutdown)")
+            dseSession.close()
+            logger.info(" + DSE Cluster is now closed.")
         }
     }
 }

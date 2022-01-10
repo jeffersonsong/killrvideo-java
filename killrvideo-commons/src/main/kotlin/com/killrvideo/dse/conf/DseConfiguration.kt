@@ -30,6 +30,7 @@ import java.util.concurrent.atomic.AtomicInteger
 import javax.inject.Inject
 import javax.net.ssl.SSLContext
 import javax.net.ssl.TrustManagerFactory
+import kotlin.system.exitProcess
 
 @Configuration
 open class DseConfiguration {
@@ -113,7 +114,7 @@ open class DseConfiguration {
             .onFailure { s: Status<*>? ->
                 LOGGER.error("Cannot connection to Cassandra after {} attempts, exiting", maxNumberOfTries)
                 System.err.println("Can not connect to Cassandra after $maxNumberOfTries attempts, exiting")
-                System.exit(500)
+                exitProcess(500)
             }
             .onSuccess { s: Status<*>? ->
                 val timeElapsed = System.currentTimeMillis() - top
@@ -260,7 +261,7 @@ open class DseConfiguration {
                 // KeyStore
                 val ks = KeyStore.getInstance(KeyStore.getDefaultType())
                 ks.load(null, null)
-                ks.setCertificateEntry(Integer.toString(1), caCert)
+                ks.setCertificateEntry(1.toString(), caCert)
 
                 // TrustStore
                 val tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm())

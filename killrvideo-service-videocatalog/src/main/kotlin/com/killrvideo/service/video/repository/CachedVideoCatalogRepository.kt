@@ -48,11 +48,9 @@ class CachedVideoCatalogRepository(
         }
     }
 
-    override suspend fun getUserVideosPreview(request: GetUserVideoPreviewsRequestData): ResultListPage<UserVideo> {
-        return videoCatalogRepository.getUserVideosPreview(request)
-    }
+    override suspend fun getUserVideosPreview(request: GetUserVideoPreviewsRequestData): ResultListPage<UserVideo> =
+        videoCatalogRepository.getUserVideosPreview(request)
 
-    override suspend fun getLatestVideoPreviewsAsync(request: GetLatestVideoPreviewsRequestData): LatestVideosPage {
-        return videoCatalogRepository.getLatestVideoPreviewsAsync(request)
-    }
+    override suspend fun getLatestVideoPreviewsAsync(request: GetLatestVideoPreviewsRequestData): LatestVideosPage =
+        videoCatalogRepository.getLatestVideoPreviewsAsync(request)
 }

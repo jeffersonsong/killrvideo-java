@@ -31,7 +31,7 @@ class VideoRedisRepository(
     }
 
     suspend fun getVideoPreview(listOfVideoIds: List<UUID>): List<Video> {
-        val buckets = redisson.getBuckets()
+        val buckets = redisson.buckets
         val keys: Array<String> = listOfVideoIds.stream().map { redisKey(it) }.toArray { n -> Array(n) { "it = $it" } }
         val future = buckets.getAsync<Video>(*keys)
 

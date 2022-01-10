@@ -38,7 +38,7 @@ open class UserRepository(mapper: UserMapper) {
                 duplicateCheck(userCredentials, !success)
                 success
             }
-            .thenCompose { _ -> userDao.insert(user) }
+            .thenCompose { userDao.insert(user) }
             .await()
     }
 

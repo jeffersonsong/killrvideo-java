@@ -8,9 +8,9 @@ spring:
   profiles:
    active:
     #- discovery_etcd
-    - messaging_kafka
+    #- messaging_kafka
     - discovery_static
-    #- messaging_memory
+    - messaging_memory
     
 # ----------------------------------------------------------------------
 # KillrVideo Backend Services

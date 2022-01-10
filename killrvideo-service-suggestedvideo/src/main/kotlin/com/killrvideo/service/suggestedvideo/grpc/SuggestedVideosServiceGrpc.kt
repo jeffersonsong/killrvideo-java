@@ -46,9 +46,7 @@ class SuggestedVideosServiceGrpc(
 
         // Invoke DAO Async
         return runCatching { suggestedVideosRepository.getSuggestedVideosForUser(userid) }
-            .map {
-                mapper.mapToGetSuggestedForUserResponse(userid, it)
-            }
+            .map { mapper.mapToGetSuggestedForUserResponse(userid, it) }
             .getOrThrow()
     }
 }

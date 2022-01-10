@@ -59,7 +59,7 @@ internal class UserManagementServiceGrpcValidatorTest {
     fun testValidateGrpcRequest_getUserProfile_Failure() {
         val request = getUserProfileRequest {
             userIds.addAll(
-                IntStream.range(0, 21).mapToObj { _ -> randomUuid() }.collect(Collectors.toList())
+                IntStream.range(0, 21).mapToObj { randomUuid() }.collect(Collectors.toList())
             )
         }
         assertThrows<IllegalArgumentException> {

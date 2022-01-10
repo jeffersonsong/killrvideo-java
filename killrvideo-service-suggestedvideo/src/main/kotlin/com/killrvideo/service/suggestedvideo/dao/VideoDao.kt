@@ -11,5 +11,5 @@ import java.util.concurrent.CompletableFuture
 interface VideoDao {
     @Select
     @StatementAttributes(consistencyLevel = "LOCAL_ONE")
-    fun getVideoById(videoid: UUID?): CompletableFuture<Video?>
+    fun getVideoById(videoid: UUID): CompletableFuture<Video?>
 }

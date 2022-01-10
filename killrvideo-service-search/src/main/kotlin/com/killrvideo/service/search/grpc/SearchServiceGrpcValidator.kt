@@ -4,7 +4,7 @@ import com.killrvideo.utils.FluentValidator
 import killrvideo.search.SearchServiceOuterClass.GetQuerySuggestionsRequest
 import killrvideo.search.SearchServiceOuterClass.SearchVideosRequest
 import mu.KotlinLogging
-import org.apache.commons.lang3.StringUtils
+import org.apache.commons.lang3.StringUtils.isBlank
 import org.springframework.stereotype.Component
 
 @Component
@@ -13,7 +13,7 @@ class SearchServiceGrpcValidator {
 
     fun validateGrpcRequest_GetQuerySuggestions(request: GetQuerySuggestionsRequest) {
         FluentValidator.of("getQuerySuggestions", request, logger)
-            .notEmpty("query string", StringUtils.isBlank(request.query))
+            .notEmpty("query string", isBlank(request.query))
             .positive("page size", request.pageSize <= 0)
             .validate()
     }
@@ -23,7 +23,7 @@ class SearchServiceGrpcValidator {
      */
     fun validateGrpcRequest_SearchVideos(request: SearchVideosRequest) {
         FluentValidator.of("searchVideos", request, logger)
-            .notEmpty("query string", StringUtils.isBlank(request.query))
+            .notEmpty("query string", isBlank(request.query))
             .positive("page size", request.pageSize <= 0)
             .validate()
     }

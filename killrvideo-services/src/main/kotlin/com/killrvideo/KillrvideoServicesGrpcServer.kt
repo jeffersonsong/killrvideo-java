@@ -3,17 +3,19 @@ package com.killrvideo
 import com.google.common.collect.ImmutableList
 import com.killrvideo.conf.KillrVideoConfiguration
 import com.killrvideo.discovery.ServiceDiscoveryDao
-import com.killrvideo.service.comment.grpc.CommentsServiceGrpc
 import com.killrvideo.grpc.interceptor.GlobalGrpcExceptionHandler
 import com.killrvideo.grpc.interceptor.LogRequestResponseInterceptor
+import com.killrvideo.service.comment.grpc.CommentsServiceGrpc
 import com.killrvideo.service.rating.grpc.RatingsServiceGrpc
 import com.killrvideo.service.search.grpc.SearchServiceGrpc
 import com.killrvideo.service.statistic.grpc.StatisticsServiceGrpc
 import com.killrvideo.service.suggestedvideo.grpc.SuggestedVideosServiceGrpc
 import com.killrvideo.service.user.grpc.UserManagementServiceGrpc
-import com.killrvideo.grpc.interceptor.TraceServiceCallInterceptor
 import com.killrvideo.service.video.grpc.VideoCatalogServiceGrpc
-import io.grpc.*
+import io.grpc.BindableService
+import io.grpc.Server
+import io.grpc.ServerBuilder
+import io.grpc.ServerInterceptors
 import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
@@ -120,7 +122,7 @@ class KillrvideoServicesGrpcServer {
     }
 
     private fun buildServiceList(): ImmutableList<BindableService> {
-        val serviecListBuilder = ImmutableList.Builder<BindableService>();
+        val serviecListBuilder = ImmutableList.Builder<BindableService>()
         if (commentServiceEnabled) {
             serviecListBuilder.add(commentService)
         }

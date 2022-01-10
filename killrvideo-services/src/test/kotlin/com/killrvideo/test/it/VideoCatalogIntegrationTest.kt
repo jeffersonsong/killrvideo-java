@@ -1,7 +1,6 @@
 package com.killrvideo.test.it
 
 import com.killrvideo.KillrvideoServicesGrpcClient
-import killrvideo.user_management.UserManagementServiceOuterClass.VerifyCredentialsRequest
 import killrvideo.user_management.verifyCredentialsRequest
 
 object VideoCatalogIntegrationTest {

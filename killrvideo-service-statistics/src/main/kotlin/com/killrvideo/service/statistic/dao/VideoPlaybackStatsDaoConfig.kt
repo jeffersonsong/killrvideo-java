@@ -7,7 +7,7 @@ import org.springframework.context.annotation.Configuration
 @Configuration
 open class VideoPlaybackStatsDaoConfig {
     @Bean
-    open fun videoPlaybackStatsMapper(session: CqlSession?): VideoPlaybackStatsMapper? {
+    open fun videoPlaybackStatsMapper(session: CqlSession): VideoPlaybackStatsMapper {
         return VideoPlaybackStatsMapperBuilder(session).build()
     }
 }

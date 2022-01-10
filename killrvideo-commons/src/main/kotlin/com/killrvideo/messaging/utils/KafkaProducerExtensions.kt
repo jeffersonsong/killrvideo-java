@@ -13,7 +13,7 @@ object KafkaProducerExtensions {
         CompletableFuture<RecordMetadata>().apply {
             send(record) { metadata, exception ->
                 if (exception != null) {
-                    logger.error("Event sent failed '{}' ..", record.topic(), exception!!)
+                    logger.error("Event sent failed '{}' ..", record.topic(), exception)
                     completeExceptionally(exception)
                 } else {
                     logger.info("Event sent successfully '{}' ..", record.topic())

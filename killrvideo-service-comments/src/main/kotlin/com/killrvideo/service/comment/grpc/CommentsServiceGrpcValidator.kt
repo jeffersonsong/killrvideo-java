@@ -20,39 +20,33 @@ class CommentsServiceGrpcValidator {
      *
      * @param request        current GRPC Request
      */
-    fun validateGrpcRequestCommentOnVideo(request: CommentOnVideoRequest) {
+    fun validateGrpcRequestCommentOnVideo(request: CommentOnVideoRequest) =
         FluentValidator.of("commentOnVideo", request, logger)
             .notEmpty("userId", !request.hasUserId() || StringUtils.isBlank(request.userId.value))
             .notEmpty("videoId", !request.hasVideoId() || StringUtils.isBlank(request.videoId.value))
             .notEmpty("commentId", !request.hasCommentId() || StringUtils.isBlank(request.commentId.value))
             .notEmpty("comment", StringUtils.isBlank(request.comment))
             .validate()
-    }
 
     /**
      * Validate get video comment query.
      *
      * @param request        current GRPC Request
      */
-    fun validateGrpcRequestGetVideoComment(request: GetVideoCommentsRequest) {
+    fun validateGrpcRequestGetVideoComment(request: GetVideoCommentsRequest) =
         FluentValidator.of("getVideoComments", request, logger)
-            .notEmpty(
-                "video id",
-                !request.hasVideoId() || StringUtils.isBlank(request.videoId.value)
-            )
+            .notEmpty("video id", !request.hasVideoId() || StringUtils.isBlank(request.videoId.value))
             .positive("page size", request.pageSize <= 0)
             .validate()
-    }
 
     /**
      * Validate get user comment query.
      *
      * @param request        current GRPC Request
      */
-    fun validateGrpcRequest_GetUserComments(request: GetUserCommentsRequest) {
+    fun validateGrpcRequest_GetUserComments(request: GetUserCommentsRequest) =
         FluentValidator.of("getUserComments", request, logger)
             .notEmpty("userId", !request.hasUserId() || StringUtils.isBlank(request.userId.value))
             .positive("page size", request.pageSize <= 0)
             .validate()
-    }
 }

@@ -21,7 +21,7 @@ data class UserCredentials(
     var userid: @NotNull UUID? = null
 ) {
     companion object {
-        fun from(user: User, hashedPassword: String?) =
+        fun from(user: User, hashedPassword: String) =
             UserCredentials(
                 user.email,
                 hashedPassword,

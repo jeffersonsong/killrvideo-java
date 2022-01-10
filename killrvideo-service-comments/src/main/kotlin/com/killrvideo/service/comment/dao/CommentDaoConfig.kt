@@ -7,7 +7,7 @@ import org.springframework.context.annotation.Configuration
 @Configuration
 open class CommentDaoConfig {
     @Bean
-    open fun commentMapper(session: CqlSession?): CommentMapper? {
+    open fun commentMapper(session: CqlSession): CommentMapper? {
         return CommentMapperBuilder(session).build()
     }
 }
