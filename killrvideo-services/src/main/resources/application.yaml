@@ -83,11 +83,15 @@ killrvideo:
       # You can override this value by defining env var: §KILLRVIDEO_KAFKA_CONTACTPOINTS
       kafka: 
         brokers: kafka
-        port: 8082
+        port: 9092
       # You can override this value by defining env var: §KILLRVIDEO_DSE_CONTACT_POINTS
       cassandra:
-        contactPoints: localhost
+        contactPoints: dse
         port: 9042
+      # You can override this value by defining env var: §KILLRVIDEO_REDIS_CONTACT_POINTS
+      redis:
+        contactPoints: redis
+        port: 6379
 
   ############################################################################################
   # Communication between services are be implemented

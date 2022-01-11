@@ -39,6 +39,18 @@ class ServiceDiscoveryDaoStatic : ServiceDiscoveryDao {
     @Value("#{environment.KILLRVIDEO_DSE_CONTACT_POINTS}")
     private val cassandraContactPointsEnvVar: Optional<String>? = null
 
+    @Value("\${killrvideo.discovery.service.redis: redis}")
+    private val redisServiceName: String? = null
+
+    @Value("\${killrvideo.discovery.static.redis.port: 6379}")
+    private val redisPort = 0
+
+    @Value("\${killrvideo.discovery.static.redis.contactPoints}")
+    private var redisContactPoints: String? = null
+
+    @Value("#{environment.KILLRVIDEO_REDIS_CONTACT_POINTS}")
+    private val redisContactPointsEnvVar: Optional<String>? = null
+
     /** {@inheritDoc}  */
     override fun lookup(serviceName: String): List<String> {
         val endPointList: MutableList<String> = ArrayList()
@@ -50,6 +62,7 @@ class ServiceDiscoveryDaoStatic : ServiceDiscoveryDao {
             }
             Arrays.stream(kafkaBrokers!!.split(",").toTypedArray())
                 .forEach { ip: String -> endPointList.add("$ip:$kafkaPort") }
+
         } else if (cassandraServiceName.equals(serviceName, ignoreCase = true)) {
             // Explicit overwriting of contact points from env var
             // Better than default spring : simpler
@@ -59,6 +72,16 @@ class ServiceDiscoveryDaoStatic : ServiceDiscoveryDao {
             }
             Arrays.stream(cassandraContactPoints!!.split(",").toTypedArray())
                 .forEach { ip: String -> endPointList.add("$ip:$cassandraPort") }
+
+        } else if (redisServiceName.equals(serviceName, ignoreCase = true)) {
+            // Explicit overwriting of contact points from env var
+            // Better than default spring : simpler
+            if (redisContactPointsEnvVar!!.isPresent && redisContactPointsEnvVar.get().isNotBlank()) {
+                redisContactPoints = redisContactPointsEnvVar.get()
+                LOGGER.info(" + Reading contactPoints from KILLRVIDEO_REDIS_CONTACT_POINTS")
+            }
+            Arrays.stream(redisContactPoints!!.split(",").toTypedArray())
+                .forEach { ip: String -> endPointList.add("$ip:$redisPort") }
         }
         LOGGER.info(" + Endpoints retrieved '{}':", endPointList)
         return endPointList
