@@ -1,7 +1,7 @@
 version: '3'
 services:
   backend:
-    image: killrvideo-java-local
+    image: killrvideo-java-local:latest
     ports:
       - "50101:50101"
     depends_on:
@@ -34,7 +34,7 @@ services:
   redis:
     image: redis:latest
     ports:
-      - 6379:6379
+      - "6379:6379"
     volumes:
       - ./config/redis.conf:/redis.conf
     command: [ "redis-server", "/redis.conf" ]

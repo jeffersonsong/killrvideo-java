@@ -80,7 +80,7 @@ killrvideo:
       maxNumberOfTries: 30
     # No lookups, direct values (leveraging on Docker,Kubernetes serviceNames) 
     static:
-      # You can override this value by defining env var: §KILLRVIDEO_KAFKA_CONTACTPOINTS
+      # You can override this value by defining env var: §KILLRVIDEO_KAFKA_BROKERS
       kafka: 
         brokers: kafka
         port: 9092
