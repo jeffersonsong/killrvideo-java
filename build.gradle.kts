@@ -12,6 +12,7 @@ plugins {
     id("org.springframework.boot") version "2.6.2" apply false
     id("com.google.protobuf") version "0.8.15" apply false
     id("java")
+    id("jacoco")
     kotlin("jvm") version "1.6.10"
     kotlin("kapt") version "1.6.10"
 }
@@ -25,6 +26,14 @@ repositories {
     mavenCentral()
 }
 
+tasks.test {
+    finalizedBy("jacocoTestReport")
+    doLast {
+        println("View code coverage at:")
+        println("file://$buildDir/reports/jacoco/test/html/index.html")
+    }
+}
+
 subprojects {
     repositories {
         mavenCentral()
@@ -33,6 +42,7 @@ subprojects {
     apply {
         plugin("java")
         plugin("org.jetbrains.kotlin.jvm")
+        plugin("jacoco")
         // plugin("com.google.protobuf")
     }
 
@@ -53,6 +63,24 @@ subprojects {
     }
 
     tasks.withType<Jar> { duplicatesStrategy = DuplicatesStrategy.EXCLUDE }
+
+    tasks.withType<JacocoReport> {
+        classDirectories.setFrom(
+            sourceSets.main.get().output.asFileTree.matching {
+                exclude("killrvideo/**/*.class")
+                exclude("com/killrvideo/service/*/dto/*.class")
+                exclude("com/killrvideo/service/*/dao/*.class")
+            }
+        )
+    }
+
+    tasks.test {
+        finalizedBy("jacocoTestReport")
+        doLast {
+            println("View code coverage at:")
+            println("file://$buildDir/reports/jacoco/test/html/index.html")
+        }
+    }
 
     dependencies {
         testImplementation(Deps.Junit.jupiter)
