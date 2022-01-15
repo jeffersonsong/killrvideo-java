@@ -13,8 +13,7 @@ spec:
   selector:
     matchLabels:
       io.kompose.service: redis
-  strategy:
-    type: Recreate
+  strategy: {}
   template:
     metadata:
       annotations:
@@ -27,18 +26,10 @@ spec:
       containers:
         - args:
             - redis-server
-            - /redis.conf
           image: redis:latest
           name: redis
           ports:
             - containerPort: 6379
           resources: {}
-          volumeMounts:
-            - mountPath: /redis.conf
-              name: redis-claim0
       restartPolicy: Always
-      volumes:
-        - name: redis-claim0
-          persistentVolumeClaim:
-            claimName: redis-claim0
 status: {}
