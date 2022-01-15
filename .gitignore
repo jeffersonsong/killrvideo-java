@@ -31,3 +31,7 @@ dse-data/
 .gradle
 /build/
 */out/
+/terraform/.terraform.lock.hcl
+/terraform/terraform.tfstate
+/terraform/terraform.tfstate.backup
+/terraform/.terraform/
