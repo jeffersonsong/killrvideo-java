@@ -4,6 +4,7 @@ plugins {
     application
     id("com.datastax.java-conventions")
     id("org.springframework.boot")
+    id("com.google.cloud.tools.jib")
     kotlin("jvm")
 }
 
@@ -37,3 +38,13 @@ tasks.getByName<BootJar>("bootJar") {
 }
 
 description = "+ killrvideo-services"
+
+jib {
+    container {
+        ports = listOf("50101")
+        mainClass = "com.killrvideo.KillrVideoServices"
+        jvmFlags = listOf("-Djava.security.egd=file:/dev/./urandom")
+    }
+    to.image = "killrvideo-java-local:${version}"
+    from.image = "openjdk:11"
+}

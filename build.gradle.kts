@@ -11,6 +11,7 @@ buildscript {
 plugins {
     id("org.springframework.boot") version "2.6.2" apply false
     id("com.google.protobuf") version "0.8.15" apply false
+    id("com.google.cloud.tools.jib") version "3.1.4" apply false
     id("java")
     id("jacoco")
     kotlin("jvm") version "1.6.10"
