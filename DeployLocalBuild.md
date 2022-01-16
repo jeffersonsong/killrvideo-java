@@ -39,6 +39,14 @@ kubectl apply -f k8s
 ```
 
 ```
+kubectl delete pods,rs,deploy,svc -l io.kompose.service=web
+kubectl delete pods,rs,deploy,svc -l io.kompose.service=backend
+kubectl delete pods -l io.kompose.service=dse-config
+kubectl delete pods,rs,deploy,svc -l io.kompose.service=redis
+kubectl delete pods,rs,deploy,svc -l io.kompose.service=dse
+```
+
+```
 minikube stop
 ```
 ```
