@@ -1,4 +1,5 @@
 import org.springframework.boot.gradle.tasks.bundling.BootJar
+import java.time.Instant
 
 plugins {
     application
@@ -40,11 +41,16 @@ tasks.getByName<BootJar>("bootJar") {
 description = "+ killrvideo-services"
 
 jib {
+    from {
+        image = "openjdk:11"
+    }
+    to {
+        image = "killrvideo-java-local:${version}"
+    }
     container {
         ports = listOf("50101")
         mainClass = "com.killrvideo.KillrVideoServices"
         jvmFlags = listOf("-Djava.security.egd=file:/dev/./urandom")
+        creationTime = Instant.now().toString()
     }
-    to.image = "killrvideo-java-local:${version}"
-    from.image = "openjdk:11"
 }
