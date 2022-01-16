@@ -25,7 +25,7 @@ modify backend-deployment.yaml
 
 Start minikube
 ```
-minikube start
+minikube start --profile killrvideo
 ```
 
 Install local docker image to minikube
@@ -47,7 +47,7 @@ kubectl delete pods,rs,deploy,svc -l io.kompose.service=dse
 ```
 
 ```
-minikube stop
+minikube stop --profile killrvideo
 ```
 ```
 minikube delete
