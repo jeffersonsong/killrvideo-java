@@ -27,6 +27,7 @@ eval $(minikube docker-env)
 
 Use k3d
 ./k3d-create-cluster.sh
-docker tag killrvideo-java-local:latest registry.local:5000/killrvideo-java-local:latest
-docker push registry.local:5000/killrvideo-java-local:latest
-skaffold dev
+skaffold dev --port-forward
+
+k3d cluster list
+k3d cluster delete k3s-local
