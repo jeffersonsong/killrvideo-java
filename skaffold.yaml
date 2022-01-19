@@ -5,8 +5,10 @@ metadata:
 build:
   artifacts:
   - image: registry.local:5000/killrvideo-java-local
-    docker:
-      dockerfile: Dockerfile
+    sync:
+      manual:
+        - src: 'killrvideo-services/build/libs/killrvideo-services-3.0.0.jar'
+          dest: ./killrvideo-java.jar
   local: {}
   insecureRegistries:
     - registry.local:5000
