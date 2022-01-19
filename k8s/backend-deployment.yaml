@@ -31,8 +31,8 @@ spec:
               value: debug
             - name: KILLRVIDEO_REDIS_CONTACT_POINTS
               value: redis
-          image: killrvideo-java-local:latest
-          imagePullPolicy: Never
+          image: registry.local:5000/killrvideo-java-local:latest
+          imagePullPolicy: IfNotPresent
           name: backend
           ports:
             - containerPort: 50101

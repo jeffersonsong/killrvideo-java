@@ -4,9 +4,13 @@ metadata:
   name: killrvideo-java-kt
 build:
   artifacts:
-  - image: killrvideo-java-local
+  - image: registry.local:5000/killrvideo-java-local
     docker:
       dockerfile: Dockerfile
+  local: {}
+  insecureRegistries:
+    - registry.local:5000
+
 deploy:
   kubectl:
     manifests:
