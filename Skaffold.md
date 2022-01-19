@@ -1,6 +1,6 @@
 minikube start --profile killrvideo
 
-skaffold init
+skaffold init (first time)
 skaffold dev
 minikube stop --profile killrvideo
 

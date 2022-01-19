@@ -19,3 +19,16 @@ deploy:
     - k8s/redis-service.yaml
     - k8s/web-deployment.yaml
     - k8s/web-service.yaml
+
+portForward:
+  - resourceType: service
+    resourceName: backend
+    namespace: default
+    port: 50101
+    localPort: 50101
+
+  - resourceType: service
+    resourceName: dse
+    namespace: default
+    port: 9042
+    localPort: 9042

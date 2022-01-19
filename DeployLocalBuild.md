@@ -4,7 +4,7 @@ git log -n 1
 ```
 Build docker image
 ```
-docker build -t a88eaf1044a8456fcd05bddece7594f44d04e890 -t killrvideo-java-local .
+docker build -t acb18b697f474b2cd7deceda655c32e5af54fc7e -t killrvideo-java-local .
 ```
 
 ```
