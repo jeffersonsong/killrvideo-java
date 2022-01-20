@@ -1,5 +1,5 @@
 provider "kubernetes" {
-  config_context_cluster   = "minikube"
+  config_context_cluster   = "k3d-k3s-local"
   config_path = "~/.kube/config"
 }
 
@@ -179,7 +179,8 @@ resource "kubernetes_deployment" "backend" {
       spec {
         container {
           name = "backend"
-          image = "killrvideo-java-local:latest"
+          image = "registry.local:5000/killrvideo-java-local:latest"
+          image_pull_policy = "IfNotPresent"
           port {
             container_port = 50101
           }
@@ -195,7 +196,6 @@ resource "kubernetes_deployment" "backend" {
             name = "KILLRVIDEO_REDIS_CONTACT_POINTS"
             value = "redis"
           }
-          image_pull_policy = "Never"
         }
         restart_policy = "Always"
       }

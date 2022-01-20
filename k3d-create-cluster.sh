@@ -77,7 +77,7 @@ create_registry () {
     echo
 
     docker volume create ${VOLUME_NAME}
-    docker container run -d --name ${REGISTRY_NAME} -v ${VOLUME_NAME}:/var/lib/registry --restart unless-stopped -p 5000:5000 registry:2.7.1
+    docker container run -d --name ${REGISTRY_NAME} -v ${VOLUME_NAME}:/var/lib/registry --restart unless-stopped -p 5000:5000 registry:2
 
     create_configuration
 }

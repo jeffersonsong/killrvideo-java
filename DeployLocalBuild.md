@@ -36,6 +36,14 @@ minikube image load killrvideo-java-local:latest
 
 ```
 kubectl apply -f k8s
+
+kubectl apply -f k8s/dse-deployment.yaml
+kubectl apply -f k8s/dse-service.yaml
+kubectl apply -f k8s/redis-deployment.yaml
+kubectl apply -f k8s/redis-service.yaml
+kubectl apply -f k8s/dse-config-pod.yaml
+kubectl apply -f k8s/backend-deployment.yaml
+kubectl apply -f k8s/backend-service.yaml
 ```
 
 ```
@@ -46,6 +54,13 @@ kubectl delete pods,rs,deploy,svc -l io.kompose.service=redis
 kubectl delete pods,rs,deploy,svc -l io.kompose.service=dse
 ```
 
+```
+kubectl delete deploy,svc -l app=web
+kubectl delete deploy,svc -l app=backend
+kubectl delete pods -l app=dse-config
+kubectl delete deploy,svc -l app=redis
+kubectl delete deploy,svc -l app=dse
+```
 ```
 minikube stop --profile killrvideo
 ```
