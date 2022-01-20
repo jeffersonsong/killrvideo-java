@@ -26,7 +26,7 @@ services:
 
   # Service implementation - use docker-compose-backend-external.yaml if running services in IDE
   backend: # KillrVideo Backend 
-    image: killrvideo-java-local:3.0.0
+    image: killrvideo-java-local:latest
     ports:
       - "50101:50101" # Exposes port to be available. Kompose tool needs that to create a k8s service and make backend available for other services.
     depends_on:
@@ -36,7 +36,9 @@ services:
       KILLRVIDEO_LOGGING_LEVEL: debug # More logging
       KILLRVIDEO_DSE_CONTACT_POINTS: dse
       KILLRVIDEO_REDIS_CONTACT_POINTS: redis
-  
+    labels:
+      kompose.service.type: nodeport # Adds a label for Kompose to expose service externally
+
   # Datastax Studio provides convenient web interface to work directly with DataStax Enterprise
   #studio:
   #  image: datastax/dse-studio:6.7.0
@@ -53,14 +55,16 @@ services:
     command: [ -s -g ] # Run with Search and Graph capabilities enabled
     ports: # Exposes ports to be available.
       - "9042:9042" # Exposes DSE port
-      - "8983:8983" # Exposes DSE Search port
-      - "8182:8182" # Exposes DSE Graph port
+      #- "8983:8983" # Exposes DSE Search port
+      #- "8182:8182" # Exposes DSE Graph port
     environment:
       DS_LICENSE: accept # Accept licence on start
     cap_add:
       - IPC_LOCK # Allow DSE to lock memory with mlock
     ulimits:
       memlock: -1
+    labels:
+      kompose.service.type: nodeport # Adds a label for Kompose to expose service externally
 
   # One-Time Bootstrap Container, configures DSE to have required keyspaces etc.
   dse-config: 
