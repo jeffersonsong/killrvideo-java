@@ -1,7 +1,7 @@
-- op: add
+- op: replace
   path: /spec/template/spec/containers/0/image
   value: registry.local:5000/killrvideo-java-local:latest
 
-- op: add
+- op: replace
   path: /spec/template/spec/containers/0/imagePullPolicy
-  value: Always
+  value: IfNotPresent
