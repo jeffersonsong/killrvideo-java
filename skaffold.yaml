@@ -16,15 +16,13 @@ build:
 deploy:
   kubectl:
     manifests:
-    - k8s/base/backend-deployment.yaml
-    - k8s/base/backend-service.yaml
-    - k8s/base/dse-config-pod.yaml
     - k8s/base/dse-deployment.yaml
     - k8s/base/dse-service.yaml
     - k8s/base/redis-deployment.yaml
     - k8s/base/redis-service.yaml
-    - k8s/base/web-deployment.yaml
-    - k8s/base/web-service.yaml
+    - k8s/base/dse-config-pod.yaml
+    - k8s/base/backend-deployment.yaml
+    - k8s/base/backend-service.yaml
 
 portForward:
   - resourceType: service

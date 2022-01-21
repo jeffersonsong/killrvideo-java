@@ -27,10 +27,12 @@ eval $(minikube docker-env)
 
 Use k3d
 ./k3d-create-cluster.sh
-skaffold dev --port-forward
+skaffold dev -p local --port-forward
 
 k3d cluster list
 k3d cluster delete k3s-local
+
+kompose convert -f ../../docker-compose.yml
 
 Get latest commit.
 ```
@@ -43,7 +45,14 @@ docker build -t 5ebd53f4a6c990566e82dd78f0021e6a93b76eb1 -t killrvideo-java-loca
 
 k3d image import killrvideo-java-local:latest --cluster k3s-local
 ```
-kubectl apply -f k8s
+kubectl apply -f k8s/base
+kubectl apply -f k8s/base/dse-deployment.yaml
+kubectl apply -f k8s/base/dse-service.yaml
+kubectl apply -f k8s/base/redis-deployment.yaml
+kubectl apply -f k8s/base/redis-service.yaml
+kubectl apply -f k8s/base/dse-config-pod.yaml
+kubectl apply -f k8s/base/backend-deployment.yaml
+kubectl apply -f k8s/base/backend-service.yaml
 ```
 port forward backend and dse.
 
