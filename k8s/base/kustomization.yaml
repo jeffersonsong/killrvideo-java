@@ -3,8 +3,3 @@ kind: Kustomization
 resources:
   - backend-deployment.yaml
   - backend-service.yaml
-  - dse-deployment.yaml
-  - dse-service.yaml
-  - redis-deployment.yaml
-  - redis-service.yaml
-  - dse-config-pod.yaml
