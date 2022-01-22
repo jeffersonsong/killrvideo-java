@@ -2,7 +2,8 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   annotations:
-    kompose.cmd: kompose convert -f ../docker-compose.yml
+    kompose.cmd: kompose convert -f ../../docker-compose.yml
+    kompose.service.type: nodeport
     kompose.version: 1.26.1 (a9d05d509)
   creationTimestamp: null
   labels:
@@ -13,11 +14,13 @@ spec:
   selector:
     matchLabels:
       io.kompose.service: dse
-  strategy: {}
+  strategy:
+    type: Recreate
   template:
     metadata:
       annotations:
-        kompose.cmd: kompose convert -f ../docker-compose.yml
+        kompose.cmd: kompose convert -f ../../docker-compose.yml
+        kompose.service.type: nodeport
         kompose.version: 1.26.1 (a9d05d509)
       creationTimestamp: null
       labels:
@@ -33,12 +36,17 @@ spec:
           name: dse
           ports:
             - containerPort: 9042
-            - containerPort: 8983
-            - containerPort: 8182
           resources: {}
           securityContext:
             capabilities:
               add:
                 - IPC_LOCK
+          volumeMounts:
+            - mountPath: /var/lib/cassandra
+              name: dse-claim0
       restartPolicy: Always
+      volumes:
+        - name: dse-claim0
+          persistentVolumeClaim:
+            claimName: dse-claim0
 status: {}

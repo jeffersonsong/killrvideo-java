@@ -2,7 +2,8 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   annotations:
-    kompose.cmd: kompose convert -f ../docker-compose.yml
+    kompose.cmd: kompose convert -f ../../docker-compose.yml
+    kompose.service.type: nodeport
     kompose.version: 1.26.1 (a9d05d509)
   creationTimestamp: null
   labels:
@@ -17,7 +18,8 @@ spec:
   template:
     metadata:
       annotations:
-        kompose.cmd: kompose convert -f ../docker-compose.yml
+        kompose.cmd: kompose convert -f ../../docker-compose.yml
+        kompose.service.type: nodeport
         kompose.version: 1.26.1 (a9d05d509)
       creationTimestamp: null
       labels:
@@ -31,10 +33,8 @@ spec:
               value: debug
             - name: KILLRVIDEO_REDIS_CONTACT_POINTS
               value: redis
-          image: registry.local:5000/killrvideo-java-local:latest
+          image: killrvideo-java-local:latest
           imagePullPolicy: IfNotPresent
-          #image: killrvideo-java-local:latest
-          #imagePullPolicy: Never
           name: backend
           ports:
             - containerPort: 50101

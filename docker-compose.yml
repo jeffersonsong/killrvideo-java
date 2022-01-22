@@ -63,6 +63,8 @@ services:
       - IPC_LOCK # Allow DSE to lock memory with mlock
     ulimits:
       memlock: -1
+    volumes:
+      - /home/jeffersons/Tutorial/github.com/KillrVideo/dse2/var/lib/cassandra:/var/lib/cassandra
     labels:
       kompose.service.type: nodeport # Adds a label for Kompose to expose service externally
 
