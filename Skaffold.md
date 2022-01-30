@@ -48,6 +48,8 @@ k3d image import killrvideo-java-local:latest --cluster k3s-local
 kubectl apply -f k8s/infra
 kubectl apply -f k8s/init
 
+kubectl delete pods -l io.kompose.service=dse-config
+
 skaffold dev -p local --port-forward
 
 kubectl apply -f k8s/base/backend-deployment.yaml
